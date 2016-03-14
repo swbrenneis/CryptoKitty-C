@@ -1,0 +1,16 @@
+  13 * 9 = 117
+
+  0000 1101
+* 0000 1001
+  0111 0101
+
+  0000 1101     First product
+
+  0000 0100     First shift
+  0000 0010     Second shift, count = 2
+  0000 0001     Third shift, count = 3
+
+  0110 1000     Second product, shifted 3 times
++ 0000 1101     First Product
+  0111 0101     First sum
+
