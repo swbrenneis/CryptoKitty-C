@@ -1,10 +1,14 @@
 .PHONY: clean bigint
 
-all: bigint
+all: data random
 
-bigint:
-	$(MAKE) -C bigint
+data:
+	$(MAKE) -C data
+
+random:
+	$(MAKE) -C random
 
 clean:
-	cd bigint && $(MAKE) clean
+	cd data && $(MAKE) clean
+	cd random && $(MAKE) clean
 
