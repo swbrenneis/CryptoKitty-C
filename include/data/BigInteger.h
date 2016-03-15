@@ -1,6 +1,7 @@
 #ifndef BIGINTEGER_H_INCLUDED
 #define BIGINTEGER_H_INCLUDED
 
+#include "ByteArray.h"
 #include <deque>
 
 class BigInteger {
@@ -19,6 +20,7 @@ class BigInteger {
     public:
         BigInteger(); // Creates BigInteger instance with a value of 0
         BigInteger(const BigInteger& other);
+        BigInteger(const ByteArray& bytes);
         BigInteger(long long intial);   // Creates BigInteger with initial value
 
     public:
@@ -42,10 +44,13 @@ class BigInteger {
         BigInteger absolute() const;
         int bitCount() const; // Returns the number of significant bits.
         int bitSize() const; // Returns the total number of bits
+        ByteArray byteArray() const; // Returns the value as an array of unsigned char
         bool equals(const BigInteger& other) const;
         BigInteger getRemainder() const;
-        bool lessThan(const BigInteger& other) const;
         bool isZero() const;
+        bool lessThan(const BigInteger& other) const;
+        long longValue() const; // Returns long value. Value returned is truncated
+                                // to sizeof(long).
 
     private:
         typedef std::deque<unsigned long long> RawBits;
