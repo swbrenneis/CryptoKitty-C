@@ -34,8 +34,10 @@ class BigInteger {
         // bool operator >= (const BigInteger& other);
         BigInteger& operator+ (const BigInteger& addend);
         BigInteger& operator- (const BigInteger& subtrahend);
-        BigInteger& operator* (const BigInteger& subtrahend);
-        BigInteger& operator/ (const BigInteger& subtrahend);
+        BigInteger& operator* (const BigInteger& multiplier);
+        BigInteger& operator/ (const BigInteger& divisor);
+        BigInteger operator>> (unsigned shiftCount) const;
+        BigInteger operator<< (unsigned shiftCount) const;
 
     public:
         ~BigInteger();
@@ -86,34 +88,15 @@ class BigInteger {
 /*
  * Global operator overloads
 */
-bool operator== (const BigInteger& lhs, const BigInteger& rhs)
-{ return lhs.equals(rhs); }
-
-bool operator!= (const BigInteger& lhs, const BigInteger& rhs)
-{ return !lhs.equals(rhs); }
-
-bool operator< (const BigInteger& lhs, const BigInteger& rhs)
-{ return lhs.lessThan(rhs); }
-
-bool operator<= (const BigInteger& lhs, const BigInteger& rhs)
-{ return lhs.lessThan(rhs) || lhs.equals(rhs); }
-
-bool operator> (const BigInteger& lhs, const BigInteger& rhs)
-{ return !(lhs <= rhs); }
-
-bool operator>= (const BigInteger& lhs, const BigInteger& rhs)
-{ return lhs > rhs || lhs.equals(rhs); }
-
-BigInteger operator+ (const BigInteger& lhs, const BigInteger& rhs)
-{ BigInteger result = lhs + rhs; return result; }
-
-BigInteger operator- (const BigInteger& lhs, const BigInteger& rhs)
-{ BigInteger result = lhs - rhs; return result; }
-
-BigInteger operator* (const BigInteger& lhs, const BigInteger& rhs)
-{ BigInteger result = lhs * rhs; return result; }
-
-BigInteger operator/ (const BigInteger& lhs, const BigInteger& rhs)
-{ BigInteger result = lhs / rhs; return result; }
+bool operator== (const BigInteger& lhs, const BigInteger& rhs);
+bool operator!= (const BigInteger& lhs, const BigInteger& rhs);
+bool operator< (const BigInteger& lhs, const BigInteger& rhs);
+bool operator<= (const BigInteger& lhs, const BigInteger& rhs);
+bool operator> (const BigInteger& lhs, const BigInteger& rhs);
+bool operator>= (const BigInteger& lhs, const BigInteger& rhs);
+BigInteger operator+ (const BigInteger& lhs, const BigInteger& rhs);
+BigInteger operator- (const BigInteger& lhs, const BigInteger& rhs);
+BigInteger operator* (const BigInteger& lhs, const BigInteger& rhs);
+BigInteger operator/ (const BigInteger& lhs, const BigInteger& rhs);
 
 #endif // BIGINTEGER_H_INCLUDED

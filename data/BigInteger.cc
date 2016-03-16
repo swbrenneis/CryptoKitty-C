@@ -42,6 +42,40 @@ BigInteger::BigInteger(long long initial) {
 }
 
 /*
+ * Construct a BigInteger from a byte array
+ */
+BigInteger::BigInteger(const ByteArray& bytes)
+: sign(true) {
+
+    zeroRemainder();
+    unsigned biSize = bytes.length() / sizeof(unsigned long long);
+    if (bytes.length() % sizeof(unsigned long long) != 0) {
+        biSize++;
+    }
+    number.resize(biSize, 0);
+    unsigned bitCount = bytes.length() * 8;
+    unsigned char mask = 0x80;
+    unsigned index = 0;
+    unsigned char byte = bytes[index];
+    while (bitCount > 0) {
+        if ((byte & mask) != 0) {
+            leftShift(number, 0, 1, true);
+        }
+        else {
+            leftShift(number, 0, 1, false);
+        }
+        bitCount--;
+        byte = byte << 1;
+        if (bitCount % 8 == 0) {
+            index++;
+            byte = bytes[index];
+        }
+    }
+    clip();
+
+}
+
+/*
  * Destructor
  */
 BigInteger::~BigInteger() {
@@ -161,6 +195,30 @@ BigInteger& BigInteger::operator/ (const BigInteger& other) {
 }
 
 /*
+ * Right shift operator. A logical right shift is performed
+ * on the number array of a copy of this BigInteger.
+ */
+BigInteger BigInteger::operator>> (unsigned count) const {
+
+    BigInteger result(*this);
+    rightShift(result.number, 0, count);
+    return result;
+
+}
+
+/*
+ * Left shift operator. A logical left shift is performed
+ * on the number array of a copy of this BigInteger.
+ */
+BigInteger BigInteger::operator<< (unsigned count) const {
+
+    BigInteger result(*this);
+    leftShift(result.number, 0, count, false);
+    return result;
+
+}
+
+/*
  * Add with carry. Places the result in a1.
  * It is assumed that zero checks have been done
  * by the calling function.
@@ -231,6 +289,35 @@ void BigInteger::borrow(RawBits& sub, unsigned index) {
         sub[index]--;
     }
 
+}
+
+/*
+ * Output the value of the integer in a byte array.
+ */
+ByteArray BigInteger::byteArray() const {
+
+    ByteArray result;
+    unsigned byteLength = number.size() * sizeof(unsigned long long);
+    result.setLength(byteLength);
+    unsigned bits = bitCount();
+    unsigned index = 0;
+    unsigned char byte = 0;
+    RawBits theNumber(number);
+    while (bits > 0) {
+        if ((theNumber[0] & 1) != 0) {
+            byte |= 0x80;
+        }
+        byte = byte >> 1;
+        rightShift(theNumber);
+        bits--;
+        if (bits % 8 == 0) {
+            result[index] = byte;
+            byte = 0;
+            index++;
+        }
+    }
+    return result;
+            
 }
 
 /*
@@ -330,6 +417,15 @@ void BigInteger::divide(const RawBits& other) {
 /*
  * Test to see of other RawBits deque holds the same value as number.
  */
+bool BigInteger::equals(const BigInteger& other) const {
+
+    return equals(other.number);
+
+}
+ 
+/*
+ * Test to see of other RawBits deque holds the same value as number.
+ */
 bool BigInteger::equals(const RawBits& other) const {
 
     if (number.size() != other.size()) {
@@ -355,6 +451,68 @@ bool BigInteger::equals(const RawBits& other) const {
 bool BigInteger::isZero() const {
 
     return number.size() == 1 && number[0] == 0;
+
+}
+
+/*
+ * Recursive logical left shift
+ */
+void BigInteger::leftShift(RawBits& reg, unsigned index,
+                            unsigned count, bool carry) const {
+
+    bool nextCarry = (reg[index] & ULLONG_MSB) != 0;
+    reg[index] = reg[index] << 1;
+    if (carry) {
+        reg[index] |= 1;
+    }
+    if (index < reg.size()) {   // Recurse to finish all blocks
+        leftShift(reg, index+1, 1, nextCarry);
+    }
+    if (count > 1) {    // Recurse to satisfy count
+        leftShift(reg, 0, count-1, false);
+    }
+
+}
+
+/*
+ * Signed value comparison.
+ */
+bool BigInteger::lessThan(const BigInteger& other) const {
+
+    if (number == other.number) {
+        return false;
+    }
+    // Sign checks
+    if (sign == other.sign) {   // Same sign.
+        if (sign) { // Both positive.
+            return number < other.number;
+        }
+        else {  // Both negative.
+            return number > other.number;
+        }
+    }
+    else {
+        if (sign) { // other is negative
+            return false;
+        }
+        else {  // This is negative, Other is positive.
+            return true;
+        }
+    }
+
+}
+
+/*
+ * Return the integer as a signed long value. If the absolute value
+ * is larger than ULONG_MAX, it will be truncated.
+ */
+long BigInteger::longValue() const {
+
+    long result = number[0] & ULONG_MAX;
+    if (!sign) {
+        result = 0 - result;
+    }
+    return result;
 
 }
 
@@ -391,19 +549,20 @@ void BigInteger::multiply(const RawBits& other) {
 }
 
 /*
- * Recursive logical right shift
+ * Recursive logical right shift.
  */
 void BigInteger::rightShift(RawBits& reg, unsigned index, unsigned count) const {
 
-    unsigned next = index + 1;
     reg[index] = reg[index] >> 1;
+    unsigned next = index + 1;
     if (next < reg.size()) {
-        if ((reg[next] & 1) == 1) {
+        if ((reg[next] & 1) != 0) {
             reg[index] |= ULLONG_MSB;
         }
-        if (count > 0) {
-            rightShift(reg, next, count - 1);
-        }
+        rightShift(reg, next, 1);   // Recurse to finish all blocks
+    }
+    if (count > 1) {    // Recurse to satisfy count
+        rightShift(reg, 0, count - 1);
     }
 
 }
@@ -428,3 +587,34 @@ void BigInteger::zeroRemainder() {
     remainderSign = true;
 
 }
+
+// Global operator overloads
+bool operator== (const BigInteger& lhs, const BigInteger& rhs)
+{ return lhs.equals(rhs); }
+
+bool operator!= (const BigInteger& lhs, const BigInteger& rhs)
+{ return !lhs.equals(rhs); }
+
+bool operator< (const BigInteger& lhs, const BigInteger& rhs)
+{ return lhs.lessThan(rhs); }
+
+bool operator<= (const BigInteger& lhs, const BigInteger& rhs)
+{ return lhs.lessThan(rhs) || lhs.equals(rhs); }
+
+bool operator> (const BigInteger& lhs, const BigInteger& rhs)
+{ return !(lhs <= rhs); }
+
+bool operator>= (const BigInteger& lhs, const BigInteger& rhs)
+{ return lhs > rhs || lhs.equals(rhs); }
+
+BigInteger operator+ (const BigInteger& lhs, const BigInteger& rhs)
+{ BigInteger result = lhs + rhs; return result; }
+
+BigInteger operator- (const BigInteger& lhs, const BigInteger& rhs)
+{ BigInteger result = lhs - rhs; return result; }
+
+BigInteger operator* (const BigInteger& lhs, const BigInteger& rhs)
+{ BigInteger result = lhs * rhs; return result; }
+
+BigInteger operator/ (const BigInteger& lhs, const BigInteger& rhs)
+{ BigInteger result = lhs / rhs; return result; }

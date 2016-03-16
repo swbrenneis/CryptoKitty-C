@@ -1,5 +1,5 @@
 #include "../include/data/NanoTime.h"
-#include "../include/random/DataException.h"
+#include "../include/data/DataException.h"
 #include <time.h>
 
 NanoTime::NanoTime() {

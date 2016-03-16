@@ -9,6 +9,9 @@
  */
 class ByteArray {
 
+    private:
+        typedef std::deque<unsigned char> Array;
+
     public:
         ByteArray();
         ByteArray(const ByteArray& other);
@@ -18,6 +21,9 @@ class ByteArray {
         ByteArray(int size);
         ~ByteArray();
 
+    private:
+        ByteArray(const Array& byteArray);
+
     public:
         ByteArray& operator= (const ByteArray& other);
         unsigned char& operator[] (unsigned index);
@@ -26,16 +32,19 @@ class ByteArray {
     public:
         void append(const ByteArray& other);
         void append(const unsigned char *byte, int length);
-        unsigned char *asArray();   // Returns an array of bytes.
+        void append(unsigned char c);
+        unsigned char *asArray() const;   // Returns an array of bytes.
+        void clear();
         void copy(unsigned offset, const ByteArray& other,
                         unsigned otherOffset, unsigned length=0);
         unsigned length() const;
         ByteArray range(unsigned offset, unsigned length) const;
-        void setLength(unsigned newLength)();
+        void setLength(unsigned newLength);
 
     private:
-        typedef std::deque<unsigned char> Array;
         Array bytes;
+        typedef Array::const_iterator ArrayConstIter;
+        typedef Array::iterator ArrayIter;
 
 };
 

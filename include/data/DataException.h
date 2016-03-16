@@ -10,12 +10,12 @@ class DataException {
 
     public:
         DataException(const std::string& msg) : message(msg) {}
-        DataException(const RNGException& other)
+        DataException(const DataException& other)
                 : message(other.message) {}
-        ~DataException() {}
+        virtual ~DataException() {}
 
     public:
-        const std::string& getMessage() const { return message; }
+        virtual const std::string& getMessage() const { return message; }
 
     private:
         std::string message;
