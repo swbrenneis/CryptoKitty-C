@@ -1,4 +1,5 @@
 #include "../include/data/BigInteger.h"
+#include "../include/data/OutOfRangeException.h"
 #include <algorithm>
 #include <climits>
 
@@ -9,6 +10,8 @@ const BigInteger BigInteger::ZERO;
 const BigInteger BigInteger::ONE(1);
 const unsigned long long
     BigInteger::ULLONG_MSB = (ULLONG_MAX >> 1) ^ ULLONG_MAX;
+const int BigInteger::LITTLEENDIAN = 1;
+const int BigInteger::BIGENDIAN = 2;
 
 /*
  * Default constructor
@@ -293,28 +296,45 @@ void BigInteger::borrow(RawBits& sub, unsigned index) {
 
 /*
  * Output the value of the integer in a byte array.
+ * little endian = 1, big endian = 2;
  */
-ByteArray BigInteger::byteArray() const {
+ByteArray BigInteger::byteArray(int endian) const {
 
     ByteArray result;
     unsigned byteLength = number.size() * sizeof(unsigned long long);
     result.setLength(byteLength);
-    unsigned bits = bitCount();
-    unsigned index = 0;
+    int bits = bitSize();
+    unsigned index;
+    switch (endian) {
+        case LITTLEENDIAN:
+            index = 0;
+            break;
+        case BIGENDIAN:
+            index = byteLength - 1;
+            break;
+        default:
+            throw OutOfRangeException("Illegal endian value.");
+    }
     unsigned char byte = 0;
     RawBits theNumber(number);
-    while (bits > 0) {
+    for (int n = 1; n <= bits; ++n) {
         if ((theNumber[0] & 1) != 0) {
             byte |= 0x80;
         }
-        byte = byte >> 1;
-        rightShift(theNumber);
-        bits--;
-        if (bits % 8 == 0) {
+        if (n % 8 == 0) {
             result[index] = byte;
             byte = 0;
-            index++;
+            switch (endian) {
+                case LITTLEENDIAN:
+                    index++;
+                    break;
+                case BIGENDIAN:
+                    index--;
+                    break;
+            }
         }
+        byte = byte >> 1;
+        rightShift(theNumber);
     }
     return result;
             

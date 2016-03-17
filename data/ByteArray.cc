@@ -1,5 +1,5 @@
 #include "../include/data/ByteArray.h"
-#include "../include/data/DataOutOfRangeException.h"
+#include "../include/data/OutOfRangeException.h"
 
 ByteArray::ByteArray() {
 }
@@ -79,7 +79,9 @@ unsigned char *ByteArray::asArray() const {
     unsigned char *resultptr = result;
     ArrayConstIter it = bytes.begin();
     while (it != bytes.end()) {
-        *resultptr++ = *it++;
+        *resultptr = *it;
+        resultptr++;
+        it++;
     }
     return result;
 
@@ -94,7 +96,7 @@ void ByteArray::clear() {
 /*
  * Copy a subrange of this another array array to this one. Existing
  * elements within the copy range are overwritten. The array size
- * is adjusted accordingly. DataOutOfRangeException if the other array
+ * is adjusted accordingly. OutOfRangeException if the other array
  * size is violated. If length is zero, the copy size is calculated from
  * the size of the other array.
  */
@@ -107,7 +109,7 @@ void ByteArray::copy(unsigned offset, const ByteArray& other,
     }
     if (otherOffset > other.length()
                     || otherOffset + transfer > other.length()) {
-        throw DataOutOfRangeException("ByteArray copy out of range");
+        throw OutOfRangeException("ByteArray copy out of range");
     }
     if (offset + transfer > bytes.size()) {
         bytes.resize(offset + transfer);
@@ -119,6 +121,12 @@ void ByteArray::copy(unsigned offset, const ByteArray& other,
     while (otherIt < other.bytes.end()) {
         *it++ = *otherIt++;
     }
+
+}
+
+bool ByteArray::equals(const ByteArray& other) const {
+
+    return bytes == other.bytes;
 
 }
 
@@ -138,7 +146,16 @@ ByteArray ByteArray::range(unsigned offset, unsigned length) const {
 
 void ByteArray::setLength(unsigned newLength) {
 
-    bytes.resize(newLength);
+    bytes.resize(newLength, 0);
 
+}
+
+// Global operators
+bool operator== (const ByteArray& lhs, const ByteArray& rhs) {
+    return lhs.equals(rhs);
+}
+
+bool operator!= (const ByteArray& lhs, const ByteArray& rhs) {
+    return !lhs.equals(rhs);
 }
 

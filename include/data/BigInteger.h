@@ -7,15 +7,17 @@
 class BigInteger {
 
     public:
+        static const int LITTLEENDIAN;
+        static const int BIGENDIAN;
+        static const BigInteger ZERO;
+        static const BigInteger ONE;
+
+    public:
         class DivideByZeroException {
             public:
                 DivideByZeroException() {}
                 ~DivideByZeroException() {}
         };
-
-    public:
-        static const BigInteger ZERO;
-        static const BigInteger ONE;
 
     public:
         BigInteger(); // Creates BigInteger instance with a value of 0
@@ -46,7 +48,8 @@ class BigInteger {
         BigInteger absolute() const;
         int bitCount() const; // Returns the number of significant bits.
         int bitSize() const; // Returns the total number of bits
-        ByteArray byteArray() const; // Returns the value as an array of unsigned char
+        // Returns the value as an array of unsigned char
+        ByteArray byteArray(int endian=BIGENDIAN) const;
         bool equals(const BigInteger& other) const;
         BigInteger getRemainder() const;
         bool isZero() const;

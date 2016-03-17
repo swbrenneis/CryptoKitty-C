@@ -37,6 +37,7 @@ class ByteArray {
         void clear();
         void copy(unsigned offset, const ByteArray& other,
                         unsigned otherOffset, unsigned length=0);
+        bool equals(const ByteArray& other) const;
         unsigned length() const;
         ByteArray range(unsigned offset, unsigned length) const;
         void setLength(unsigned newLength);
@@ -47,5 +48,9 @@ class ByteArray {
         typedef Array::iterator ArrayIter;
 
 };
+
+// Global operators
+bool operator== (const ByteArray& lhs, const ByteArray& rhs);
+bool operator!= (const ByteArray& lhs, const ByteArray& rhs);
 
 #endif // BYTEARRAY_H_INCLUDED
