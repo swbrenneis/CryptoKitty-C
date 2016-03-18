@@ -1,6 +1,7 @@
 #include "../include/digest/CKSHA256.h"
 #include "../include/data/ByteArray.h"
 #include "../include/data/BigInteger.h"
+#include "../include/data/Scalar32.h"
 #include <string.h>
 #include <climits>
 
@@ -55,13 +56,13 @@ unsigned *CKSHA256::decompose(unsigned char *chunks) {
 
     for (int j = 0; j < 16; ++j) {
         int i = j * 4;
-        w[j] = chunks[i+3];
-        w[j] = w[j] << 2;
-        w[j] |= chunks[i+2];
-        w[j] = w[j] << 2;
+        w[j] = chunks[i];
+        w[j] = w[j] << 8;
         w[j] |= chunks[i+1];
-        w[j] = w[j] << 2;
-        w[j] |= chunks[i];
+        w[j] = w[j] << 8;
+        w[j] |= chunks[i+2];
+        w[j] = w[j] << 8;
+        w[j] |= chunks[i+3];
     }
 
     for (int j = 16; j < 64; ++j) {
@@ -107,6 +108,7 @@ ByteArray CKSHA256::finalize(const ByteArray& in) {
     unsigned h8[n + 1];
     h8[0] = H8;
 
+    unsigned *w;
     // Process chunks.
     for (long i = 1; i <= n; ++i) {
         unsigned a = h1[i-1];
@@ -118,7 +120,7 @@ ByteArray CKSHA256::finalize(const ByteArray& in) {
         unsigned g = h7[i-1];
         unsigned h = h8[i-1];
 
-        unsigned *w = decompose(chunks[i]);
+        w = decompose(chunks[i]);
 
         for (int j = 0; j < 64; ++j) {
 
@@ -147,16 +149,35 @@ ByteArray CKSHA256::finalize(const ByteArray& in) {
 
     }
 
+    delete[] w;
+
     ByteArray d;
 
-    //d.write(Scalar32.encode((int)h1[N]));
-    //d.write(Scalar32.encode((int)h2[N]));
-    //d.write(Scalar32.encode((int)h3[N]));
-    //d.write(Scalar32.encode((int)h4[N]));
-    //d.write(Scalar32.encode((int)h5[N]));
-    //d.write(Scalar32.encode((int)h6[N]));
-    //d.write(Scalar32.encode((int)h7[N]));
-    //d.write(Scalar32.encode((int)h8[N]));
+    unsigned char *encoded =
+        Scalar32::encode(h1[n], Scalar32::BIGENDIAN); 
+    d.append(encoded, 4);
+    delete[] encoded;
+    encoded = Scalar32::encode(h2[n], Scalar32::BIGENDIAN); 
+    d.append(encoded, 4);
+    delete[] encoded;
+    encoded = Scalar32::encode(h3[n], Scalar32::BIGENDIAN); 
+    d.append(encoded, 4);
+    delete[] encoded;
+    encoded = Scalar32::encode(h4[n], Scalar32::BIGENDIAN); 
+    d.append(encoded, 4);
+    delete[] encoded;
+    encoded = Scalar32::encode(h5[n], Scalar32::BIGENDIAN); 
+    d.append(encoded, 4);
+    delete[] encoded;
+    encoded = Scalar32::encode(h6[n], Scalar32::BIGENDIAN); 
+    d.append(encoded, 4);
+    delete[] encoded;
+    encoded = Scalar32::encode(h7[n], Scalar32::BIGENDIAN); 
+    d.append(encoded, 4);
+    delete[] encoded;
+    encoded = Scalar32::encode(h8[n], Scalar32::BIGENDIAN); 
+    d.append(encoded, 4);
+    delete[] encoded;
 
     return d;
 
@@ -180,7 +201,7 @@ ByteArray CKSHA256:: pad(const ByteArray& in) {
     long l = in.length() * 8;
     // Calculate padding bits, k such that k + 1 + l is
     // congruent to 448 (mod 512).
-    int padbits = 448 - ((l + 1) % 512);
+    int padbits = 448 - ((l + 1)  % 512);
     // Convert to bytes
     int padLength = (padbits / 8) + ((padbits % 8) != 0 ? 1 : 0);
     unsigned char padding[padLength];
@@ -208,8 +229,8 @@ unsigned CKSHA256::ror(unsigned reg, int count) {
     unsigned msb = (UINT_MAX >> 1) ^ UINT_MAX;
     unsigned result = reg;
     for (int i = 1; i <= count; ++i) {
-        unsigned carry = result & msb;
-        result = (result >> 1) | carry;
+        unsigned carry = result & 1;
+        result = (result >> 1) | (carry * msb);
     }
     return result;
     
@@ -220,7 +241,7 @@ unsigned CKSHA256::ror(unsigned reg, int count) {
  */
 unsigned CKSHA256::sigma0(unsigned x) {
 
-    return ror(x, 7) ^ ror(x, 18) ^ (x >> 25);
+    return ror(x, 7) ^ ror(x, 18) ^ (x >> 3);
 
 }
 
