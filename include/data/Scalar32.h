@@ -9,6 +9,10 @@
 class Scalar32 {
 
     public:
+        static const unsigned char LITTLEENDIAN;
+        static const unsigned char BIGENDIAN;
+
+    public:
         Scalar32();
         Scalar32(unsigned char* bValue);
         Scalar32(unsigned uValue);
@@ -25,7 +29,15 @@ class Scalar32 {
         static void endianTest();
 
     public:
+	unsigned char *asArray();
+        int asSigned();
         unsigned asUnsigned();
+
+    public:
+        static unsigned char *encode(unsigned u32,
+                                            int endian);
+        static unsigned decode(unsigned char *bytes,
+                                            int endian);
 
     public:
         static unsigned char endian;
