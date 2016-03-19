@@ -10,6 +10,9 @@ class RandomTest {
         RandomTest(const RandomTest&);
         RandomTest& operator= (const RandomTest&);
 
+    public:
+        bool cmwcTest();
+
     private:
         CMWCRandom rnd;
 

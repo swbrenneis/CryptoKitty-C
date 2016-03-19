@@ -34,10 +34,6 @@ class BigInteger {
         // bool operator <= (const BigInteger& other);
         // bool operator > (const BigInteger& other);
         // bool operator >= (const BigInteger& other);
-        BigInteger& operator+ (const BigInteger& addend);
-        BigInteger& operator- (const BigInteger& subtrahend);
-        BigInteger& operator* (const BigInteger& multiplier);
-        BigInteger& operator/ (const BigInteger& divisor);
         BigInteger operator>> (unsigned shiftCount) const;
         BigInteger operator<< (unsigned shiftCount) const;
 
@@ -45,17 +41,21 @@ class BigInteger {
         ~BigInteger();
 
     public:
+        BigInteger& add(const BigInteger& addend);
         BigInteger absolute() const;
         int bitCount() const; // Returns the number of significant bits.
         int bitSize() const; // Returns the total number of bits
         // Returns the value as an array of unsigned char
         ByteArray byteArray(int endian=BIGENDIAN) const;
+        BigInteger& divide(const BigInteger& divisor);
         bool equals(const BigInteger& other) const;
         BigInteger getRemainder() const;
         bool isZero() const;
         bool lessThan(const BigInteger& other) const;
         long longValue() const; // Returns long value. Value returned is truncated
                                 // to sizeof(long).
+        BigInteger& multiply(const BigInteger& multiplier);
+        BigInteger& subtract(const BigInteger& subtrahend);
 
     private:
         typedef std::deque<unsigned long long> RawBits;

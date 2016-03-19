@@ -44,10 +44,10 @@ bool DigestTest::sha256Test() {
     }
     std::cout << std::endl;
     if (expected != actual) {
-        std::cout << "Empty test failed." << std::endl;
+        std::cout << "Empty message test failed." << std::endl;
         return false;
     }
-    std::cout << "Empty test passed." << std::endl;
+    std::cout << "Empty message test passed." << std::endl << std::endl;
 
     sha256.reset();
     std::cout << "'abc' message test." << std::endl;
@@ -71,21 +71,21 @@ bool DigestTest::sha256Test() {
         std::cout << "'abc' test failed." << std::endl;
         return false;
     }
-    std::cout << "'abc' test passed." << std::endl;
+    std::cout << "'abc' test passed." << std::endl << std::endl;
 
     sha256.reset();
-    unsigned char progressionTest256[] =
+    unsigned char padTest256[] =
         "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
-    unsigned char progressionExpected256[] =
+    unsigned char padExpected256[] =
             { 0x24, 0x8d, 0x6a, 0x61, 0xd2, 0x06, 0x38, 0xb8, 0xe5, 0xc0, 0x26,
                     0x93, 0x0c, 0x3e, 0x60, 0x39, 0xa3, 0x3c, 0xe4, 0x59, 0x64,
                     0xff, 0x21, 0x67, 0xf6, 0xec, 0xed, 0xd4, 0x19, 0xdb, 0x06, 0xc1 };
 
-    std::cout << "Character progression test." << std::endl;
+    std::cout << "Padding test." << std::endl;
     std::cout << "Expected 248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1"
                 << std::endl;
-    expected = ByteArray(progressionExpected256, 32);
-    sha256.update(ByteArray(progressionTest256, 56));
+    expected = ByteArray(padExpected256, 32);
+    sha256.update(ByteArray(padTest256, 56));
     actual = sha256.digest();
     std::cout << "Actual   ";
     for (unsigned n = 0; n < actual.length(); ++n) {
@@ -93,10 +93,36 @@ bool DigestTest::sha256Test() {
     }
     std::cout << std::endl;
     if (expected != actual) {
-        std::cout << "Mixed character test failed." << std::endl;
+        std::cout << "Padding test failed." << std::endl;
         return false;
     }
-    std::cout << "Mixed character test passed." << std::endl;
+    std::cout << "Padding test passed." << std::endl << std::endl;
+
+    sha256.reset();
+    unsigned char millionExpected256[] =
+            { 0xcd, 0xc7, 0x6e, 0x5c, 0x99, 0x14, 0xfb, 0x92, 0x81, 0xa1, 0xc7,
+                    0xe2, 0x84, 0xd7, 0x3e, 0x67, 0xf1, 0x80, 0x9a, 0x48, 0xa4,
+                    0x97, 0x20, 0x0e, 0x04, 0x6d, 0x39, 0xcc, 0xc7, 0x11, 0x2c, 0xd0 };
+
+    std::cout << "Million test." << std::endl;
+    std::cout << "Expected cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0"
+                << std::endl;
+    expected = ByteArray(millionExpected256, 32);
+    // Insert 1 million 'a' characters
+    for (int n = 0; n < 1000000; ++n) {
+        sha256.update('a');
+    }
+    actual = sha256.digest();
+    std::cout << "Actual   ";
+    for (unsigned n = 0; n < actual.length(); ++n) {
+        std::cout << hexByte2string(actual[n]);
+    }
+    std::cout << std::endl;
+    if (expected != actual) {
+        std::cout << "Million test failed." << std::endl;
+        return false;
+    }
+    std::cout << "Million test passed." << std::endl;
 
     return true;
 

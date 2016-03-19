@@ -98,106 +98,6 @@ BigInteger& BigInteger::operator= (const BigInteger& other) {
 }
 
 /*
- * Unary addition operator.
- * Binary operator will be gobal. See BigInteger.h
- */
-BigInteger& BigInteger::operator+ (const BigInteger& other) {
-
-    zeroRemainder();
-    if (isZero()) {
-        *this = other;
-    }
-    else if (other.isZero()) { /* Do nothing */ }
-    else if (sign == other.sign) { // Signs the same. Absolute sum.
-        add(number, other.number);
-    }
-    else {
-        if (other.number > number) {    // Larger value retains sign
-            sign = other.sign;
-        }
-        diff(number, other.number); // Absolute difference
-    }
-
-    return *this;
-
-}
-
-/*
- * Unary subtraction operator.
- * Binary operator will be gobal. See BigInteger.h
- */
-BigInteger& BigInteger::operator- (const BigInteger& other) {
-
-    zeroRemainder();
-    if (other.isZero()) { /* Do nothing */ }
-    else if (*this == other) {   // Values equal, answer is zero.
-        zero();
-    }
-    else if (sign == other.sign) {   // Signs same, subtract
-        diff(number, other.number);
-        if (other.number > number) {    // Change sign
-            sign = !sign;
-        }
-    }
-    else {  // Absolute sum, gets my sign.
-        add(number, other.number);
-    }
-    return *this;
-
-}
-
-/*
- * Unary multiplication operator.
- * Binary operator will be gobal. See BigInteger.h
- */
-BigInteger& BigInteger::operator* (const BigInteger& other) {
-
-    zeroRemainder();
-    if (other.isZero() || isZero()) {
-        zero(); // Yes, doing this might be redundant.
-    }
-    else if (other == BigInteger::ONE) { /* Do nothing */ }
-    else if (*this == BigInteger::ONE) {
-        *this = other;
-    }
-    else {
-        multiply(other.number);
-        if (!other.sign && !sign) { // Adjust sign
-            sign = true;
-        }
-        else if (!other.sign) {
-            sign = false;
-        }
-    }
-    return *this;
-
-}
-        
-/*
- * Unary division operator with remainder.
- * Binary operator will be gobal. See BigInteger.h
- */
-BigInteger& BigInteger::operator/ (const BigInteger& other) {
-
-    zeroRemainder();
-    if (other.isZero()) {
-        throw DivideByZeroException();
-    }
-    else if (isZero()) { /* Do nothing */ }
-    else if (other > *this) {
-        zero();
-        remainder = other.number;
-        remainderSign = other.sign;
-    }
-    else {
-        divide(other.number);
-        sign = sign == other.sign;
-    }
-    return *this;
-
-}
-
-/*
  * Right shift operator. A logical right shift is performed
  * on the number array of a copy of this BigInteger.
  */
@@ -218,6 +118,31 @@ BigInteger BigInteger::operator<< (unsigned count) const {
     BigInteger result(*this);
     leftShift(result.number, 0, count, false);
     return result;
+
+}
+
+/*
+ * Unary addition operator.
+ * Binary operator will be gobal. See BigInteger.h
+ */
+BigInteger& BigInteger::add(const BigInteger& other) {
+
+    zeroRemainder();
+    if (isZero()) {
+        *this = other;
+    }
+    else if (other.isZero()) { /* Do nothing */ }
+    else if (sign == other.sign) { // Signs the same. Absolute sum.
+        add(number, other.number);
+    }
+    else {
+        if (other.number > number) {    // Larger value retains sign
+            sign = other.sign;
+        }
+        diff(number, other.number); // Absolute difference
+    }
+
+    return *this;
 
 }
 
@@ -400,6 +325,30 @@ void BigInteger::diff(RawBits& d1, const RawBits& d2) {
 }
 
 /*
+ * Unary division operator with remainder.
+ * Binary operator will be gobal. See BigInteger.h
+ */
+BigInteger& BigInteger::divide(const BigInteger& other) {
+
+    zeroRemainder();
+    if (other.isZero()) {
+        throw DivideByZeroException();
+    }
+    else if (isZero()) { /* Do nothing */ }
+    else if (other > *this) {
+        zero();
+        remainder = other.number;
+        remainderSign = other.sign;
+    }
+    else {
+        divide(other.number);
+        sign = sign == other.sign;
+    }
+    return *this;
+
+}
+
+/*
  * Divide with remainder. The result will be placed in number and
  * the remainder will be placed in remainder
  */
@@ -537,6 +486,33 @@ long BigInteger::longValue() const {
 }
 
 /*
+ * Unary multiplication operator.
+ * Binary operator will be gobal. See BigInteger.h
+ */
+BigInteger& BigInteger::multiply(const BigInteger& other) {
+
+    zeroRemainder();
+    if (other.isZero() || isZero()) {
+        zero(); // Yes, doing this might be redundant.
+    }
+    else if (other == BigInteger::ONE) { /* Do nothing */ }
+    else if (*this == BigInteger::ONE) {
+        *this = other;
+    }
+    else {
+        multiply(other.number);
+        if (!other.sign && !sign) { // Adjust sign
+            sign = true;
+        }
+        else if (!other.sign) {
+            sign = false;
+        }
+    }
+    return *this;
+
+}
+ 
+/*
  * Unsigned multiply. It is assumed that all zero checks and
  * sign adjustment are done by the calling function.
  * Multiplies by right shifting
@@ -588,6 +564,30 @@ void BigInteger::rightShift(RawBits& reg, unsigned index, unsigned count) const 
 }
 
 /*
+ * Unary subtraction operator.
+ * Binary operator will be gobal. See BigInteger.h
+ */
+BigInteger& BigInteger::subtract(const BigInteger& other) {
+
+    zeroRemainder();
+    if (other.isZero()) { /* Do nothing */ }
+    else if (*this == other) {   // Values equal, answer is zero.
+        zero();
+    }
+    else if (sign == other.sign) {   // Signs same, subtract
+        diff(number, other.number);
+        if (other.number > number) {    // Change sign
+            sign = !sign;
+        }
+    }
+    else {  // Absolute sum, gets my sign.
+        add(number, other.number);
+    }
+    return *this;
+
+}
+
+/*
  * Zero the integer value.
  */
 void BigInteger::zero() {
@@ -628,13 +628,13 @@ bool operator>= (const BigInteger& lhs, const BigInteger& rhs)
 { return lhs > rhs || lhs.equals(rhs); }
 
 BigInteger operator+ (const BigInteger& lhs, const BigInteger& rhs)
-{ BigInteger result = lhs + rhs; return result; }
+{ BigInteger result(lhs); result.add(rhs); return result; }
 
 BigInteger operator- (const BigInteger& lhs, const BigInteger& rhs)
-{ BigInteger result = lhs - rhs; return result; }
+{ BigInteger result(lhs); result.subtract(rhs); return result; }
 
 BigInteger operator* (const BigInteger& lhs, const BigInteger& rhs)
-{ BigInteger result = lhs * rhs; return result; }
+{ BigInteger result(lhs); result.multiply(rhs); return result; }
 
 BigInteger operator/ (const BigInteger& lhs, const BigInteger& rhs)
-{ BigInteger result = lhs / rhs; return result; }
+{ BigInteger result(lhs); result.divide(rhs); return result; }

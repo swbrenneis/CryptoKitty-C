@@ -12,11 +12,22 @@ int main(int argc, char** argv) {
 
     if (tests == "digest" || tests == "all") {
         DigestTest digest;
-        std::cout << "SHA-256 test" << std::endl;
+        std::cout << "SHA-256 test" << std::endl << std::endl;
         if (!digest.sha256Test()) {
-            std::cout << "SHA-256 test failed." << std::endl;
+            std::cout << std::endl << "SHA-256 test failed." << std::endl;
             return -1;
         }
+        std::cout << std::endl << "SHA-256 test passed." << std::endl;
+    }
+
+    if (tests == "random" || tests == "all") {
+        RandomTest random;
+        std::cout << "CMWC Test." << std::endl << std::endl;
+        if (!random.cmwcTest()) {
+            std::cout << std::endl << "CMWC Test failed." << std::endl;
+            return -1;
+        }
+        std::cout << std::endl << "CMWC Test passed." << std::endl;
     }
 
     return 0;

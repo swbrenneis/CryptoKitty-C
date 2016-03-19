@@ -26,19 +26,19 @@ class CMWCRandom : public Random {
         void setSeed(unsigned long seedValue);
 
     protected:
-        virtual long next(unsigned bits);
+        virtual unsigned long next(unsigned bits);
 
     private:
         long cmwc4096();
         void seedGenerator();
 
     private:
-        unsigned long seed;
+        unsigned long seed; // Seed generator nonce.
         unsigned long c; // Reset mask.
-        typedef std::deque<unsigned long> Q;
+        typedef std::deque<unsigned long> Q;    // Seed
         Q q;
 
-        static unsigned i;
+        static unsigned i;  // Seed selector.
         static const BigInteger A;
         static const unsigned R;
 

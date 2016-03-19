@@ -1,6 +1,6 @@
 LD= g++
 LDPATHS=
-LDLIBS=
+LDLIBS=  -lrt
 LDFLAGS= -Wall -g -shared $(LDPATHS) $(LDLIBS)
 
 LIBRARY= libcryptokitty.so

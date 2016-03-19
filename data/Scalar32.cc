@@ -31,7 +31,7 @@ unsigned Scalar32::asUnsigned() {
 
     if (uValid) { /* Do nothing */ }
     else if (sValid) {
-        u32 = std::abs(s32);
+        u32 = std::fabs(s32);
     }
     else if (bytesValid) {
         endianTest();

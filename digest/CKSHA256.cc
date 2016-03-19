@@ -199,6 +199,7 @@ ByteArray CKSHA256:: pad(const ByteArray& in) {
 
     // Message size in bits - l
     long l = in.length() * 8;
+    /*
     // Calculate padding bits, k such that k + 1 + l is
     // congruent to 448 (mod 512).
     int padbits = 448 - ((l + 1)  % 512);
@@ -212,12 +213,31 @@ ByteArray CKSHA256:: pad(const ByteArray& in) {
     long cSize = in.length() + padLength + 8;
     unsigned char context[cSize];
     memcpy(context, in.asArray(), in.length());
-    memcpy(context+in.length(), padding, padLength);
+    memcpy(context+in.length(), padding, padLength); */
+
+    /*
+     * Pad the message such that k + 1 + l is congruent to
+     * 448 mod 512, where k + 1 is the padding length and l is the
+     * message length. The message is always padded with a byte
+     * value of 0x80, which is a single bit added to the end of
+     * the message.
+     */
+    ByteArray work = in;
+    work.append(0x80);
+    // 512 bits = 64 bytes. The padded message includes the 64 bit
+    // big endian representation of the message length in bits, so
+    // in order to make the message modulo 512, we add bytes until
+    // the whole message, including the length encoding is an even
+    // multiple of 64,
+    while ((work.length() + 8)  % 64 != 0) {
+        work.append(0); //pad with zeroes.
+    }
     // Append the 64 bit encoded bit length
     BigInteger l64(l);
-    memcpy(context+in.length()+padLength,
-                    l64.byteArray(BigInteger::BIGENDIAN).asArray(), 8);
-    return ByteArray(context, cSize);
+    // memcpy(context+in.length()+padLength,
+    //                l64.byteArray(BigInteger::BIGENDIAN).asArray(), 8);
+    work.append(l64.byteArray(BigInteger::BIGENDIAN));
+    return work;
 
 }
 

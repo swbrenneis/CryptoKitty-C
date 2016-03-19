@@ -52,10 +52,10 @@ long CMWCRandom::cmwc4096() {
  * exceeds UINT_MAX, the output will be truncated
  * silently.
  */
-long CMWCRandom::next(unsigned bits) {
+unsigned long CMWCRandom::next(unsigned bits) {
 
-    if (bits > sizeof(unsigned)) {
-        bits = sizeof(unsigned);
+    if (bits > (sizeof(unsigned long) * 8)) {
+        bits = sizeof(unsigned long) * 8;
     }
     if (q.size() == 0) {
         seedGenerator();

@@ -1,6 +1,8 @@
 #ifndef RANDOM_H_INCLUDED
 #define RANDOM_H_INCLUDED
 
+class ByteArray;
+
 /*
  * Random number generator.
  * This class is largely unimplemented. It is intended
@@ -20,10 +22,15 @@ class Random {
         Random& operator= (const Random& other);
 
     public:
+        virtual void nextBytes(ByteArray& bytes);
+        virtual int nextInt();
+        virtual long nextLong();
+
+    public:
         virtual void setSeed(unsigned long seedValue);
 
     protected:
-        virtual long next(unsigned bits);
+        virtual unsigned long next(unsigned bits);
 
 };
 
