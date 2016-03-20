@@ -30,7 +30,7 @@ class Random {
         virtual void setSeed(unsigned long seedValue);
 
     protected:
-        virtual unsigned long next(unsigned bits);
+        virtual unsigned long next(int bits);
 
 };
 

@@ -20,7 +20,7 @@ Random::~Random() {
  * than the long word size, the maximum available
  * bits will be returned.
  */
-unsigned long Random::next(unsigned bits) {
+unsigned long Random::next(int bits) {
 
     long rnd = random();
     unsigned long mask = 1 << bits;

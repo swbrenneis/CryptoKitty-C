@@ -1,14 +1,16 @@
 #include "../include/random/CMWCRandom.h"
 #include "../include/data/NanoTime.h"
 #include "../include/data/ByteArray.h"
+#include "../include/data/BigInteger.h"
 #include "../include/digest/CKSHA256.h"
 #include <time.h>
-#include <string.h>
+#include <climits>
+#include <cmath>
 
 // Static initializations
 unsigned CMWCRandom::i = 4095;
-const BigInteger CMWCRandom::A(18782L);
-const unsigned CMWCRandom::R = 0xfffffffe;
+const unsigned long long CMWCRandom::A(18782L);
+const unsigned long CMWCRandom::R = 0xfffffffe;
 
 CMWCRandom::CMWCRandom() {
 
@@ -29,39 +31,49 @@ CMWCRandom::~CMWCRandom() {
  */
 long CMWCRandom::cmwc4096() {
 
-    BigInteger t;
-    BigInteger x;
-    BigInteger ci(c);
+    unsigned long long t;
+    unsigned long x;
 
     i = (i + 1) & 4095;
-    BigInteger qi(q[i]);
-    t = (A * qi) + ci;
-    ci = t >> 32;
-    x = t + ci;
-    c = ci.longValue();
-    if (x < ci) {
-        x = x + BigInteger::ONE;
+    t = (A * q[i]) + c;
+    c = (t >> 32);
+    x = t + c;
+    if (x < c) {
+        x++;
         c++;
     }
-    return (q[i] = R - x.longValue());
+    return (q[i] = R - x);
 
 }
 
 /*
  * Provide the next bits of entropy. If bits
- * exceeds UINT_MAX, the output will be truncated
+ * exceeds ULONG_MAX, the output will be truncated
  * silently.
  */
-unsigned long CMWCRandom::next(unsigned bits) {
+unsigned long CMWCRandom::next(int bits) {
 
-    if (bits > (sizeof(unsigned long) * 8)) {
-        bits = sizeof(unsigned long) * 8;
-    }
     if (q.size() == 0) {
         seedGenerator();
     }
-    unsigned mask = bits << 1;;
-    return (cmwc4096() & mask);
+
+    long rnd = cmwc4096();
+
+    int ulSize = sizeof(unsigned long) * 8;
+    bits = std::min(ulSize, bits);
+    unsigned long result = 0;
+    unsigned long msb = (ULONG_MAX >> 1) ^ ULONG_MAX;
+    for (int n = 0; n < ulSize; ++n) {
+        if (n < bits) {
+            if ((rnd & 1) != 0) {
+                result |= msb;
+            }
+            rnd = rnd >> 1;
+        }
+        result = result >> 1;
+    }
+
+    return result;
 
 }
 
@@ -70,14 +82,16 @@ unsigned long CMWCRandom::next(unsigned bits) {
  */
 void CMWCRandom::seedGenerator() {
 
-    ByteArray fill(4096 * 8);
+    ByteArray fill(4096);
     CKSHA256 digest;
     NanoTime nt;
     unsigned long nonce = seed;
     ByteArray context;
     int filled = 0;
 
-    q.resize(4096, 0);
+    if (q.size() != 4096) {
+        q.resize(4096, 0);
+    }
     while (filled < 4096) {
         if (context.length() != 0) {
             digest.update(context);
@@ -88,7 +102,7 @@ void CMWCRandom::seedGenerator() {
         BigInteger l(nt.getFullTime());
         digest.update(l.byteArray());
         context = digest.digest();
-        fill.copy(filled*8, context, 0);
+        fill.copy(filled, context, 0);
         filled += context.length();
     }
     for (int qi = 0; qi < 4096; ++qi) {

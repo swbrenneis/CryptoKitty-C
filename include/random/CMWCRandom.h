@@ -2,7 +2,6 @@
 #define CMWCRANDOM_H_INCLUDED
 
 #include "Random.h"
-#include "../data/BigInteger.h"
 #include <deque>
 
 /*
@@ -26,7 +25,7 @@ class CMWCRandom : public Random {
         void setSeed(unsigned long seedValue);
 
     protected:
-        virtual unsigned long next(unsigned bits);
+        virtual unsigned long next(int bits);
 
     private:
         long cmwc4096();
@@ -39,8 +38,8 @@ class CMWCRandom : public Random {
         Q q;
 
         static unsigned i;  // Seed selector.
-        static const BigInteger A;
-        static const unsigned R;
+        static const unsigned long long A;
+        static const unsigned long R;
 
 };
 

@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
         std::cout << std::endl << "SHA-256 test passed." << std::endl;
     }
 
+    std::cout << std::endl;
     if (tests == "random" || tests == "all") {
         RandomTest random;
         std::cout << "CMWC Test." << std::endl << std::endl;
