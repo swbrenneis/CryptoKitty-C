@@ -199,21 +199,6 @@ ByteArray CKSHA256:: pad(const ByteArray& in) {
 
     // Message size in bits - l
     long l = in.length() * 8;
-    /*
-    // Calculate padding bits, k such that k + 1 + l is
-    // congruent to 448 (mod 512).
-    int padbits = 448 - ((l + 1)  % 512);
-    // Convert to bytes
-    int padLength = (padbits / 8) + ((padbits % 8) != 0 ? 1 : 0);
-    unsigned char padding[padLength];
-    memset(padding, 0, padLength);
-    // 1 bit appended to l
-    padding[0] = 0x80;
-    // 8 bytes (64 bits) Appended for encoded bit length of the message.
-    long cSize = in.length() + padLength + 8;
-    unsigned char context[cSize];
-    memcpy(context, in.asArray(), in.length());
-    memcpy(context+in.length(), padding, padLength); */
 
     /*
      * Pad the message such that k + 1 + l is congruent to
