@@ -1,7 +1,7 @@
-#include "../include/digest/CKSHA256.h"
-#include "../include/data/ByteArray.h"
-#include "../include/data/BigInteger.h"
-#include "../include/data/Scalar32.h"
+#include "digest/CKSHA256.h"
+#include "data/ByteArray.h"
+#include "data/Scalar32.h"
+#include "data/Scalar64.h"
 #include <string.h>
 #include <climits>
 
@@ -218,10 +218,8 @@ ByteArray CKSHA256:: pad(const ByteArray& in) {
         work.append(0); //pad with zeroes.
     }
     // Append the 64 bit encoded bit length
-    BigInteger l64(l);
-    // memcpy(context+in.length()+padLength,
-    //                l64.byteArray(BigInteger::BIGENDIAN).asArray(), 8);
-    work.append(l64.byteArray(BigInteger::BIGENDIAN));
+    Scalar64 l64(l);
+    work.append(l64.getEncoded(Scalar64::BIGENDIAN));
     return work;
 
 }

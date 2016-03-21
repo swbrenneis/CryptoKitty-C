@@ -4,6 +4,15 @@
 #include "ByteArray.h"
 #include <deque>
 
+class Random;
+namespace NTL {
+    class ZZ;
+}
+
+/*
+ * This is a delegate class for Victor Shoup's
+ * Number Theory Library ZZ class.
+ */
 class BigInteger {
 
     public:
@@ -20,14 +29,23 @@ class BigInteger {
         };
 
     public:
-        BigInteger(); // Creates BigInteger instance with a value of 0
+        // Constructs a BigInteger object with a value of 0 
+        BigInteger();
         BigInteger(const BigInteger& other);
         BigInteger(const ByteArray& bytes);
-        BigInteger(long long intial);   // Creates BigInteger with initial value
+        // Constructs a BigInteger object with initial value
+        BigInteger(long intial);
+        // Constructs a BigInteger object with a probablistic
+        // prime value.
+        BigInteger(int bits, int certainty, Random& rnd);
+
+    private:
+        BigInteger(NTL::ZZ *newNumber);
 
     public:
         BigInteger& operator= (const BigInteger& other);
-        BigInteger& operator= (const unsigned long long value);
+        BigInteger& operator= (long value);
+        /*
         // bool operator== (const BigInteger& other);
         // bool operator!= (const BigInteger& other);
         // bool operator < (const BigInteger& other);
@@ -36,19 +54,22 @@ class BigInteger {
         // bool operator >= (const BigInteger& other);
         BigInteger operator>> (unsigned shiftCount) const;
         BigInteger operator<< (unsigned shiftCount) const;
-
+*/
     public:
         ~BigInteger();
 
     public:
-        BigInteger& add(const BigInteger& addend);
+        // Returns true if this = other.
+        bool equals(const BigInteger& other) const;
+        // Returns a BigInteger equal to this mod a.
+        BigInteger mod(const BigInteger& a) const;
+/*        BigInteger& add(const BigInteger& addend);
         BigInteger absolute() const;
         int bitCount() const; // Returns the number of significant bits.
         int bitSize() const; // Returns the total number of bits
         // Returns the value as an array of unsigned char
         ByteArray byteArray(int endian=BIGENDIAN) const;
         BigInteger& divide(const BigInteger& divisor);
-        bool equals(const BigInteger& other) const;
         BigInteger getRemainder() const;
         bool isZero() const;
         bool lessThan(const BigInteger& other) const;
@@ -77,13 +98,10 @@ class BigInteger {
                         unsigned count=1) const;
         void zero();
         void zeroRemainder();
-
+*/
     private:
-        RawBits number; // Absolute value of the integer
-        bool sign;  // true = positive or zero
-        RawBits remainder;   // Remainser, if any, from division
-        bool remainderSign;
-
+        NTL::ZZ *number;
+        
         static const unsigned long long ULLONG_MSB;
 
 };
@@ -101,5 +119,6 @@ BigInteger operator+ (const BigInteger& lhs, const BigInteger& rhs);
 BigInteger operator- (const BigInteger& lhs, const BigInteger& rhs);
 BigInteger operator* (const BigInteger& lhs, const BigInteger& rhs);
 BigInteger operator/ (const BigInteger& lhs, const BigInteger& rhs);
+BigInteger operator% (const BigInteger& lhs, const BigInteger& rhs);
 
 #endif // BIGINTEGER_H_INCLUDED

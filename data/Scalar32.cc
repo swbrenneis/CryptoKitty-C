@@ -112,11 +112,12 @@ void Scalar32::endianTest() {
     if (endian == 0) {
         unsigned short test = 0x4578;
         if ((test & 0xff) == 0x45) {
-            endian = 1;
+            endian = BIGENDIAN;
         }
         else {
-            endian = 2;
+            endian = LITTLEENDIAN;
         }
     }
 
 }
+

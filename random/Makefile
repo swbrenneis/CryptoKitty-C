@@ -1,9 +1,9 @@
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
-CPPINCLUDES= 
+CPPINCLUDES= -I../include
 CPPFLAGS= -Wall -g -MMD -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
-CPP_SOURCES= CMWCRandom.cc Random.cc
+CPP_SOURCES= BBSSecureRandom.cc CMWCRandom.cc Random.cc SecureRandom.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 

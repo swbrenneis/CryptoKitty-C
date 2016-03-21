@@ -14,7 +14,7 @@ class NanoTime {
         NanoTime(const NanoTime& other);
 
     public:
-        unsigned long getFullTime() const; // Time in nanseconds.
+        unsigned long getFullTime() const; // Time in nanoseconds.
         unsigned long getNanoseconds() const; // Returns just nanoseconds.
         unsigned long getSeconds() const; // Returns just seconds.
         void newTime(); // Get new time value.

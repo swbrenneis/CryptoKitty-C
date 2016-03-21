@@ -1,9 +1,9 @@
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
-CPPINCLUDES= 
-CPPFLAGS= -Wall -g -MMD -fPIC $(CPPDEFINES) $(CPPINCLUDES)
+CPPINCLUDES= -I../include -I../NTL/include
+CPPFLAGS= -Wall -g -MMD -fPIC -std=c++11 $(CPPDEFINES) $(CPPINCLUDES)
 
-CPP_SOURCES= BigInteger.cc ByteArray.cc NanoTime.cc Scalar32.cc
+CPP_SOURCES= BigInteger.cc ByteArray.cc NanoTime.cc Scalar32.cc Scalar64.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 

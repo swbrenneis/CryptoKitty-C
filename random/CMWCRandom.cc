@@ -1,8 +1,9 @@
-#include "../include/random/CMWCRandom.h"
-#include "../include/data/NanoTime.h"
-#include "../include/data/ByteArray.h"
-#include "../include/data/BigInteger.h"
-#include "../include/digest/CKSHA256.h"
+#include "random/CMWCRandom.h"
+#include "data/NanoTime.h"
+#include "data/ByteArray.h"
+#include "data/BigInteger.h"
+#include "data/Scalar64.h"
+#include "digest/CKSHA256.h"
 #include <time.h>
 #include <climits>
 #include <cmath>
@@ -96,18 +97,15 @@ void CMWCRandom::seedGenerator() {
         if (context.length() != 0) {
             digest.update(context);
         }
-        BigInteger biNonce(nonce);
-        digest.update(biNonce.byteArray());
+        digest.update(Scalar64::encode(nonce));
         nonce++;
-        BigInteger l(nt.getFullTime());
-        digest.update(l.byteArray());
+        digest.update(Scalar64::encode(nt.getFullTime()));
         context = digest.digest();
         fill.copy(filled, context, 0);
         filled += context.length();
     }
     for (int qi = 0; qi < 4096; ++qi) {
-        BigInteger qInt(fill.range(qi, 8));
-        q[qi] = qInt.longValue();
+        q[qi] = Scalar64::decode(fill.range(qi, 8));
     }
     nt.newTime();
     c = nt.getFullTime() % 809430659;  // Reset the reseed counter.
