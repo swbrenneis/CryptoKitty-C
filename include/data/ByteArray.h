@@ -16,9 +16,9 @@ class ByteArray {
         ByteArray();
         ByteArray(const ByteArray& other);
         // Create a ByteArray from an array of unsigned char
-        ByteArray(const unsigned char *bytes, int length);
+        ByteArray(const unsigned char *bytes, unsigned length);
         // Create a ByteArray with an initial size
-        ByteArray(int size);
+        ByteArray(unsigned size);
         ~ByteArray();
 
     private:
@@ -31,7 +31,7 @@ class ByteArray {
 
     public:
         void append(const ByteArray& other);
-        void append(const unsigned char *byte, int length);
+        void append(const unsigned char *byte, unsigned length);
         void append(unsigned char c);
         unsigned char *asArray() const;   // Returns an array of bytes.
         void clear();

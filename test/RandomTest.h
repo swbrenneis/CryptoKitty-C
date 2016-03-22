@@ -12,6 +12,7 @@ class RandomTest {
 
     public:
         bool cmwcTest();
+        bool BBSTest();
 
     private:
         CMWCRandom rnd;

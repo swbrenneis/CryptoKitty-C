@@ -11,7 +11,7 @@ ByteArray::ByteArray(const ByteArray& other)
 /*
  * Create a ByteArray object from a C array.
  */
-ByteArray::ByteArray(const unsigned char *bytearray, int length)
+ByteArray::ByteArray(const unsigned char *bytearray, unsigned length)
 : bytes(bytearray, bytearray+length) {
 }
 
@@ -19,7 +19,7 @@ ByteArray::ByteArray(const unsigned char *bytearray, int length)
  * Create a ByteArray of a specified size. The content is
  * undefined.
  */
-ByteArray::ByteArray(int size) {
+ByteArray::ByteArray(unsigned size) {
 
     bytes.resize(size);
 
@@ -60,7 +60,7 @@ void ByteArray::append(const ByteArray& other) {
 
 }
 
-void ByteArray::append(const unsigned char *byte, int length) {
+void ByteArray::append(const unsigned char *byte, unsigned length) {
 
     Array appendix(byte, byte+length);
     bytes.insert(bytes.end(), appendix.begin(), appendix.end());

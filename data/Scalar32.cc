@@ -1,23 +1,35 @@
-#include "../include/data/Scalar32.h"
-#include "../include/data/OutOfRangeException.h"
-#include <string.h>
-#include <cmath>
+#include "data/Scalar32.h"
+#include "data/OutOfRangeException.h"
 
-// Static initialization
-// Untested = 0, Little endian = 1, big endian = 2
-unsigned char Scalar32::endian = 0;
-const unsigned char Scalar32::LITTLEENDIAN = 1;
-const unsigned char Scalar32::BIGENDIAN = 2;
+// Static initializations
+const int Scalar32::BIGENDIAN = 1;
+const int Scalar32::LITTLEENDIAN = 2;
+int Scalar32::endian = 0;
 
-Scalar32::Scalar32() {
-    bytesValid = sValid = uValid = false;
+Scalar32::Scalar32() 
+: value(0) {
+
+    endianTest();
 }
 
-Scalar32::Scalar32(unsigned char *bValue) {
+Scalar32::Scalar32(int v) 
+: value(v) {
 
-    sValid = uValid = false;
-    memcpy(bytes, bValue, 4);
-    bytesValid = true;
+    endianTest();
+
+}
+
+Scalar32::Scalar32(const ByteArray& encoded) {
+
+    endianTest();
+    decode(encoded, endian);
+
+}
+
+Scalar32::Scalar32(const ByteArray& encoded, int eType) {
+
+    endianTest();
+    decode(encoded, eType);
 
 }
 
@@ -25,82 +37,47 @@ Scalar32::~Scalar32() {
 }
 
 /*
- * Return the value as an unsigned integer.
+ * Convenience function. Returns a long value decoded
+ * from a byte array in native endian order.
  */
-unsigned Scalar32::asUnsigned() {
+int Scalar32::decode(const ByteArray& encoded) {
 
-    if (uValid) { /* Do nothing */ }
-    else if (sValid) {
-        u32 = std::fabs(s32);
-    }
-    else if (bytesValid) {
-        endianTest();
-        unsigned tmp;
-        switch (endian) {
-            case LITTLEENDIAN:
-                u32 = bytes[0];
-                tmp = bytes[1];
-                tmp = tmp >> 8;
-                u32 |= tmp;
-                tmp = bytes[2];
-                tmp = tmp >> 16;
-                u32 |= tmp;
-                tmp = bytes[3];
-                tmp = tmp >> 24;
-                u32 |= tmp;
-                break;
-            case BIGENDIAN:
-                u32 = bytes[3];
-                tmp = bytes[2];
-                tmp = tmp >> 8;
-                u32 |= tmp;
-                tmp = bytes[1];
-                tmp = tmp >> 16;
-                u32 |= tmp;
-                tmp = bytes[0];
-                tmp = tmp >> 24;
-                u32 |= tmp;
-                break;
-            default:
-                throw OutOfRangeException("Illegal endian value");
-        }
-    }
-    uValid = true;
-    return u32;
+    return Scalar32(encoded).getIntValue();
 
 }
-                   
-/*
- * Encode an unsigned integer according to
- * the endian-ness indicator.
- */
-unsigned char *Scalar32::encode(unsigned u32, int endian) {
 
-    unsigned char *result = new unsigned char[4];
-    unsigned tmp = u32;
-    switch(endian) {
-        case LITTLEENDIAN:
-            result[0] = tmp & 0xff;
-            tmp = tmp >> 8;
-            result[1] = tmp & 0xff;
-            tmp = tmp >> 8;
-            result[2] = tmp & 0xff;
-            tmp = tmp >> 8;
-            result[3] = tmp & 0xff;
-            break;
+/*
+ * Decode the encoded array in the specified endian format.
+ */
+void Scalar32::decode(const ByteArray& encoded, int eType) {
+
+    value = 0;
+    switch (eType) {
         case BIGENDIAN:
-            result[3] = tmp & 0xff;
-            tmp = tmp >> 8;
-            result[2] = tmp & 0xff;
-            tmp = tmp >> 8;
-            result[1] = tmp & 0xff;
-            tmp = tmp >> 8;
-            result[0] = tmp & 0xff;
+            for (int n = 0; n < 4; ++n) {
+                value |= encoded[n];
+                value = value << 8;
+            }
+            break;
+        case LITTLEENDIAN:
+            for (int n = 3; n >= 0; --n) {
+                value |= encoded[n];
+                value = value << 8;
+            }
             break;
         default:
             throw OutOfRangeException("Illegal endian value");
     }
-    return result;
+
+}
+
+/*
+ * Convenience function. Returns encoded array in native
+ * endian format.
+ */
+ByteArray Scalar32::encode(int v) {
+
+    return Scalar32(v).getEncoded();
 
 }
 
@@ -118,6 +95,53 @@ void Scalar32::endianTest() {
             endian = LITTLEENDIAN;
         }
     }
+
+}
+
+/*
+ * Returns the value encoded in an 8 byte array in native
+ * endian order.
+ */
+ByteArray Scalar32::getEncoded() const {
+
+    return getEncoded(endian);
+
+}
+
+/*
+ * Returns the value encoded in an 8 byte array in the
+ * specified endian order.
+ */
+ByteArray Scalar32::getEncoded(int eType) const {
+
+    ByteArray result(4);
+    long tmp = value;
+    switch(eType) {
+        case LITTLEENDIAN:
+            for (int n = 0; n < 4; ++n) {
+                result[n] = tmp & 0xff;
+                tmp = tmp >> 8;
+            }
+            break;
+        case BIGENDIAN:
+            for (int n = 3; n >= 0; --n) {
+                result[n] = tmp & 0xff;
+                tmp = tmp >> 8;
+            }
+            break;
+        default:
+            throw OutOfRangeException("Illegal endian value");
+    }
+    return result;
+
+}
+
+/*
+ * Returns a signed integer value.
+ */
+int Scalar32::getIntValue() const {
+
+    return value;
 
 }
 

@@ -153,31 +153,23 @@ ByteArray CKSHA256::finalize(const ByteArray& in) {
 
     ByteArray d;
 
-    unsigned char *encoded =
-        Scalar32::encode(h1[n], Scalar32::BIGENDIAN); 
-    d.append(encoded, 4);
-    delete[] encoded;
-    encoded = Scalar32::encode(h2[n], Scalar32::BIGENDIAN); 
-    d.append(encoded, 4);
-    delete[] encoded;
-    encoded = Scalar32::encode(h3[n], Scalar32::BIGENDIAN); 
-    d.append(encoded, 4);
-    delete[] encoded;
-    encoded = Scalar32::encode(h4[n], Scalar32::BIGENDIAN); 
-    d.append(encoded, 4);
-    delete[] encoded;
-    encoded = Scalar32::encode(h5[n], Scalar32::BIGENDIAN); 
-    d.append(encoded, 4);
-    delete[] encoded;
-    encoded = Scalar32::encode(h6[n], Scalar32::BIGENDIAN); 
-    d.append(encoded, 4);
-    delete[] encoded;
-    encoded = Scalar32::encode(h7[n], Scalar32::BIGENDIAN); 
-    d.append(encoded, 4);
-    delete[] encoded;
-    encoded = Scalar32::encode(h8[n], Scalar32::BIGENDIAN); 
-    d.append(encoded, 4);
-    delete[] encoded;
+    ByteArray encoded =
+        Scalar32(h1[n]).getEncoded(Scalar32::BIGENDIAN); 
+    d.append(encoded);
+    encoded = Scalar32(h2[n]).getEncoded(Scalar32::BIGENDIAN); 
+    d.append(encoded);
+    encoded = Scalar32(h3[n]).getEncoded(Scalar32::BIGENDIAN); 
+    d.append(encoded);
+    encoded = Scalar32(h4[n]).getEncoded(Scalar32::BIGENDIAN); 
+    d.append(encoded);
+    encoded = Scalar32(h5[n]).getEncoded(Scalar32::BIGENDIAN); 
+    d.append(encoded);
+    encoded = Scalar32(h6[n]).getEncoded(Scalar32::BIGENDIAN); 
+    d.append(encoded);
+    encoded = Scalar32(h7[n]).getEncoded(Scalar32::BIGENDIAN); 
+    d.append(encoded);
+    encoded = Scalar32(h8[n]).getEncoded(Scalar32::BIGENDIAN); 
+    d.append(encoded);
 
     return d;
 

@@ -1,22 +1,15 @@
 #ifndef SCALAR32_H_INCLUDED
 #define SCALAR32_H_INCLUDED
 
-/*
- * This class provides various transformation and
- * codec functions for signed and unsigned 32 bit
- * integers.
- */
+#include "ByteArray.h"
+
 class Scalar32 {
 
     public:
-        static const unsigned char LITTLEENDIAN;
-        static const unsigned char BIGENDIAN;
-
-    public:
         Scalar32();
-        Scalar32(unsigned char* bValue);
-        Scalar32(unsigned uValue);
-        Scalar32(int iValue);
+        Scalar32(int v);
+        Scalar32(const ByteArray& encoded);
+        Scalar32(const ByteArray& encoded, int endian);
         Scalar32(const Scalar32& other);
 
         ~Scalar32();
@@ -25,30 +18,28 @@ class Scalar32 {
         Scalar32& operator= (const Scalar32& other);
 
     public:
-        // Endian-ness test.
-        static void endianTest();
+        // Returns an encoded array in the native endian order.
+        ByteArray getEncoded() const;
+        // Returns an encoded array in the specified endian order.
+        ByteArray getEncoded(int endian) const;
+        // Returns a signed integer.
+        int getIntValue() const;
 
     public:
-	unsigned char *asArray();
-        int asSigned();
-        unsigned asUnsigned();
+        static ByteArray encode(int value);
+        static int decode(const ByteArray& value);
+                
+    private:
+        void decode(const ByteArray& encoded, int endian);
+        void endianTest();
 
     public:
-        static unsigned char *encode(unsigned u32,
-                                            int endian);
-        static unsigned decode(unsigned char *bytes,
-                                            int endian);
-
-    public:
-        static unsigned char endian;
+        static const int BIGENDIAN;
+        static const int LITTLEENDIAN;
 
     private:
-        unsigned u32;
-        bool uValid;
-        int s32;
-        bool sValid;
-        unsigned char bytes[4];
-        bool bytesValid;
+        int value;
+        static int endian;
 
 };
 

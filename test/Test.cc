@@ -29,6 +29,12 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::cout << std::endl << "CMWC Test passed." << std::endl;
+        std::cout << std::endl << "BBS Test." << std::endl << std::endl;
+        if (!random.BBSTest()) {
+            std::cout << std::endl << "BBS Test failed." << std::endl;
+            return -1;
+        }
+        std::cout << std::endl << "BBS Test passed." << std::endl;
     }
 
     return 0;

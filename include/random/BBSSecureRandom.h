@@ -13,6 +13,11 @@ class BBSSecureRandom : public SecureRandom {
     public:
         ~BBSSecureRandom();
 
+    public:
+        virtual void nextBytes(ByteArray& bytes);
+        virtual int nextInt();
+        virtual long nextLong();
+
     private:
         void initialize();
         void setState(unsigned long seed);
@@ -20,8 +25,11 @@ class BBSSecureRandom : public SecureRandom {
     private:
         bool initialized;
         BigInteger M;
+        BigInteger X;
+        unsigned reseed;
 
     private:
+        static const BigInteger TWO;
         static const BigInteger THREE;
         static const BigInteger FOUR;
 

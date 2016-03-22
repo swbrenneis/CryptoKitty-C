@@ -1,4 +1,6 @@
 #include "RandomTest.h"
+#include "random/SecureRandom.h"
+#include "data/ByteArray.h"
 #include <iostream>
 #include <deque>
 
@@ -6,6 +8,36 @@ RandomTest::RandomTest() {
 }
 
 RandomTest::~RandomTest() {
+}
+
+bool RandomTest::BBSTest() {
+
+    std::cout << "Reseed test" << std::endl;
+    SecureRandom *bbs = SecureRandom::getSecureRandom("BBS");
+    std::cout << "First long random " << std::flush;
+    long firstRnd = bbs->nextLong();
+    std::cout << firstRnd << std::endl;
+    // 900 KBytes is the reseed period
+    std::cout << "Getting 900 KBytes" << std::flush;
+    ByteArray bytes(1024);
+    for (int n = 0; n < 899; ++n) {
+        bbs->nextBytes(bytes);
+        if (n % 50 == 0) {
+            std::cout << " ." << std::flush;;
+        }
+    }
+    bytes.setLength(1016);
+    bbs->nextBytes(bytes);
+    std::cout << std::endl << "Second long random " << std::flush;
+    long secondRnd = bbs->nextLong();
+    std::cout << secondRnd << std::endl;
+    if (firstRnd == secondRnd) {
+        std::cout << "Reseed test failed." << std::endl;
+        return false;
+    }
+    std::cout << "Reseed test passed." << std::endl;
+    return true;
+
 }
 
 bool RandomTest::cmwcTest() {
