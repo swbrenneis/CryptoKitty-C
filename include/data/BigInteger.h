@@ -62,6 +62,9 @@ class BigInteger {
         BigInteger gcd(const BigInteger& a) const;
         // Returns a BigInteger equal to this mod a.
         BigInteger mod(const BigInteger& a) const;
+        // Returns the modular inverse. x = a^{-1} mod n. Throws a
+        // Data exception if a = 0 or if a and n are not coprime.
+        BigInteger modInverse(const BigInteger& n);
         // Returns BigInteger equal to this**exp mod m.
         BigInteger modPow(const BigInteger& exp, const BigInteger& m);
         // Returns a BigInteger equal to this * multiplier.
