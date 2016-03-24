@@ -4,6 +4,8 @@
 #include <climits>
 #include <cmath>
 
+namespace CK {
+
 /*
  * This is mostly used as a base class. It provides
  * a value from the built-in OS RNG. It is not a secure
@@ -73,5 +75,7 @@ long Random::nextLong() {
  * Does nothing.
  */
 void Random::setSeed(unsigned long newSeed) {
+}
+
 }
 

@@ -1,6 +1,8 @@
 #include "data/Scalar64.h"
 #include "data/OutOfRangeException.h"
 
+namespace CK {
+
 // Static initializations
 const int Scalar64::BIGENDIAN = 1;
 const int Scalar64::LITTLEENDIAN = 2;
@@ -142,6 +144,8 @@ ByteArray Scalar64::getEncoded(int eType) const {
 long Scalar64::getLongValue() const {
 
     return value;
+
+}
 
 }
 

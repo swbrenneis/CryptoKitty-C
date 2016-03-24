@@ -3,6 +3,8 @@
 
 #include <string>
 
+namespace CK {
+
 class DataException {
 
     protected:
@@ -21,5 +23,7 @@ class DataException {
         std::string message;
 
 };
+
+}
 
 #endif // DATAEXCEPTION_H_INCLUDED

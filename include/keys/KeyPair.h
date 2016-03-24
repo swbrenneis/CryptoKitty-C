@@ -1,6 +1,8 @@
 #ifndef KEYPAIR_H_INCLUDED
 #define KEYPAIR_H_INCLUDED
 
+namespace CK {
+
 class PublicKey;
 class PrivateKey;
 
@@ -24,5 +26,7 @@ class KeyPair {
         PrivateKey* prvKey;
 
 };
+
+}
 
 #endif  // KEYPAIR_H_INCLUDED

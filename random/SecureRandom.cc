@@ -3,6 +3,8 @@
 #include "../include/random/SecureRandomException.h"
 #include <sstream>
 
+namespace CK {
+
 SecureRandom::SecureRandom() {
 }
 
@@ -21,3 +23,6 @@ SecureRandom::getSecureRandom(const std::string& name) {
     throw SecureRandomException(msg.str());
 
 }
+
+}
+

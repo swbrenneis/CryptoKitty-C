@@ -1,6 +1,8 @@
 #include "data/Scalar32.h"
 #include "data/OutOfRangeException.h"
 
+namespace CK {
+
 // Static initializations
 const int Scalar32::BIGENDIAN = 1;
 const int Scalar32::LITTLEENDIAN = 2;
@@ -142,6 +144,8 @@ ByteArray Scalar32::getEncoded(int eType) const {
 int Scalar32::getIntValue() const {
 
     return value;
+
+}
 
 }
 

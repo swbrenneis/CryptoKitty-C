@@ -4,6 +4,8 @@
 #include "SecureRandom.h"
 #include "data/BigInteger.h"
 
+namespace CK {
+
 class BBSSecureRandom : public SecureRandom {
 
     private:
@@ -34,4 +36,7 @@ class BBSSecureRandom : public SecureRandom {
         static const BigInteger FOUR;
 
 };
+
+}
+
 #endif  // BBSSECURERANDOM_H_INCLUDED

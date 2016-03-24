@@ -4,6 +4,7 @@
 #include "Random.h"
 #include <deque>
 
+namespace CK {
 /*
  * Complimentary Multiply With Carry entropy generator
  * Geroge Marsaglia et al.
@@ -42,5 +43,7 @@ class CMWCRandom : public Random {
         static const unsigned long R;
 
 };
+
+}
 
 #endif // CMWCRANDOM_H_INCLUDED

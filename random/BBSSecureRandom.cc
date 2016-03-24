@@ -5,6 +5,8 @@
 #include "data/Scalar64.h"
 #include "data/Scalar32.h"
 
+namespace CK {
+
 // Static initializers
 const BigInteger BBSSecureRandom::TWO(2);
 const BigInteger BBSSecureRandom::THREE(3);
@@ -125,6 +127,8 @@ void BBSSecureRandom::setState(unsigned long seed) {
     while (X.gcd(M) != BigInteger::ONE) {
         X = BigInteger(64, false, rnd);
     }
+
+}
 
 }
 

@@ -5,10 +5,13 @@
 #include <deque>
 #include <iostream>
 
-class Random;
 namespace NTL {
     class ZZ;
 }
+
+namespace CK {
+
+class Random;
 
 /*
  * This is a delegate class for Victor Shoup's
@@ -84,22 +87,24 @@ class BigInteger {
 
 };
 
+}
+
 /*
  * Global operator overloads
 */
-bool operator== (const BigInteger& lhs, const BigInteger& rhs);
-bool operator!= (const BigInteger& lhs, const BigInteger& rhs);
-bool operator< (const BigInteger& lhs, const BigInteger& rhs);
-bool operator<= (const BigInteger& lhs, const BigInteger& rhs);
-bool operator> (const BigInteger& lhs, const BigInteger& rhs);
-bool operator>= (const BigInteger& lhs, const BigInteger& rhs);
-BigInteger operator+ (const BigInteger& lhs, const BigInteger& rhs);
-BigInteger operator- (const BigInteger& lhs, const BigInteger& rhs);
-BigInteger operator* (const BigInteger& lhs, const BigInteger& rhs);
-BigInteger operator/ (const BigInteger& lhs, const BigInteger& rhs);
-BigInteger operator% (const BigInteger& lhs, const BigInteger& rhs);
-BigInteger operator>> (const BigInteger& lhs, long rhs);
-BigInteger operator<< (const BigInteger& lhs, long rhs);
-std::ostream& operator<< (std::ostream& out, const BigInteger& bi);
+bool operator== (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+bool operator!= (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+bool operator< (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+bool operator<= (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+bool operator> (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+bool operator>= (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator+ (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator- (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator* (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator/ (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator% (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator>> (const CK::BigInteger& lhs, long rhs);
+CK::BigInteger operator<< (const CK::BigInteger& lhs, long rhs);
+std::ostream& operator<< (std::ostream& out, const CK::BigInteger& bi);
 
 #endif // BIGINTEGER_H_INCLUDED

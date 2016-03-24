@@ -3,6 +3,8 @@
 
 #include <string>
 
+namespace CK {
+
 class SecureRandomException {
 
     protected:
@@ -21,5 +23,7 @@ class SecureRandomException {
         std::string message;
 
 };
+
+}
 
 #endif // SecureRandomEXCEPTION_H_INCLUDED

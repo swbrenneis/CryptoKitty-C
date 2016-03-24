@@ -3,10 +3,12 @@
 #include "data/ByteArray.h"
 #include "data/BigInteger.h"
 #include "data/Scalar64.h"
-#include "digest/CKSHA256.h"
+#include "digest/SHA256.h"
 #include <time.h>
 #include <climits>
 #include <cmath>
+
+namespace CK {
 
 // Static initializations
 unsigned CMWCRandom::i = 4095;
@@ -84,7 +86,7 @@ unsigned long CMWCRandom::next(int bits) {
 void CMWCRandom::seedGenerator() {
 
     ByteArray fill(4096);
-    CKSHA256 digest;
+    SHA256 digest;
     NanoTime nt;
     unsigned long nonce = seed;
     ByteArray context;
@@ -116,6 +118,8 @@ void CMWCRandom::setSeed(unsigned long seedValue) {
 
     seed = seedValue;
     seedGenerator(); // Generate new Q
+
+}
 
 }
 

@@ -5,6 +5,8 @@
 #include <climits>
 #include "NTL/ZZ.h"
 
+namespace CK {
+
 /*
  * Static initialization
  */
@@ -245,16 +247,18 @@ bool BigInteger::testBit(int bitnum) const {
 
 }
 
+}
+
 // Global operators
-bool operator== (const BigInteger& lhs, const BigInteger& rhs)
+bool operator== (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.equals(rhs); }
-bool operator!= (const BigInteger& lhs, const BigInteger& rhs)
+bool operator!= (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return !lhs.equals(rhs); }
-BigInteger operator% (const BigInteger& lhs, const BigInteger& rhs)
+CK::BigInteger operator% (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.mod(rhs); }
-BigInteger operator* (const BigInteger& lhs, const BigInteger& rhs)
+CK::BigInteger operator* (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.multiply(rhs); }
-BigInteger operator>> (const BigInteger& lhs, long rhs)
+CK::BigInteger operator>> (const CK::BigInteger& lhs, long rhs)
 { return lhs.rightShift(rhs); }
-std::ostream& operator<< (std::ostream& out, const BigInteger& bi)
+std::ostream& operator<< (std::ostream& out, const CK::BigInteger& bi)
 { bi.out(out); return out; }

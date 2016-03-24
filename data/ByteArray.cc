@@ -1,6 +1,8 @@
 #include "../include/data/ByteArray.h"
 #include "../include/data/OutOfRangeException.h"
 
+namespace CK {
+
 ByteArray::ByteArray() {
 }
 
@@ -157,5 +159,7 @@ bool operator== (const ByteArray& lhs, const ByteArray& rhs) {
 
 bool operator!= (const ByteArray& lhs, const ByteArray& rhs) {
     return !lhs.equals(rhs);
+}
+
 }
 

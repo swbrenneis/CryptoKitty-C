@@ -1,6 +1,8 @@
 #ifndef PUBLICKEY_H_INCLUDED
 #define PUBLICKEY_H_INCLUDED
 
+namespace CK {
+
 class PublicKey {
 
     protected:
@@ -14,5 +16,7 @@ class PublicKey {
         virtual ~PublicKey();
 
 };
+
+}
 
 #endif  // PUBLICKEY_H_INCLUDED

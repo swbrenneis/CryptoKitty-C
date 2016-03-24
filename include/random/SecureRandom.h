@@ -1,8 +1,10 @@
 #ifndef SECURERANDOM_H_INCLUDED
 #define SECURERANDOM_H_INCLUDED
 
-#include "Random.h"
+#include "random/Random.h"
 #include <string>
+
+namespace CK {
 
 class SecureRandom : public Random {
 
@@ -16,5 +18,7 @@ class SecureRandom : public Random {
         static SecureRandom* getSecureRandom(const std::string& name);
 
 };
+
+}
 
 #endif	// SECURERANDOM_H_INCLUDED

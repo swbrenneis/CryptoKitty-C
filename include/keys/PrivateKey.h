@@ -1,6 +1,8 @@
 #ifndef PRIVATEKEY_H_INCLUDED
 #define PRIVATEKEY_H_INCLUDED
 
+namespace CK {
+
 class PrivateKey {
 
     protected:
@@ -14,5 +16,7 @@ class PrivateKey {
         virtual ~PrivateKey();
 
 };
+
+}
 
 #endif  // PRIVATEKEY_H_INCLUDED

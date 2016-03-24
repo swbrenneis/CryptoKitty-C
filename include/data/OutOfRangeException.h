@@ -3,6 +3,8 @@
 
 #include "DataException.h"
 
+namespace CK {
+
 class OutOfRangeException : public DataException {
 
     protected:
@@ -16,5 +18,7 @@ class OutOfRangeException : public DataException {
         ~OutOfRangeException() {}
 
 };
+
+}
 
 #endif // DATAOUTOFRANGEEXCEPTION_H_INCLUDED

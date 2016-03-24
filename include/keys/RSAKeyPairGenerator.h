@@ -3,6 +3,8 @@
 
 #include "data/BigInteger.h"
 
+namespace CK {
+
 class SecureRandom;
 class KeyPair;
 
@@ -28,5 +30,7 @@ class RSAKeyPairGenerator {
         static const BigInteger THREE;
 
 };
+
+}
 
 #endif	// RSAKEYPAIRGENERATOR_H_INCLUDED

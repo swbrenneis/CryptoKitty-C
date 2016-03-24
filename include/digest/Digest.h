@@ -1,6 +1,10 @@
 #ifndef DIGEST_H_INCLUDED
 #define DIGEST_H_INCLUDED
 
+#include <string>
+
+namespace CK {
+
 class ByteArray;
 
 /*
@@ -27,9 +31,14 @@ class Digest {
         virtual void update(const ByteArray& bytes)=0;
         virtual void update(const ByteArray& bytes, unsigned offset, unsigned length)=0;
 
+    public:
+        static Digest *getInstance(const std::string& algorithm);
+
     protected:
         virtual ByteArray finalize(const ByteArray& bytes)=0;
 
 };
+
+}
 
 #endif  // DIGEST_H_INCLUDED

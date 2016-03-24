@@ -1,6 +1,8 @@
 #ifndef RANDOM_H_INCLUDED
 #define RANDOM_H_INCLUDED
 
+namespace CK {
+
 class ByteArray;
 
 /*
@@ -33,5 +35,7 @@ class Random {
         virtual unsigned long next(int bits);
 
 };
+
+}
 
 #endif  // RANDOM_H_INCLUDED

@@ -2,6 +2,8 @@
 #include "../include/data/DataException.h"
 #include <time.h>
 
+namespace CK {
+
 NanoTime::NanoTime() {
 
      newTime();
@@ -41,6 +43,8 @@ void NanoTime::newTime() {
     time = (now.tv_sec * 1000000000) + now.tv_nsec;
     seconds = now.tv_sec;
     nanoseconds = now.tv_nsec;
+
+}
 
 }
 

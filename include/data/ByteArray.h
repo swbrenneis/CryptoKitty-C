@@ -3,6 +3,8 @@
 
 #include <deque>
 
+namespace CK {
+
 /*
  * This really just encapsulates a deque, but it provides
  * some convenience methods and extra management
@@ -49,8 +51,10 @@ class ByteArray {
 
 };
 
+}
+
 // Global operators
-bool operator== (const ByteArray& lhs, const ByteArray& rhs);
-bool operator!= (const ByteArray& lhs, const ByteArray& rhs);
+bool operator== (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
+bool operator!= (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 
 #endif // BYTEARRAY_H_INCLUDED

@@ -3,6 +3,8 @@
 
 #include "ByteArray.h"
 
+namespace CK {
+
 class Scalar64 {
 
     public:
@@ -42,5 +44,7 @@ class Scalar64 {
         static int endian;
 
 };
+
+}
 
 #endif  // SCALAR64_H_INCLUDED

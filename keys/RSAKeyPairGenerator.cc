@@ -1,6 +1,10 @@
 #include "keys/RSAKeyPairGenerator.h"
 #include "keys/KeyPair.h"
+#include "keys/RSAPublicKey.h"
+#include "keys/RSAPrivateCrtKey.h"
 #include "random/SecureRandom.h"
+
+namespace CK {
 
 // Static initialization
 const BigInteger THREE(3);
@@ -72,14 +76,15 @@ KeyPair *RSAKeyPairGenerator::generateKeyPair() {
     BigInteger d = e.modInverse(phi);
 
     // Create the public key.
-    PublicKey *pub = new CKRSAPublicKey(n, e);
+    PublicKey *pub = new RSAPublicKey(n, e);
     // Create the private key.
-    // PrivateKey prv = new CKRSAPrivateKey(n, d);
+    // PrivateKey prv = new RSAPrivateKey(n, d);
     // We're going to create a Chinese Remainder Theorem key.
     // Leaving the line creating a simple key here for reference.
-    PrivateKey *prv = new CKRSAPrivateCrtKey(p, q, d, e);
+    PrivateKey *prv = new RSAPrivateCrtKey(p, q, d, e);
 
     return new KeyPair(pub, prv);
 
 }
 
+}
