@@ -1,12 +1,12 @@
 #ifndef RSAPRIVATECRTKEY_H_INCLUDED
 #define RSAPRIVATECRTKEY_H_INCLUDED
 
-#include "keys/PrivateKey.h"
+#include "keys/RSAPrivateKey.h"
 #include "data/BigInteger.h"
 
 namespace CK {
 
-class RSAPrivateCrtKey : public PrivateKey {
+class RSAPrivateCrtKey : public RSAPrivateKey {
 
     private:
         RSAPrivateCrtKey();
@@ -19,6 +19,7 @@ class RSAPrivateCrtKey : public PrivateKey {
         ~RSAPrivateCrtKey();
 
     public:
+        int getBitLength() const;
         const BigInteger& getCrtCoefficient() const;
         const BigInteger& getPrivateExponent() const;
         const BigInteger& getPrimeExponentP() const;
@@ -27,6 +28,10 @@ class RSAPrivateCrtKey : public PrivateKey {
         const BigInteger& getPrimeQ() const;
         const BigInteger& getPublicExponent() const;
         const BigInteger& getModulus() const;
+
+    protected:
+        // Signature generation primitive.
+        BigInteger rsasp1(const BigInteger& m) const;
 
     private:
         BigInteger prvExp;  // d
@@ -37,6 +42,7 @@ class RSAPrivateCrtKey : public PrivateKey {
         BigInteger qPrime;  // q
         BigInteger crtCoeff;    // qInv
         BigInteger mod; // n
+        int bitLength;
 
 };
 

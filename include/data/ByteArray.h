@@ -20,7 +20,7 @@ class ByteArray {
         // Create a ByteArray from an array of unsigned char
         ByteArray(const unsigned char *bytes, unsigned length);
         // Create a ByteArray with an initial size
-        ByteArray(unsigned size);
+        ByteArray(unsigned size, unsigned char fill=0);
         ~ByteArray();
 
     private:
@@ -40,7 +40,7 @@ class ByteArray {
         void copy(unsigned offset, const ByteArray& other,
                         unsigned otherOffset, unsigned length=0);
         bool equals(const ByteArray& other) const;
-        unsigned length() const;
+        unsigned getLength() const;
         ByteArray range(unsigned offset, unsigned length) const;
         void setLength(unsigned newLength);
 

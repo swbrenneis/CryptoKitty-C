@@ -20,8 +20,8 @@ class Random;
 class BigInteger {
 
     public:
-        // static const int LITTLEENDIAN;
-        // static const int BIGENDIAN;
+        static const int LITTLEENDIAN;
+        static const int BIGENDIAN;
         static const BigInteger ZERO;
         static const BigInteger ONE;
 
@@ -59,6 +59,8 @@ class BigInteger {
         int bitLength() const;
         // Returns the total number of bits
         int bitSize() const;
+        // Returns a ByteArray in the specified encoding.
+        ByteArray encode(int endian) const;
         // Returns true if this = other.
         bool equals(const BigInteger& other) const;
         // Returns the greatest common denominator of this and a.
@@ -67,11 +69,13 @@ class BigInteger {
         BigInteger mod(const BigInteger& a) const;
         // Returns the modular inverse. x = a^{-1} mod n. Throws a
         // Data exception if a = 0 or if a and n are not coprime.
-        BigInteger modInverse(const BigInteger& n);
+        BigInteger modInverse(const BigInteger& n) const;
         // Returns BigInteger equal to this**exp mod m.
-        BigInteger modPow(const BigInteger& exp, const BigInteger& m);
+        BigInteger modPow(const BigInteger& exp, const BigInteger& m) const;
         // Returns a BigInteger equal to this * multiplier.
         BigInteger multiply(const BigInteger& multiplier) const;
+        // Returns a BigInteger equal to this raised to the exp power.
+        BigInteger pow(const BigInteger& exp) const;
         // Returns a BigInteger equal to this shifted right count times.
         BigInteger rightShift(long count) const;
         // Returns true if the specified bit is set.

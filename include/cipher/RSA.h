@@ -5,6 +5,9 @@
 
 namespace CK {
 
+class RSAPublicKey;
+class RSAPrivateKey;
+
 class RSA {
 
     protected:
@@ -16,44 +19,20 @@ class RSA {
     private:
         static const BigInteger MASK;
 
-    protected:
-
-        struct PublicKey {
-            BigInteger n;
-            BigInteger e;
-            int bitSize;
-        };
-
-        struct ModulusPrivateKey {
-            BigInteger n;
-            BigInteger d;
-            int bitSize;
-        };
-
-        struct CRTPrivateKey {
-            // First prime.
-            BigInteger p;
-            // Second prime.
-            BigInteger q;
-            // First prime CRT exponent.
-            BigInteger dP;
-            // Second prime CRT exponent.
-            BigInteger dQ;
-            // CRT coefficient.
-            BigInteger qInv;
-            int bitSize;
-        };
-
     public:
         virtual ByteArray
-                decrypt(const ModulusPrivateKey& K,
-                            const ByteArray& C)=0;
+                decrypt(const RSAPrivateKey& K, const ByteArray& C)=0;
         virtual ByteArray
-                decrypt(const CRTPrivateKey& K,
-                            const ByteArray& C)=0 ;
-        virtual ByteArray
-                decrypt(const PublicKey& K,
-                            const ByteArray& C)=0;
+                encrypt(const RSAPublicKey& K, const ByteArray& C)=0;
+        virtual ByteArray sign(const RSAPrivateKey& K, const ByteArray& M)=0;
+        virtual bool
+                verify(const RSAPublicKey& K, const ByteArray& M,
+                                    const ByteArray& S)=0;
+
+    protected:
+        ByteArray i2osp(const BigInteger& X, int xLen);
+        BigInteger os2ip(const ByteArray& X);
+
 };
 
 }

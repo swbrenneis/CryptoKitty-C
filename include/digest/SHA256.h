@@ -20,6 +20,7 @@ class SHA256 : public DigestBase {
 
     protected:
         ByteArray finalize(const ByteArray& bytes);
+        const ByteArray& getDER() const;
         unsigned getDigestLength() const { return 32; }
 
     private:
@@ -39,6 +40,8 @@ class SHA256 : public DigestBase {
                                 H5, H6, H7, H8;
         // Round constants
         static const unsigned K[];
+        // ASN.1 identifier encoding.
+        static const ByteArray DER;
 
 };
 

@@ -18,12 +18,14 @@ class RSAPublicKey : public PublicKey {
         ~RSAPublicKey();
 
     public:
+        int getBitLength() const;
         const BigInteger& getExponent() const;
         const BigInteger& getModulus() const;
 
     private:
         BigInteger exp; // e
         BigInteger mod; // n
+        int bitLength;
 
 };
 
