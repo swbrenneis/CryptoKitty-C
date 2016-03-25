@@ -1,5 +1,5 @@
 #include "data/Scalar32.h"
-#include "data/OutOfRangeException.h"
+#include "exceptions/OutOfRangeException.h"
 
 namespace CK {
 

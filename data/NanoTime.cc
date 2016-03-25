@@ -1,5 +1,5 @@
-#include "../include/data/NanoTime.h"
-#include "../include/data/DataException.h"
+#include "data/NanoTime.h"
+#include "exceptions/DataException.h"
 #include <time.h>
 
 namespace CK {

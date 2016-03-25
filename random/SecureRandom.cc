@@ -1,6 +1,6 @@
-#include "../include/random/SecureRandom.h"
-#include "../include/random/BBSSecureRandom.h"
-#include "../include/random/SecureRandomException.h"
+#include "random/SecureRandom.h"
+#include "random/BBSSecureRandom.h"
+#include "exceptions/SecureRandomException.h"
 #include <sstream>
 
 namespace CK {

@@ -1,5 +1,5 @@
-#include "../include/data/ByteArray.h"
-#include "../include/data/OutOfRangeException.h"
+#include "data/ByteArray.h"
+#include "exceptions/OutOfRangeException.h"
 
 namespace CK {
 
