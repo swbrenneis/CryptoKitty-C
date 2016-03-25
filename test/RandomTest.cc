@@ -1,5 +1,6 @@
 #include "RandomTest.h"
 #include "random/SecureRandom.h"
+#include "random/CMWCRandom.h"
 #include "data/ByteArray.h"
 #include <iostream>
 #include <deque>
@@ -13,13 +14,13 @@ RandomTest::~RandomTest() {
 bool RandomTest::BBSTest() {
 
     std::cout << "Reseed test" << std::endl;
-    SecureRandom *bbs = SecureRandom::getSecureRandom("BBS");
+    CK::SecureRandom *bbs = CK::SecureRandom::getSecureRandom("BBS");
     std::cout << "First long random " << std::flush;
     long firstRnd = bbs->nextLong();
     std::cout << firstRnd << std::endl;
     // 900 KBytes is the reseed period
     std::cout << "Getting 900 KBytes" << std::flush;
-    ByteArray bytes(1024);
+    CK::ByteArray bytes(1024);
     for (int n = 0; n < 899; ++n) {
         bbs->nextBytes(bytes);
         if (n % 50 == 0) {
@@ -44,7 +45,7 @@ bool RandomTest::cmwcTest() {
 
     std::cout << "Repeated seed test" << std::endl;
     unsigned long seed = 2953602193602L;
-    CMWCRandom cmwc;
+    CK::CMWCRandom cmwc;
     cmwc.setSeed(seed);
     std::deque<long> set1;
     std::cout << "First set ";

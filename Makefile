@@ -5,8 +5,8 @@ LDFLAGS= -Wall -g -shared $(LDPATHS) $(LDLIBS)
 
 LIBRARY= libcryptokitty.so
 
-CIPHER_OBJECT= cipher/RSA.o
-CIPHER_HEADER= include/cipher/RSA.h
+CIPHER_OBJECT= cipher/PKCS1rsassa.o cipher/RSA.o
+CIPHER_HEADER= include/cipher/PKCS1rsassa.h include/cipher/RSA.h
 CIPHER_SOURCE= $(CIPHER_OBJECT:.o=.cc)
 DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/NanoTime.o data/Scalar32.o \
 			 data/Scalar64.o
@@ -17,9 +17,10 @@ DATA_SOURCE= $(DATA_OBJECT:.o=.cc)
 DIGEST_OBJECT= digest/SHA256.o digest/DigestBase.o
 DIGEST_HEADER= include/digest/SHA256.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
-KEYS_OBJECT= keys/RSAKeyPairGenerator.o keys/RSAPublicKey.o keys/RSAPrivateCrtKey.o
+KEYS_OBJECT= keys/RSAKeyPairGenerator.o keys/RSAPublicKey.o keys/RSAPrivateCrtKey.o \
+			 keys/RSAPrivateModKey.o
 KEYS_HEADER= include/keys/RSAKeyPairGenerator.h include/keys/RSAPublicKey.h \
-			include/keys/RSAPrivateCrtKey.h
+			include/keys/RSAPrivateCrtKey.h include/keys/RSAPrivateModKey.h
 KEYS_SOURCE= $(KEYS_OBJECT:.o=.cc)
 RANDOM_OBJECT= random/BBSSecureRandom.o random/CMWCRandom.o random/Random.o \
 			   random/SecureRandom.o

@@ -21,9 +21,9 @@ ByteArray::ByteArray(const unsigned char *bytearray, unsigned length)
  * Create a ByteArray of a specified size. The content is
  * undefined.
  */
-ByteArray::ByteArray(unsigned size) {
+ByteArray::ByteArray(unsigned size, unsigned char fill) {
 
-    bytes.resize(size);
+    bytes.resize(size, fill);
 
 }
 
@@ -107,10 +107,10 @@ void ByteArray::copy(unsigned offset, const ByteArray& other,
 
     unsigned transfer = length;
     if (length == 0) {
-        transfer = other.length() - otherOffset;
+        transfer = other.getLength() - otherOffset;
     }
-    if (otherOffset > other.length()
-                    || otherOffset + transfer > other.length()) {
+    if (otherOffset > other.getLength()
+                    || otherOffset + transfer > other.getLength()) {
         throw OutOfRangeException("ByteArray copy out of range");
     }
     if (offset + transfer > bytes.size()) {
@@ -132,7 +132,7 @@ bool ByteArray::equals(const ByteArray& other) const {
 
 }
 
-unsigned ByteArray::length() const {
+unsigned ByteArray::getLength() const {
 
     return bytes.size();
 

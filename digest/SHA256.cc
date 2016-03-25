@@ -25,6 +25,10 @@ const unsigned SHA256::K[] =
           0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
           0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
           0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2 };
+const unsigned char DERbytes[] = { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 
+                                    0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
+                                    0x00, 0x04, 0x20 };
+const ByteArray DER(DERbytes, 19);
 
 SHA256::SHA256(){
 }
@@ -81,7 +85,7 @@ ByteArray SHA256::finalize(const ByteArray& in) {
     ByteArray context(pad(in));
 
     // Split the message up into 512 bit chunks.
-    long n = context.length() / 64;
+    long n = context.getLength() / 64;
     // We need the chunk array to begin at index 1 so the indexing
     // works out below.
     unsigned char chunks[n+1][64];
@@ -178,6 +182,15 @@ ByteArray SHA256::finalize(const ByteArray& in) {
 }
 
 /*
+ * Return the ASN.1 encoding identifier
+ */
+const ByteArray& SHA256::getDER() const {
+
+    return DER;
+
+}
+
+/*
  * Maj(X, Y, Z) = (X ∧ Y ) ⊕ (X ∧ Z) ⊕ (Y ∧ Z)
  */
 unsigned SHA256::Maj(unsigned x, unsigned y, unsigned z) {
@@ -192,7 +205,7 @@ unsigned SHA256::Maj(unsigned x, unsigned y, unsigned z) {
 ByteArray SHA256:: pad(const ByteArray& in) {
 
     // Message size in bits - l
-    long l = in.length() * 8;
+    long l = in.getLength() * 8;
 
     /*
      * Pad the message such that k + 1 + l is congruent to
@@ -208,7 +221,7 @@ ByteArray SHA256:: pad(const ByteArray& in) {
     // in order to make the message modulo 512, we add bytes until
     // the whole message, including the length encoding is an even
     // multiple of 64,
-    while ((work.length() + 8)  % 64 != 0) {
+    while ((work.getLength() + 8)  % 64 != 0) {
         work.append(0); //pad with zeroes.
     }
     // Append the 64 bit encoded bit length

@@ -1,5 +1,4 @@
 #include "data/BigInteger.h"
-#include "data/OutOfRangeException.h"
 #include "random/Random.h"
 #include <algorithm>
 #include <climits>
@@ -106,7 +105,7 @@ BigInteger::BigInteger(int bits, bool sgPrime, Random& rnd) {
 
     // Load the big integer.
     NTL::ZZ work(pBytes[0]);
-    for (unsigned n = 1; n < pBytes.length(); ++n) {
+    for (unsigned n = 1; n < pBytes.getLength(); ++n) {
         work = work << 8;
         work = work | pBytes[1];
     }
@@ -204,10 +203,11 @@ BigInteger BigInteger::mod(const BigInteger& a) const {
 /*
  * Returns a BigInteger that is equal to (this**exp) % m.
  */
-BigInteger BigInteger::modPow(const BigInteger& exp, const BigInteger& m) {
+BigInteger BigInteger::modPow(const BigInteger& exp,
+                const BigInteger& m) const {
 
     return BigInteger(new NTL::ZZ(
-                            NTL::PowerMod(*number, *exp.number, *m.number)));
+                        NTL::PowerMod(*number, *exp.number, *m.number)));
 
 }
 

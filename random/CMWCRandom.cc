@@ -96,7 +96,7 @@ void CMWCRandom::seedGenerator() {
         q.resize(4096, 0);
     }
     while (filled < 4096) {
-        if (context.length() != 0) {
+        if (context.getLength() != 0) {
             digest.update(context);
         }
         digest.update(Scalar64::encode(nonce));
@@ -104,7 +104,7 @@ void CMWCRandom::seedGenerator() {
         digest.update(Scalar64::encode(nt.getFullTime()));
         context = digest.digest();
         fill.copy(filled, context, 0);
-        filled += context.length();
+        filled += context.getLength();
     }
     for (int qi = 0; qi < 4096; ++qi) {
         q[qi] = Scalar64::decode(fill.range(qi, 8));

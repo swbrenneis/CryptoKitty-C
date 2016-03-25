@@ -1,4 +1,5 @@
-#include "../include/random/CMWCRandom.h"
+#ifndef RANDOMTEST_H_INCLUDED
+#define RANDOMTEST_H_INCLUDED
 
 class RandomTest {
 
@@ -14,7 +15,6 @@ class RandomTest {
         bool cmwcTest();
         bool BBSTest();
 
-    private:
-        CMWCRandom rnd;
-
 };
+
+#endif  // RANDOMTEST_H_INCLUDED

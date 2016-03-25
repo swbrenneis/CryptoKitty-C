@@ -3,7 +3,8 @@
 namespace CK {
 
 RSAPublicKey::RSAPublicKey(const BigInteger& n, const BigInteger& e)
-: exp(e),
+: PublicKey("RSA"),
+  exp(e),
   mod(n) {
 }
 

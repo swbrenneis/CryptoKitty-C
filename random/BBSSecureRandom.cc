@@ -55,16 +55,16 @@ void BBSSecureRandom::nextBytes(ByteArray& bytes) {
         initialize();
     }
 
-    if (reseed + bytes.length() > RESEED) {
+    if (reseed + bytes.getLength() > RESEED) {
         NanoTime nt;
         setState(nt.getFullTime());
         reseed = 0;
     }
-    reseed += bytes.length();
+    reseed += bytes.getLength();
 
     X = X.modPow(TWO, M);   // X(n) = X(n-1)**2 mod M.
     int bitLength = X.bitLength();
-    int byteCount = bytes.length() - 1;
+    int byteCount = bytes.getLength() - 1;
 
     while (byteCount >= 0) {
         // Count bits to make a byte.

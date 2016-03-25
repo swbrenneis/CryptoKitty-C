@@ -1,4 +1,5 @@
-#include "../include/digest/CKSHA256.h"
+#ifndef DIGESTTEST_H_INCLUDED
+#define DIGESTTEST_H_INCLUDED
 
 class DigestTest {
 
@@ -13,7 +14,6 @@ class DigestTest {
     public:
         bool sha256Test();
 
-    private:
-        CKSHA256 sha256;
-
 };
+
+#endif  // DIGESTTEST_H_INCLUDED

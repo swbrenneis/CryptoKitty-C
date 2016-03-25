@@ -37,14 +37,14 @@ unsigned long Random::next(int bits) {
 void Random::nextBytes(ByteArray& bytes) {
 
     // Bit length.
-    int l = bytes.length() * 8;
+    int l = bytes.getLength() * 8;
     int lSize = sizeof(long) * 8;
     unsigned index = 0;
     while (l > 0) {
         int getBits = std::min(l, lSize);
         long rnd = next(getBits);
         int shifted = lSize;
-        while (shifted > 0 && l > 0 && index < bytes.length()) {
+        while (shifted > 0 && l > 0 && index < bytes.getLength()) {
             bytes[index++] = rnd & 0xff;
             rnd = rnd >> 8;
             shifted -= 8;
