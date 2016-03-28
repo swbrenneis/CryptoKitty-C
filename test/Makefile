@@ -8,7 +8,7 @@ LD_FLAGS= -g -Wall -fpermissive
 LD_LIBRARY_PATH= -L../
 LD_LIBRARIES= -lcryptokitty
 
-CPP_SOURCES= DigestTest.cc RandomTest.cc Test.cc
+CPP_SOURCES= DigestTest.cc RandomTest.cc SignatureTest.cc Test.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 LIBRARY= ../libcryptokitty.so

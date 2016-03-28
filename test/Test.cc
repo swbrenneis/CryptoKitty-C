@@ -1,5 +1,6 @@
 #include "DigestTest.h"
 #include "RandomTest.h"
+#include "SignatureTest.h"
 #include <string>
 #include <iostream>
 
@@ -35,6 +36,48 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::cout << std::endl << "BBS Test passed." << std::endl;
+    }
+
+    std::cout << std::endl;
+    if (tests == "signature" || tests == "all") {
+        SignatureTest sig;
+        std::cout << "RSA signature using PKCS1 encoding and SHA-256 digest."
+                << std::endl << std::endl;
+
+        if (!sig.RSAPKCS1test(1024)) {
+            std::cout << std::endl << "RSA PKCS v1.5 signature test failed." << std::endl;
+            return -1;
+        }
+        
+        if (!sig.RSAPKCS1test(2048)) {
+            std::cout << std::endl << "RSA PKCS v1.5 signature test failed." << std::endl;
+            return -1;
+        }
+        
+        if (!sig.RSAPKCS1test(4096)) {
+            std::cout << std::endl << "RSA PKCS v1.5 signature test failed." << std::endl;
+            return -1;
+        }
+        std::cout << "RSA PKCS v1.5 signature test passed." << std::endl << std::endl;
+
+        std::cout << "RSA signature using EMSA-PSS encoding and SHA-256 digest."
+                << std::endl << std::endl;
+
+        if (!sig.RSAPSStest(1024)) {
+            std::cout << std::endl << "RSA PSS signature test failed." << std::endl;
+            return -1;
+        }
+        
+        if (!sig.RSAPSStest(2048)) {
+            std::cout << std::endl << "RSA PSS signature test failed." << std::endl;
+            return -1;
+        }
+        
+        if (!sig.RSAPSStest(4096)) {
+            std::cout << std::endl << "RSA PSS signature test failed." << std::endl;
+            return -1;
+        }
+        std::cout << "RSA EMSA-PSS signature test passed." << std::endl << std::endl;
     }
 
     return 0;
