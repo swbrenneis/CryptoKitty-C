@@ -1,0 +1,361 @@
+#include "cipher/PSSrsassa.h"
+#include "cipher/PSSmgf1.h"
+#include "digest/Digest.h"
+#include "random/SecureRandom.h"
+#include "keys/RSAPrivateKey.h"
+#include "keys/RSAPublicKey.h"
+#include "exceptions/IllegalOperationException.h"
+#include "exceptions/NoSuchAlgorithmException.h"
+#include "exceptions/EncodingException.h"
+#include "exceptions/BadParameterException.h"
+#include <cmath>
+
+namespace CK {
+
+PSSrsassa::PSSrsassa(Digest *d)
+: digest(d),
+  algorithmOID(d->getDER()),
+  saltLength(10) {
+}
+
+PSSrsassa::PSSrsassa(Digest *d, int sLen)
+: digest(d),
+  algorithmOID(d->getDER()),
+  saltLength(sLen) {
+}
+
+PSSrsassa::~PSSrsassa() {
+
+    delete digest;
+
+}
+
+ByteArray PSSrsassa::decrypt(const RSAPrivateKey& K, const ByteArray& C) {
+    throw IllegalOperationException("Unsupported signature operation");
+}
+
+/**
+ * Message signature encoding operation.
+ * 
+ * M is the essage octet string. emBits is themaximal bit length of
+ * the integer representation of the encoded message.
+ * 
+ * Returns the encoded octet string.
+ * 
+ */
+ByteArray PSSrsassa::emsaPSSEncode(const ByteArray& M, int emBits) {
+
+    // The check here for message size with respect to the hash input
+    // size (~= 2 exabytes for SHA1) isn't necessary.
+
+    // 2.  Let mHash = Hash(M), an octet string of length hLen.
+    ByteArray mHash(digest->digest(M));
+
+    // 3.  If emLen < hLen + sLen + 2, output "encoding error" and stop.
+    int hLen = digest->getDigestLength();
+    double emDouble = emBits;
+    int emLen = std::ceil(emDouble / 8);
+    if (emLen < hLen + saltLength + 2) {
+        throw EncodingException("Encoding error");
+    }
+
+    // 4.  Generate a random octet string salt of length sLen; if sLen = 0,
+    //     then salt is the empty string.
+    ByteArray salt(saltLength);
+    SecureRandom *rnd;
+    if (salt.getLength() > 0) {
+        try {
+            rnd = SecureRandom::getSecureRandom("BBS");
+            rnd->nextBytes(salt);
+            delete rnd;
+        }
+        catch (NoSuchAlgorithmException& e) {
+            // Shouldn't happen, but...
+            delete rnd;
+            throw EncodingException(e);
+        }
+    }
+
+    // 5.  Let
+    //       M' = (0x)00 00 00 00 00 00 00 00 || mHash || salt;
+    //
+    // M' is an octet string of length 8 + hLen + sLen with eight
+    // initial zero octets.
+    ByteArray initial(8, 0);
+    ByteArray mPrime;
+    mPrime.append(mHash);;
+    mPrime.append(salt);
+
+    // 6.  Let H = Hash(M'), an octet string of length hLen.
+    digest->reset();
+    ByteArray H(digest->digest(mPrime));
+
+    // 7.  Generate an octet string PS consisting of emLen - sLen - hLen - 2
+    //     zero octets.  The length of PS may be 0.
+    ByteArray PS(emLen - saltLength - hLen - 2, 0);
+
+    // 8.  Let DB = PS || 0x01 || salt; DB is an octet string of length
+    //     emLen - hLen - 1.
+    ByteArray DB;
+    DB.append(PS);
+    DB.append(0x01);
+    DB.append(salt);
+
+    // 9.  Let dbMask = MGF(H, emLen - hLen - 1).
+    PSSmgf1 dbmgf(digest);
+    ByteArray dbMask;
+    try {
+        dbMask = dbmgf.generateMask(H, emLen - hLen - 1);
+    }
+    catch (BadParameterException& e) {
+        // Fail silently
+        return false;
+    }
+
+    // 10. Let maskedDB = DB \xor dbMask.
+    ByteArray maskedDB(rsaXor(DB, dbMask));
+
+    // 11. Set the leftmost 8emLen - emBits bits of the leftmost octet in
+    //     maskedDB to zero.
+    unsigned char bitmask = 0xff;
+    for (int i = 0; i < (8 * emLen) - emBits; i++) {
+        bitmask = bitmask >> 1;
+    }
+    maskedDB[0] = maskedDB[0] & bitmask;
+
+    // 12. Let EM = maskedDB || H || 0xbc.
+    ByteArray EM;
+    EM.append(maskedDB);
+    EM.append(H);
+    EM.append(0xbc);
+
+    // 13. Output EM.
+    return EM;
+
+}
+
+/**
+ * Verify an EMSA-PSS encoded signature.
+ * 
+ * M is the message to be verified. EM is the encoded message octet
+ * string. emBits is the maximal bit length of the integer
+ * representation of EM
+ *                 
+ * Returns true if the encoding is consistent, otherwise false.
+ */
+bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM, 
+                                                        int emBits) {
+
+    // 1.  If the length of M is greater than the input limitation for the
+    //     hash function (2^61 - 1 octets for SHA-1), output "inconsistent"
+    //     and stop.
+    //
+    // As noted before, this test is impractical since the actual size limit
+    // for SHA1 is 2^64 - 1 octets and Java cannot create a string or array
+    // longer than 2^63 - 1.
+
+    // 2.  Let mHash = Hash(M), an octet string of length hLen.
+    ByteArray mHash(digest->digest(M));
+
+    // 3.  If emLen < hLen + sLen + 2, output "inconsistent" and stop.
+    int hLen = digest->getDigestLength();
+    double doubleEMBits = emBits;
+    int emLen = std::ceil(doubleEMBits / 8);
+    if (emLen < hLen + saltLength + 2) {
+        return false;
+    }
+
+    // 4.  If the rightmost octet of EM does not have hexadecimal value
+    //     0xbc, output "inconsistent" and stop.
+    if (EM[EM.getLength() - 1] != 0xbc) {
+        return false;
+    }
+
+    // 5.  Let maskedDB be the leftmost emLen - hLen - 1 octets of EM, and
+    //     let H be the next hLen octets.
+    int maskLength = emLen - hLen - 1;
+    ByteArray maskedDB(EM.range(0, maskLength));
+    ByteArray H(EM.range(maskLength, maskedDB.getLength() - maskLength));
+
+    // 6.  If the leftmost 8emLen - emBits bits of the leftmost octet in
+    //     maskedDB are not all equal to zero, output "inconsistent" and
+    //     stop.
+    unsigned char bitmask = 0xff;
+    bitmask = bitmask >> ((8 * emLen) - emBits);
+    unsigned char invert = bitmask ^ 0xff;
+    if ((maskedDB[0] & invert) != 0) {
+        return false;
+    }
+
+    // 7.  Let dbMask = MGF(H, emLen - hLen - 1).
+    PSSmgf1 dbmgf(digest);
+    ByteArray dbMask;
+    try {
+        dbMask = dbmgf.generateMask(H, emLen - hLen - 1);
+    }
+    catch (BadParameterException& e) {
+        // Fail silently
+        return false;
+    }
+
+    // 8.  Let DB = maskedDB \xor dbMask.
+    ByteArray DB;
+    try {
+        DB = rsaXor(maskedDB, dbMask);
+    }
+    catch (BadParameterException& e) {
+        // Fail silently
+        return false;
+    }
+
+    // 9.  Set the leftmost 8emLen - emBits bits of the leftmost octet in DB
+    //     to zero.
+    bitmask = 0xff;
+    bitmask = bitmask >> ((8 * emLen) - emBits);
+    DB[0] = DB[0] & bitmask;
+
+    // 10. If the emLen - hLen - sLen - 2 leftmost octets of DB are not zero
+    //     or if the octet at position emLen - hLen - sLen - 1 (the leftmost
+    //     position is "position 1") does not have hexadecimal value 0x01,
+    //     output "inconsistent" and stop.
+    //
+    for (int i = 0; i < emLen - hLen - saltLength - 2; ++i) {
+        if (DB[i] != 0) {
+            return false;
+        }
+    }
+    if (DB[emLen - hLen - saltLength - 1] != 0x01) {
+        return false;
+    }
+
+    // 11.  Let salt be the last sLen octets of DB.
+    ByteArray salt(DB.range(DB.getLength() - saltLength, saltLength));
+
+    // 12.  Let
+    //        M' = (0x)00 00 00 00 00 00 00 00 || mHash || salt ;
+    //
+    // M' is an octet string of length 8 + hLen + sLen with eight
+    // initial zero octets.
+    ByteArray fill(8, 0);
+    ByteArray mPrime;
+    mPrime.append(fill);
+    mPrime.append(mHash);
+    mPrime.append(salt);
+
+    // 13. Let H' = Hash(M'), an octet string of length hLen.
+    // hash.reset(); Not needed. CK digests don't retail state.
+    ByteArray hPrime(digest->digest(mPrime));
+
+    // 14. If H = H', output "consistent." Otherwise, output "inconsistent."
+    return H == hPrime;
+
+}
+
+/**
+ * Sign a message.
+ * 
+ * K is the private key. M is the message octet string to be signed
+ * 
+ * Returns signature octet string.
+ */
+ByteArray PSSrsassa::sign(const RSAPrivateKey& K, const ByteArray& M) {
+
+    // 1. EMSA-PSS encoding: Apply the EMSA-PSS encoding operation to
+    // the message M to produce an encoded message EM of length
+    // \ceil ((modBits - 1)/8) octets such that the bit length of the
+    // integer OS2IP (EM) is at most modBits - 1, where modBits is the
+    // length in bits of the RSA modulus n:
+    //
+    //    EM = EMSA-PSS-ENCODE (M, modBits - 1).
+    //
+    // Note that the octet length of EM will be one less than k if
+    // modBits - 1 is divisible by 8 and equal to k otherwise.  If the
+    // encoding operation outputs "message too long," output "message too
+    // long" and stop.  If the encoding operation outputs "encoding
+    // error," output "encoding error" and stop.
+    //
+    // The encoding operation won't output "message too long" since the
+    // message would have to be ~= 2 exabytes long.
+    ByteArray EM(emsaPSSEncode(M, K.getBitLength() - 1));
+
+    // RSA signature
+    //
+    // a. Convert the encoded message EM to an integer message
+    //    representative m (see Section 4.2):
+    //
+    //      m = OS2IP (EM).
+    BigInteger m(os2ip(EM));
+
+    // b. Apply the RSASP1 signature primitive (Section 5.2.1) to the RSA
+    //    private key K and the message representative m to produce an
+    //    integer signature representative s:
+    //
+    //       s = RSASP1 (K, m).
+    BigInteger s(K.rsasp1(m));
+
+    // c. Convert the signature representative s to a signature S of
+    //    length k octets (see Section 4.1):
+    //
+    //      S = I2OSP (s, k).
+    unsigned k = K.getBitLength() / 8;
+    return i2osp(s, k);
+
+}
+
+ByteArray
+PSSrsassa::encrypt(const RSAPublicKey& K, const ByteArray& C) {
+    throw IllegalOperationException("Unsupported signature operation");
+}
+
+/**
+ *
+ * Verify an EMSA-PSS encoded signature.
+ * 
+ * K is the he public key in the form of (n,e). M is the signed message
+ * octet string. S is the signature octet string.
+ * 
+ * Returns true if the signature is valid, otherwise false.
+ * 
+ */
+bool PSSrsassa::verify(const RSAPublicKey& K, const ByteArray& M,
+                                                    const ByteArray& S) {
+
+    // Length check.
+    unsigned k = K.getBitLength() / 8;
+    if (S.getLength() != k) {
+        // Fail silently
+        return false;
+    }
+
+    // a. Convert the signature S to an integer signature representative s
+    //
+    //      s = OS2IP (S).
+    //
+    // b. Apply the RSAVP1 verification primitive (Section 5.2.2) to the
+    //    RSA public key (n, e) and the signature representative s to
+    //    produce an integer message representative m:
+    //
+    //       m = RSAVP1 ((n, e), s).
+    //
+    // If RSAVP1 output "signature representative out of range,"
+    // output "invalid signature" and stop.
+    BigInteger m(rsavp1(K, os2ip(S)));
+
+    // c. Convert the message representative m to an encoded message EM
+    //    of length emLen = \ceil ((modBits - 1)/8) octets, where modBits
+    //    is the length in bits of the RSA modulus n:
+    //
+    //      EM = I2OSP (m, emLen).
+    //
+    // Note that emLen will be one less than k if modBits - 1 is
+    // divisible by 8 and equal to k otherwise.  If I2OSP outputs
+    // "integer too large," output "invalid signature" and stop.
+    double doubleBitSize = K.getBitLength();
+    int emLen = std::ceil((doubleBitSize - 1) / 8);
+    ByteArray EM(i2osp(m, emLen));
+
+    return emsaPSSVerify(M, EM, K.getBitLength() - 1);
+
+}
+
+}
