@@ -11,6 +11,7 @@ class PKCS1rsassa : public RSA {
 
     public:
         PKCS1rsassa(Digest *digest);
+        PKCS1rsassa(Digest *digest, int saltLength);
         ~PKCS1rsassa();
 
     private:

@@ -22,12 +22,16 @@ class RSAPrivateKey : public PrivateKey {
         RSAPrivateKey& operator=(const RSAPrivateKey& other);
 
     public:
-        virtual int getBitLength() const=0;
+        virtual int getBitLength() const;
 
     protected:
         friend class PKCS1rsassa;
+        friend class PSSrsassa;
         // Signature generation primitive.
         virtual BigInteger rsasp1(const BigInteger& m) const=0;
+
+    protected:
+        int bitLength;
 
 };
 

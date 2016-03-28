@@ -2,11 +2,13 @@
 #define RSAKEYPAIRGENERATOR_H_INCLUDED
 
 #include "data/BigInteger.h"
+#include "keys/KeyPair.h"
 
 namespace CK {
 
 class SecureRandom;
-class KeyPair;
+class RSAPublicKey;
+class RSAPrivateKey;
 
 class RSAKeyPairGenerator {
 
@@ -20,7 +22,7 @@ class RSAKeyPairGenerator {
                 operator= (const RSAKeyPairGenerator& other);
 
     public:
-        KeyPair *generateKeyPair();
+        KeyPair<RSAPublicKey, RSAPrivateKey> *generateKeyPair();
         void initialize(int bits, SecureRandom* secure);
 
     private:

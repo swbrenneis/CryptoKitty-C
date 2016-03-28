@@ -27,7 +27,8 @@ class BBSSecureRandom : public SecureRandom {
     private:
         bool initialized;
         BigInteger M;
-        BigInteger X;
+        BigInteger Xn;  // X(n)
+        BigInteger Xn1; // X(n-1)
         unsigned reseed;
 
     private:

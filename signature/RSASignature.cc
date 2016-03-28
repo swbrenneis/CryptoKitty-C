@@ -12,6 +12,13 @@ RSASignature<C,D>::RSASignature()
 }
 
 template<class C, class D>
+RSASignature<C,D>::RSASignature(int saltLength)
+: signInit(false),
+  verifyInit(false),
+  cipher(new C(new D, saltLength)) {
+}
+
+template<class C, class D>
 RSASignature<C,D>::~RSASignature() {
 
     delete cipher;
@@ -21,7 +28,7 @@ RSASignature<C,D>::~RSASignature() {
  * Initialize the signing function.
  */
 template<class C, class D>
-void RSASignature<C,D>::initSign(const RSAPrivateKey& prv) {
+void RSASignature<C,D>::initSign(RSAPrivateKey* prv) {
 
     privateKey = prv;
     signInit = true;
@@ -32,7 +39,7 @@ void RSASignature<C,D>::initSign(const RSAPrivateKey& prv) {
  * Initialize the signature verification function.
  */
 template<class C, class D>
-void RSASignature<C,D>::initVerify(const RSAPublicKey& pub) {
+void RSASignature<C,D>::initVerify(RSAPublicKey* pub) {
 
     publicKey = pub;
     verifyInit = true;
@@ -49,7 +56,7 @@ ByteArray RSASignature<C,D>::sign() {
         throw IllegalStateException("Signature Not Initialized");
     }
 
-    return cipher->sign(privateKey, accumulator);
+    return cipher->sign(*privateKey, accumulator);
 
 }
 
@@ -74,25 +81,40 @@ void RSASignature<C,D>::update(const ByteArray& bytes) {
 }
 
 /*
+ * Update the message accumulator with a byte array.
+ */
+template<class C, class D>
+void RSASignature<C,D>::update(const ByteArray& bytes,
+                int offset, int length) {
+
+    accumulator.append(bytes, offset, length);
+
+}
+
+/*
  * Verify the accumulated message.
  */
 template<class C, class D>
 bool RSASignature<C,D>::verify(const ByteArray& sig) {
 
-    if (!signInit) {
+    if (!verifyInit) {
         throw IllegalStateException("Signature Not Initialized");
     }
 
-    return cipher->verify(publicKey, accumulator, sig);
+    return cipher->verify(*publicKey, accumulator, sig);
 
 }
 
 }
 
+// Template instantiations. We want to limit the possible combinations.
 // PKCS1SHA256RSASignature with RSA CRT private key instantiation.
-//#include "digest/SHA256.h"
-//#include "cipher/PKCS1rsassa.h"
-//#include "keys/RSAPrivateCrtKey.h"
+#include "digest/SHA256.h"
+#include "cipher/PKCS1rsassa.h"
+#include "cipher/PSSrsassa.h"
 
-//CK::RSASignature<CK::PKCS1rsassa<CK::RSAPrivateCrtKey>, CK::SHA256, CK::RSAPrivateCrtKey> pkcs1sha256sig;
+CK::RSASignature<CK::PKCS1rsassa, CK::SHA256> pkcs1sha256sig;
+CK::RSASignature<CK::PSSrsassa, CK::SHA256> psssha256sig;
+CK::RSASignature<CK::PKCS1rsassa, CK::SHA256> pkcs1sha256sigSalted(10);
+CK::RSASignature<CK::PSSrsassa, CK::SHA256> psssha256sigSalted(10);
 

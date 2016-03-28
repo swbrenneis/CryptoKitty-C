@@ -18,7 +18,6 @@ class RSAPrivateModKey : public RSAPrivateKey {
         ~RSAPrivateModKey();
 
     public:
-        int getBitLength() const;
         const BigInteger& getPrivateExponent() const;
         const BigInteger& getModulus() const;
 
@@ -29,7 +28,6 @@ class RSAPrivateModKey : public RSAPrivateKey {
     private:
         BigInteger prvExp;  // d
         BigInteger mod; // n
-        int bitLength;
 
 };
 

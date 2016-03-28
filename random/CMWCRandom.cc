@@ -106,7 +106,7 @@ void CMWCRandom::seedGenerator() {
         fill.copy(filled, context, 0);
         filled += context.getLength();
     }
-    for (int qi = 0; qi < 4096; ++qi) {
+    for (int qi = 0; qi < 4088; qi += 8) {
         q[qi] = Scalar64::decode(fill.range(qi, 8));
     }
     nt.newTime();

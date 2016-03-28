@@ -1,12 +1,12 @@
 #ifndef KEYPAIR_H_INCLUDED
 #define KEYPAIR_H_INCLUDED
 
+/*
+ * Key pair POD with copy protection.
+ */
 namespace CK {
 
-class PublicKey;
-class PrivateKey;
-
-class KeyPair {
+template<class Pu, class Pr> class KeyPair {
 
     private:
         KeyPair();
@@ -14,16 +14,17 @@ class KeyPair {
         KeyPair& operator= (const KeyPair& other);
 
     public:
-        KeyPair(PublicKey* pub, PrivateKey* prv);
-        ~KeyPair();
+        KeyPair(Pu* pub, Pr* prv)
+                : pubKey(pub), prvKey(prv) {}
+        ~KeyPair() { delete pubKey; delete prvKey; }
 
     public:
-        PublicKey& publicKey();
-        PrivateKey& privateKey();
+        Pu* publicKey() { return pubKey; }
+        Pr* privateKey() { return prvKey; }
 
     private:
-        PublicKey* pubKey;
-        PrivateKey* prvKey;
+        Pu* pubKey;
+        Pr* prvKey;
 
 };
 

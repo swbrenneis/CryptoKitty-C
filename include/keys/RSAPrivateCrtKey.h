@@ -18,8 +18,8 @@ class RSAPrivateCrtKey : public RSAPrivateKey {
                             const BigInteger& d, const BigInteger& e);
         ~RSAPrivateCrtKey();
 
+        /*
     public:
-        int getBitLength() const;
         const BigInteger& getCrtCoefficient() const;
         const BigInteger& getPrivateExponent() const;
         const BigInteger& getPrimeExponentP() const;
@@ -28,21 +28,20 @@ class RSAPrivateCrtKey : public RSAPrivateKey {
         const BigInteger& getPrimeQ() const;
         const BigInteger& getPublicExponent() const;
         const BigInteger& getModulus() const;
-
+*/
     protected:
         // Signature generation primitive.
         BigInteger rsasp1(const BigInteger& m) const;
 
     private:
-        BigInteger prvExp;  // d
-        BigInteger pPrimeExp;   // dP
-        BigInteger qPrimeExp;   // dQ
-        BigInteger pubExp;  // e
-        BigInteger pPrime;  // p
-        BigInteger qPrime;  // q
-        BigInteger crtCoeff;    // qInv
-        BigInteger mod; // n
-        int bitLength;
+        BigInteger d;  // Private exponent
+        BigInteger dP;   // First prime exponent
+        BigInteger dQ;   // Second prime exponent
+        BigInteger e;  // Public exponent
+        BigInteger p;  // First prime.
+        BigInteger q;  // Second prime
+        BigInteger qInv;    // qInv
+        BigInteger n; // Modulus
 
 };
 

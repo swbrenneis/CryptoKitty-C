@@ -18,11 +18,12 @@ template<class C, class D> class RSASignature {
 
     public:
         RSASignature();
+        RSASignature(int saltLength);
         ~RSASignature();
 
     public:
-        virtual void initVerify(const RSAPublicKey& publicKey);
-        virtual void initSign(const RSAPrivateKey& privateKey);
+        virtual void initVerify(RSAPublicKey* publicKey);
+        virtual void initSign(RSAPrivateKey* privateKey);
         virtual ByteArray sign();
         virtual void update(unsigned char b);
         virtual void update(const ByteArray& bytes);
@@ -30,8 +31,8 @@ template<class C, class D> class RSASignature {
         virtual bool verify(const ByteArray& sig);
 
     private:
-        RSAPublicKey publicKey;
-        RSAPrivateKey privateKey;
+        RSAPublicKey* publicKey;
+        RSAPrivateKey* privateKey;
         bool signInit;
         bool verifyInit;
         ByteArray accumulator;

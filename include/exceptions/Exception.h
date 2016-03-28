@@ -20,7 +20,7 @@ class Exception {
         virtual ~Exception() {}
 
     public:
-        virtual const std::string& getMessage() const { return message; }
+        virtual const std::string& what() const { return message; }
 
     private:
         std::string message;

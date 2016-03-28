@@ -36,7 +36,7 @@ class BigInteger {
         // Constructs a BigInteger object with a value of 0 
         BigInteger();
         BigInteger(const BigInteger& other);
-        BigInteger(const ByteArray& bytes);
+        BigInteger(const ByteArray& bytes, int endian);
         // Constructs a BigInteger object with initial value
         BigInteger(long intial);
         // Constructs a BigInteger object with a probablistic
@@ -46,6 +46,7 @@ class BigInteger {
 
     private:
         BigInteger(NTL::ZZ *newNumber);
+        BigInteger(const NTL::ZZ& otherNumber);
 
     public:
         BigInteger& operator= (const BigInteger& other);
@@ -55,16 +56,22 @@ class BigInteger {
         ~BigInteger();
 
     public:
+        // Returns a BigInteger that is aht sum of this and addend.
+        BigInteger add(const BigInteger& addend) const;
         // Returns the number of significant bits.
         int bitLength() const;
         // Returns the total number of bits
         int bitSize() const;
+        // Returns a BigInteger equal to this divided by divisor.
+        BigInteger divide(const BigInteger& divisor) const;
         // Returns a ByteArray in the specified encoding.
         ByteArray encode(int endian) const;
         // Returns true if this = other.
         bool equals(const BigInteger& other) const;
         // Returns the greatest common denominator of this and a.
         BigInteger gcd(const BigInteger& a) const;
+        // Returns true if this < other.
+        bool lessThan(const BigInteger& other) const;
         // Returns a BigInteger equal to this mod a.
         BigInteger mod(const BigInteger& a) const;
         // Returns the modular inverse. x = a^{-1} mod n. Throws a
@@ -75,9 +82,11 @@ class BigInteger {
         // Returns a BigInteger equal to this * multiplier.
         BigInteger multiply(const BigInteger& multiplier) const;
         // Returns a BigInteger equal to this raised to the exp power.
-        BigInteger pow(const BigInteger& exp) const;
+        BigInteger pow(long exp) const;
         // Returns a BigInteger equal to this shifted right count times.
         BigInteger rightShift(long count) const;
+        // Returns a BigInteger equal to this minus subtractor.
+        BigInteger subtract(const BigInteger& subtractor) const;
         // Returns true if the specified bit is set.
         bool testBit(int bitnum) const;
 

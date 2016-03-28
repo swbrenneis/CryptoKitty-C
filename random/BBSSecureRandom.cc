@@ -62,8 +62,9 @@ void BBSSecureRandom::nextBytes(ByteArray& bytes) {
     }
     reseed += bytes.getLength();
 
-    X = X.modPow(TWO, M);   // X(n) = X(n-1)**2 mod M.
-    int bitLength = X.bitLength();
+    Xn = Xn1.modPow(TWO, M);   // X(n) = X(n-1)**2 mod M.
+    Xn1 = Xn;
+    int bitLength = Xn1.bitLength();
     int byteCount = bytes.getLength() - 1;
 
     while (byteCount >= 0) {
@@ -74,19 +75,20 @@ void BBSSecureRandom::nextBytes(ByteArray& bytes) {
             // Parity test.
             int parity = 0;
             for (int l = 0; l < bitLength; ++l) {
-                if (X.testBit(l)) {
+                if (Xn.testBit(l)) {
                     ++parity;
                 }
             }
             // If parity is even, set the bit
             thisByte |= (parity % 2 == 0) ? 1 : 0;
-            X = X >> 1;
+            Xn = Xn >> 1;
             bitLength--;
             if (bitLength == 0) {
                 // We ran out of bits. Need another random.
-                X = X.modPow(TWO, M);
+                Xn = Xn1.modPow(TWO, M);
+                Xn1 = Xn;
                 // This is an unsigned operation. Not really important.
-                bitLength = X.bitLength();
+                bitLength = Xn.bitLength();
             }
         }
         bytes[byteCount--] = thisByte;
@@ -123,9 +125,9 @@ void BBSSecureRandom::setState(unsigned long seed) {
 
     CMWCRandom rnd;
     rnd.setSeed(seed);
-    X = BigInteger(64, false, rnd);
-    while (X.gcd(M) != BigInteger::ONE) {
-        X = BigInteger(64, false, rnd);
+    Xn1 = BigInteger(64, false, rnd);
+    while (Xn1.gcd(M) != BigInteger::ONE) {
+        Xn1 = BigInteger(64, false, rnd);
     }
 
 }

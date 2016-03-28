@@ -11,14 +11,40 @@ ByteArray::ByteArray(const ByteArray& other)
 }
 
 /*
- * Create a ByteArray object from a C array.
+ * Construct a ByteArray object from another ByteArray's range.
+ */
+ByteArray::ByteArray(const ByteArray& other, unsigned offset, unsigned length) {
+
+    if (offset + length > other.getLength()) {
+        throw OutOfRangeException("Array parameters out of range");
+    }
+
+    unsigned char *array = other.range(offset, length).asArray();
+    bytes = Array(array, array+length);
+
+}
+
+/*
+ * Construct a ByteArray object from a C array.
  */
 ByteArray::ByteArray(const unsigned char *bytearray, unsigned length)
 : bytes(bytearray, bytearray+length) {
 }
 
 /*
- * Create a ByteArray of a specified size. The content is
+ * Construct a ByteArray object from a standard string.
+ */
+ByteArray::ByteArray(const std::string& str) {
+
+    const unsigned char *string =
+            reinterpret_cast<const unsigned char*>(str.c_str());
+    unsigned length = str.length();
+    bytes = Array(string, string+length);
+
+}
+
+/*
+ * Construct a ByteArray of a specified size. The content is
  * undefined.
  */
 ByteArray::ByteArray(unsigned size, unsigned char fill) {
@@ -28,7 +54,7 @@ ByteArray::ByteArray(unsigned size, unsigned char fill) {
 }
 
 /*
- * Creates a ByteArray object from an Array object.
+ * Cconstruct a ByteArray object from an Array object.
  */
 ByteArray::ByteArray(const Array& array)
 : bytes(array) {
@@ -59,6 +85,15 @@ unsigned char ByteArray::operator[] (unsigned index) const {
 void ByteArray::append(const ByteArray& other) {
 
     bytes.insert(bytes.end(), other.bytes.begin(), other.bytes.end());
+
+}
+
+void ByteArray::append(const ByteArray& other, unsigned offset, unsigned length) {
+
+    if (offset + length > other.getLength()) {
+        throw OutOfRangeException("Array parameters out of range");
+    }
+    append(other.range(offset, length));
 
 }
 
@@ -138,7 +173,21 @@ unsigned ByteArray::getLength() const {
 
 }
 
+
+/*
+ * Push a byte onto the front of the array.
+ */
+void ByteArray::push(unsigned char b) {
+
+    bytes.push_front(b);
+
+}
+
 ByteArray ByteArray::range(unsigned offset, unsigned length) const {
+
+    if (offset + length > bytes.size()) {
+        throw OutOfRangeException("Array parameters out of range");
+    }
 
     ArrayConstIter it = bytes.begin() + offset;
     Array result(it, it+length);
@@ -163,3 +212,8 @@ bool operator!= (const ByteArray& lhs, const ByteArray& rhs) {
 
 }
 
+// Global operators.
+bool operator== (const CK::ByteArray& lhs, const CK::ByteArray& rhs)
+{ return lhs.equals(rhs); }
+bool operator!= (const CK::ByteArray& lhs, const CK::ByteArray& rhs)
+{ return !lhs.equals(rhs); }

@@ -21,13 +21,11 @@ class PrivateKey {
     public:
         virtual ~PrivateKey();
 
-        /*
     public:
         const std::string& getAlgorithm() const;
 
     private:
         std::string algorithm;
-    */
 
 };
 

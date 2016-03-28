@@ -13,7 +13,7 @@ class EncodingException : public Exception {
 
     public:
         EncodingException(const std::string& msg) : Exception(msg) {}
-        EncodingException(const EncodingException& other)
+        EncodingException(const Exception& other)
                 : Exception(other) {}
 
     private:

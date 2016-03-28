@@ -3,8 +3,9 @@ CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
 CPPINCLUDES= -I../include
 CPPFLAGS= -Wall -g -MMD -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
-CPP_SOURCES= RSAKeyPairGenerator.cc RSAPublicKey.cc RSAPrivateCrtKey.cc \
-			 RSAPrivateModKey.cc
+CPP_SOURCES= PrivateKey.cc PublicKey.cc RSAKeyPairGenerator.cc \
+			 RSAPrivateKey.cc RSAPrivateCrtKey.cc RSAPrivateModKey.cc \
+			 RSAPublicKey.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 

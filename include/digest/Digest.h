@@ -25,7 +25,7 @@ class Digest {
     public:
         virtual ByteArray digest()=0;
         virtual ByteArray digest(const ByteArray& bytes)=0;
-        virtual const ByteArray& getDER() const;
+        virtual const ByteArray& getDER() const=0;
         virtual unsigned getDigestLength() const=0;
         virtual void reset()=0;
         virtual void update(unsigned char byte)=0;

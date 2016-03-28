@@ -1,5 +1,4 @@
 #include "keys/RSAKeyPairGenerator.h"
-#include "keys/KeyPair.h"
 #include "keys/RSAPublicKey.h"
 #include "keys/RSAPrivateCrtKey.h"
 #include "random/SecureRandom.h"
@@ -7,7 +6,7 @@
 namespace CK {
 
 // Static initialization
-const BigInteger THREE(3);
+const BigInteger RSAKeyPairGenerator::THREE(3);
 
 /*
  * The class defaults to a key size of 1024 bits and
@@ -43,15 +42,16 @@ void RSAKeyPairGenerator::initialize(int bits,
 /*
  * Generate the key pair.
  */
-KeyPair *RSAKeyPairGenerator::generateKeyPair() {
+KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair() {
 
     // Create SG primes.
-    BigInteger p(keySize / 2, true, *random);
-    BigInteger q(keySize / 2, true, *random);
+    BigInteger p(keySize / 2, false, *random);
+    BigInteger q(keySize / 2, false, *random);
     // Get the modulus and make sure it is the right bit size.
     BigInteger n = p * q;
     while (n.bitLength() != keySize) {
-        q = BigInteger(keySize / 2, true, *random);
+        q = BigInteger(keySize / 2, false, *random);
+        p = BigInteger(keySize / 2, false, *random);
         n = p * q;
     }
 
@@ -63,11 +63,10 @@ KeyPair *RSAKeyPairGenerator::generateKeyPair() {
     // e is coprime (gcd = 1) with phi.
     bool eFound = false;
     BigInteger e;
-    BigInteger nn = n - BigInteger::ONE;
     while (!eFound) {
-        e = BigInteger(64, true, *random);
+        e = BigInteger(64, false, *random);
         // 3 < e <= n-1
-        if (e > THREE && e <= nn) {
+        if (e > THREE && e < n) {
             eFound = e.gcd(phi) == BigInteger::ONE;
         }
     }
@@ -76,14 +75,14 @@ KeyPair *RSAKeyPairGenerator::generateKeyPair() {
     BigInteger d = e.modInverse(phi);
 
     // Create the public key.
-    PublicKey *pub = new RSAPublicKey(n, e);
+    RSAPublicKey *pub = new RSAPublicKey(n, e);
     // Create the private key.
     // PrivateKey prv = new RSAPrivateKey(n, d);
     // We're going to create a Chinese Remainder Theorem key.
     // Leaving the line creating a simple key here for reference.
-    PrivateKey *prv = new RSAPrivateCrtKey(p, q, d, e);
+    RSAPrivateKey *prv = new RSAPrivateCrtKey(p, q, d, e);
 
-    return new KeyPair(pub, prv);
+    return new KeyPair<RSAPublicKey, RSAPrivateKey>(pub, prv);
 
 }
 

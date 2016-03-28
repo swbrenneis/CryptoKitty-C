@@ -1,5 +1,6 @@
 #include "data/BigInteger.h"
 #include "random/Random.h"
+#include "exceptions/BadParameterException.h"
 #include <algorithm>
 #include <climits>
 #include "NTL/ZZ.h"
@@ -13,8 +14,8 @@ const BigInteger BigInteger::ZERO;
 const BigInteger BigInteger::ONE(1);
 const unsigned long long
     BigInteger::ULLONG_MSB = (ULLONG_MAX >> 1) ^ ULLONG_MAX;
-// const int BigInteger::LITTLEENDIAN = 1;
-// const int BigInteger::BIGENDIAN = 2;
+const int BigInteger::BIGENDIAN = 1;
+const int BigInteger::LITTLEENDIAN = 2;
 
 /* Uses small coprime test, 64 rounds of Miller-Rabin, and
  * tests for Germain primality, if indicated.
@@ -82,7 +83,27 @@ BigInteger::BigInteger(long initial)
 /*
  * Construct a BigInteger from a byte array
  */
-BigInteger::BigInteger(const ByteArray& bytes) {
+BigInteger::BigInteger(const ByteArray& bytes, int endian) {
+
+    number = new NTL::ZZ(0L);
+    
+    switch (endian) {
+        case BIGENDIAN:
+            for (unsigned n = 0; n < bytes.getLength(); ++n) {
+                *number = *number << 8;
+                *number |= bytes[n];
+            }
+            break;
+        case LITTLEENDIAN:
+            for (unsigned n = bytes.getLength() - 1; n >= 0; --n) {
+                *number = *number << 8;
+                *number |= bytes[n];
+            }
+            break;
+        default:
+            throw BadParameterException("Illegal endian value");
+    }
+
 }
 
 /*
@@ -97,17 +118,11 @@ BigInteger::BigInteger(int bits, bool sgPrime, Random& rnd) {
 
     ByteArray pBytes(bits/8 + ((bits % 8 != 0) ? 1 : 0));
     rnd.nextBytes(pBytes);
-    // We're going to do everything in bigendian order.
-    // Make sure it is at least bits - (bits mod 8) significant.
-    while (pBytes[0] == 0) {
-        rnd.nextBytes(pBytes);
-    }
 
     // Load the big integer.
     NTL::ZZ work(pBytes[0]);
     for (unsigned n = 1; n < pBytes.getLength(); ++n) {
-        work = work << 8;
-        work = work | pBytes[1];
+        work = (work * 256) + pBytes[n];
     }
 
     // Make sure it's positive.
@@ -130,6 +145,13 @@ BigInteger::BigInteger(int bits, bool sgPrime, Random& rnd) {
  */
 BigInteger::BigInteger(NTL::ZZ *newNumber)
 : number(newNumber) {
+}
+
+/*
+ * Construct a BigInteger with a copy of an  NTL integer.
+ */
+BigInteger::BigInteger(const NTL::ZZ& otherNumber)
+: number(new NTL::ZZ(otherNumber)) {
 }
 
 /*
@@ -164,12 +186,58 @@ BigInteger& BigInteger::operator= (long value) {
 }
 
 /*
+ * Returns a BigInteger equal to this plus addend.
+ */
+BigInteger BigInteger::add(const BigInteger& addend) const {
+
+    return BigInteger(new NTL::ZZ(*number + *addend.number));
+
+}
+
+/*
  * Returns the position of the most significant bit that is
  * different than the sign bit.
  */
 int BigInteger::bitLength() const {
 
     return NTL::NumBits(*number);
+
+}
+
+/*
+ * returns a BigInteger that is eual to this divded by divisor.
+ */
+BigInteger BigInteger::divide(const BigInteger& divisor) const {
+
+    return BigInteger(*number / *divisor.number);
+
+}
+
+/*
+ * Encodes the absolute value of the integer into an array
+ * in the specified byte order.
+ */
+ByteArray BigInteger::encode(int endian) const {
+
+    NTL::ZZ work(NTL::abs(*number));
+    int index = bitLength() / 8 + (bitLength() % 8 != 0 ? 1 : 0);
+    ByteArray result;
+    while (index > 0) {
+        long byte = work % 256;
+        switch (endian) {
+            case BIGENDIAN:
+                result.push(byte & 0xff);
+                break;
+            case LITTLEENDIAN:
+                result.append(byte & 0xff);
+                break;
+            default:
+                throw BadParameterException("Invalid byte order");
+        }
+        work = work / 256;
+        index --;
+    }
+    return result;
 
 }
 
@@ -192,6 +260,15 @@ BigInteger BigInteger::gcd(const BigInteger& a) const {
 }
 
 /*
+ * Returns true if this < other.
+ */
+bool BigInteger::lessThan(const BigInteger& other) const {
+
+    return NTL::compare(*number, *other.number) < 0;
+
+}
+
+/*
  * Returns a BigInteger object that is the remainder of this divided by a.
  */
 BigInteger BigInteger::mod(const BigInteger& a) const {
@@ -201,13 +278,106 @@ BigInteger BigInteger::mod(const BigInteger& a) const {
 }
 
 /*
+ * Returns a BigInteger that is equal to the modular inverse of this.
+ * This and n must be coprime.
+ */
+BigInteger BigInteger::modInverse(const BigInteger& n) const {
+
+    // Sadly, NTL has a bug that causes this to throw an exception when
+    // the a >= n in a congruent to 1/x mod n.
+    //try {
+    //    return BigInteger(new NTL::ZZ(NTL::InvMod(*number, *n.number)));
+    //}
+    //catch (NTL::InvModErrorObject& e) {
+    //    throw BadParameterException("Undefined inverse");
+    //}
+
+    if (gcd(n) != ONE) {
+        throw BadParameterException("Modulus not coprime");
+    }
+
+    BigInteger t;
+    BigInteger q;
+    BigInteger x0(ZERO);
+    BigInteger x1(ONE);
+    BigInteger a(*number);
+    BigInteger m(n);
+
+    // Inverse modulus 1 is always 0. 
+    if (n == ONE) {
+        return BigInteger(ZERO);;
+    }
+
+    while (a > ONE) {
+        // q is quotient
+        q = a / m;
+        t = m;
+        // m is remainder
+        m = a % m;
+        a = t;
+        t = x0;
+        // Extended Euclid substitution.
+        x0 = x1 - q * x0;
+        x1 = t;
+    }
+
+    // Make x1 positive
+    if (x1 < ZERO) {
+        x1 = x1 +  n;
+    }
+
+    return x1;
+
+}
+
+/*
  * Returns a BigInteger that is equal to (this**exp) % m.
  */
 BigInteger BigInteger::modPow(const BigInteger& exp,
                 const BigInteger& m) const {
 
-    return BigInteger(new NTL::ZZ(
-                        NTL::PowerMod(*number, *exp.number, *m.number)));
+    // This also appears to be bugged in NTL.
+    //return BigInteger(new NTL::ZZ(
+    //                    NTL::PowerMod(*number, *exp.number, *m.number)));
+
+    // Solve for negative exponents using modular multiplicative
+    // inverse.
+    if (exp < ZERO) {
+        return modInverse(m);
+    }
+
+    /*
+     * Pseudocode from Schneier
+    if modulus = 1 then return 0
+    Assert :: (modulus - 1) * (modulus - 1) does not overflow base
+    result := 1
+    base := base mod modulus
+    while exponent > 0
+        if (exponent mod 2 == 1):
+            result := (result * base) mod modulus
+        exponent := exponent >> 1
+        base := (base * base) mod modulus
+    return result
+    */
+
+    if (m == ONE) {
+        return BigInteger(ZERO);
+    }
+
+    BigInteger base(*this % m);
+    BigInteger exponent(exp);
+    BigInteger result(ONE);
+    BigInteger TWO(2L);
+    
+    while (exponent > ZERO) {
+        if (exponent % TWO == ONE) {
+            result = (result * base) % m;
+        }
+        exponent = exponent >> 1;
+        base = (base * base) % m;
+    }
+ 
+    return result;
 
 }
 
@@ -230,11 +400,29 @@ void BigInteger::out(std::ostream& o) const {
 }
 
 /*
+ * Returns a BigInteger equal to this**exp.
+ */
+BigInteger BigInteger::pow(long exp) const {
+
+    return BigInteger(new NTL::ZZ(NTL::power(*number, exp)));
+
+}
+
+/*
  * Returns a BigInteger that is this shifted right count times.
  */
 BigInteger BigInteger::rightShift(long count) const {
 
     return BigInteger(new NTL::ZZ(*number >> count));
+
+}
+
+/*
+ * Returns a BigInteger equal to this minus subtractor.
+ */
+BigInteger BigInteger::subtract(const BigInteger& subtractor) const {
+
+    return BigInteger(new NTL::ZZ(*number - *subtractor.number));
 
 }
 
@@ -254,10 +442,24 @@ bool operator== (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.equals(rhs); }
 bool operator!= (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return !lhs.equals(rhs); }
-CK::BigInteger operator% (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
-{ return lhs.mod(rhs); }
+bool operator< (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.lessThan(rhs); }
+bool operator<= (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.lessThan(rhs) || lhs.equals(rhs); }
+bool operator> (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return !lhs.lessThan(rhs) && !lhs.equals(rhs); }
+bool operator>= (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return !lhs.lessThan(rhs); }
+CK::BigInteger operator- (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.subtract(rhs); }
+CK::BigInteger operator+ (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.add(rhs); }
 CK::BigInteger operator* (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.multiply(rhs); }
+CK::BigInteger operator/ (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.divide(rhs); }
+CK::BigInteger operator% (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.mod(rhs); }
 CK::BigInteger operator>> (const CK::BigInteger& lhs, long rhs)
 { return lhs.rightShift(rhs); }
 std::ostream& operator<< (std::ostream& out, const CK::BigInteger& bi)

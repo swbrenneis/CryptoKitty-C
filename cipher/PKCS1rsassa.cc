@@ -3,12 +3,19 @@
 #include "exceptions/IllegalOperationException.h"
 #include "exceptions/EncodingException.h"
 #include "exceptions/BadParameterException.h"
+#include "exceptions/SignatureException.h"
 #include "keys/RSAPublicKey.h"
 #include "keys/RSAPrivateKey.h"
 
 namespace CK {
 
 PKCS1rsassa::PKCS1rsassa(Digest *d)
+: digest(d),
+  algorithmOID(d->getDER()) {
+}
+
+// This constructor is generally unused. PKCS1 padding uses no salt.
+PKCS1rsassa::PKCS1rsassa(Digest *d, int saltLength)
 : digest(d),
   algorithmOID(d->getDER()) {
 }
@@ -50,10 +57,10 @@ ByteArray PKCS1rsassa::emsaPKCS1Encode(const ByteArray& M, int emLen) {
     //    The first field identifies the hash function and the second
     //    contains the hash value.  Let T be the DER encoding of the
     //    DigestInfo value and let tLen be the length in octets of T.
-    int tLen = H.getLength() + algorithmOID.getLength();
-    ByteArray T(tLen);
+    ByteArray T;
     T.append(algorithmOID);
     T.append(H);
+    int tLen = T.getLength();
 
     // 3. If emLen < tLen + 11, output "intended encoded message length too
     //    short" and stop.
@@ -80,7 +87,6 @@ ByteArray PKCS1rsassa::emsaPKCS1Encode(const ByteArray& M, int emLen) {
     return EM;
 
 }
-
 
 ByteArray
 PKCS1rsassa::encrypt(const RSAPublicKey& K, const ByteArray& C) {
@@ -110,7 +116,7 @@ ByteArray PKCS1rsassa::sign(const RSAPrivateKey& K, const ByteArray& M) {
         EM = emsaPKCS1Encode(M, k);
     }
     catch (EncodingException& e) {
-        if (e.getMessage() == "Intended encoded message length too short") {
+        if (e.what() == "Intended encoded message length too short") {
             throw new BadParameterException("RSA modulus too short");
         }
         else {
@@ -135,6 +141,7 @@ ByteArray PKCS1rsassa::sign(const RSAPrivateKey& K, const ByteArray& M) {
                                         // carries the rsasp1 function
                                         // so that it can be specialized
                                         // for CRT and modulus keys.
+    //std::cout << "sign s = " << s << std::endl;
 
     // Convert the signature representative s to a signature S of
     // length k octets:
@@ -147,7 +154,83 @@ ByteArray PKCS1rsassa::sign(const RSAPrivateKey& K, const ByteArray& M) {
 bool
 PKCS1rsassa::verify(const RSAPublicKey& K, const ByteArray& M,
                                             const ByteArray& S) {
-    return false;
+
+    // Length checking.
+    // If the length of the signature S is not k octets,
+    // output "invalid signature" and stop.
+    unsigned k = K.getBitLength() / 8;
+    if (S.getLength() != k) {
+        return false;
+    }
+
+    // RSA verification
+    //
+    // Convert the signature S to an integer signature representative s:
+    //
+    //    s = OS2IP (S).
+    //
+    // Apply the RSAVP1 verification primitive (Section 5.2.2) to the
+    // RSA public key (n, e) and the signature representative s to
+    // produce an integer message representative m:
+    //
+    //    m = RSAVP1 ((n, e), s).
+    BigInteger m;
+    try {
+        m = rsavp1(K, os2ip(S));
+    }
+    catch (SignatureException& e) {
+        // Fail silently
+        return false;
+    }
+
+    //std::cout << "verify m = " << m << std::endl;
+    // Convert the message representative m to an encoded message EM
+    // of length k octets:
+    //
+    //    EM = I2OSP (m, k).
+    ByteArray EM;
+    try {
+        // The padded message always begins with a zero byte. BigInteger
+        // encoding will clip the byte, so the mesage length will always
+        // be one short.
+        EM = i2osp(m, k - 1);
+    }
+    catch (BadParameterException& e) {
+        // Fail silently
+        return false;
+    }
+
+    // Add the zero byte back to the front of the message.
+    EM.push(0);
+
+    // Apply the EMSA-PKCS1-v1_5 encoding operation to the message M
+    // to produce a second encoded message EM' of length k octets:
+    //
+    //    EM' = EMSA-PKCS1-V1_5-ENCODE (M, k).
+    //
+    // The RFC says:
+    //
+    // If the encoding operation outputs "message too long," output
+    // "message too long" and stop.  If the encoding operation outputs
+    // "intended encoded message length too short," output "RSA modulus
+    // too short" and stop.
+    //
+    // This would violate the best practice of voiding the creation of
+    // oracles. We will just fail silently on any exceptions.
+    ByteArray emPrime;
+    try {
+        emPrime = emsaPKCS1Encode(M, k);
+    }
+    catch (EncodingException& e) {
+        // Fail silently
+        return false;
+    }
+
+    // Compare the encoded message EM and the second encoded message EM'.
+    // If they are the same, output "valid signature"; otherwise, output
+    // "invalid signature."
+    return EM == emPrime;
+
 }
 
 }

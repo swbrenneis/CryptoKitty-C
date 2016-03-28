@@ -2,6 +2,7 @@
 #define BYTEARRAY_H_INCLUDED
 
 #include <deque>
+#include <string>
 
 namespace CK {
 
@@ -17,9 +18,13 @@ class ByteArray {
     public:
         ByteArray();
         ByteArray(const ByteArray& other);
-        // Create a ByteArray from an array of unsigned char
+        // Construct a ByteArray from anther ByteArray's range
+        ByteArray(const ByteArray& other, unsigned offset, unsigned length);
+        // Construct a ByteArray from an array of unsigned char
         ByteArray(const unsigned char *bytes, unsigned length);
-        // Create a ByteArray with an initial size
+        // Construct a ByteArray from a standard string.
+        ByteArray(const std::string& str);
+        // Construct a ByteArray with an initial size
         ByteArray(unsigned size, unsigned char fill=0);
         ~ByteArray();
 
@@ -33,6 +38,7 @@ class ByteArray {
 
     public:
         void append(const ByteArray& other);
+        void append(const ByteArray& other, unsigned offset, unsigned length);
         void append(const unsigned char *byte, unsigned length);
         void append(unsigned char c);
         unsigned char *asArray() const;   // Returns an array of bytes.
@@ -41,6 +47,7 @@ class ByteArray {
                         unsigned otherOffset, unsigned length=0);
         bool equals(const ByteArray& other) const;
         unsigned getLength() const;
+        void push(unsigned char b);
         ByteArray range(unsigned offset, unsigned length) const;
         void setLength(unsigned newLength);
 
