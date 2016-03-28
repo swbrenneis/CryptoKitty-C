@@ -124,6 +124,34 @@ unsigned char *ByteArray::asArray() const {
 
 }
 
+std::string ByteArray::asHex(unsigned index) const {
+
+    if (index >= bytes.size()) {
+        throw OutOfRangeException("Index out of range");
+    }
+
+    std::string result("0x");
+
+    unsigned char u = bytes[index] >> 4;
+    if (u < 0x0a) {
+        result += (u + '0');
+    }
+    else {
+        result += ((u - 0x0a) + 'a');
+    }
+
+    unsigned char l = bytes[index] & 0x0f;
+    if (l < 0x0a) {
+        result += (l + '0');
+    }
+    else {
+        result += ((l - 0x0a) + 'a');
+    }
+
+    return result;
+
+}
+
 void ByteArray::clear() {
 
     bytes.clear();
@@ -217,3 +245,18 @@ bool operator== (const CK::ByteArray& lhs, const CK::ByteArray& rhs)
 { return lhs.equals(rhs); }
 bool operator!= (const CK::ByteArray& lhs, const CK::ByteArray& rhs)
 { return !lhs.equals(rhs); }
+std::ostream& operator <<(std::ostream& out, const CK::ByteArray& bytes) {
+
+    int linecount = 0;
+    for (unsigned n = 0; n < bytes.getLength(); ++n) {
+        out << bytes.asHex(n) << ", ";
+        linecount++;
+        if (linecount == 16) {
+            out << std::endl;
+            linecount = 0;
+        }
+    }
+
+    return out;
+
+}

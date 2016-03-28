@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <string>
+#include <ostream>
 
 namespace CK {
 
@@ -42,11 +43,13 @@ class ByteArray {
         void append(const unsigned char *byte, unsigned length);
         void append(unsigned char c);
         unsigned char *asArray() const;   // Returns an array of bytes.
+        std::string asHex(unsigned index) const;
         void clear();
         void copy(unsigned offset, const ByteArray& other,
                         unsigned otherOffset, unsigned length=0);
         bool equals(const ByteArray& other) const;
         unsigned getLength() const;
+        void push(const ByteArray& b);
         void push(unsigned char b);
         ByteArray range(unsigned offset, unsigned length) const;
         void setLength(unsigned newLength);
@@ -63,5 +66,6 @@ class ByteArray {
 // Global operators
 bool operator== (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 bool operator!= (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
+std::ostream& operator <<(std::ostream& out, const CK::ByteArray& bytes);
 
 #endif // BYTEARRAY_H_INCLUDED

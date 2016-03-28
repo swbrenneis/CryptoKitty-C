@@ -32,6 +32,10 @@ ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
 
     //std::cout << "i2sop x = " << x << std::endl;
     ByteArray work(x.encode(BigInteger::BIGENDIAN));
+    while (work.getLength() != xLen) {
+        work.push(0);
+    }
+
     if (work.getLength() != xLen) {
         throw BadParameterException("Encoding size mismatch");
     }

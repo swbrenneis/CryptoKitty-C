@@ -76,13 +76,14 @@ ByteArray PSSrsassa::emsaPSSEncode(const ByteArray& M, int emBits) {
         }
     }
 
+    //std::cout << "emsaPSSEncode salt = " << salt << std::endl << std::endl;
+
     // 5.  Let
     //       M' = (0x)00 00 00 00 00 00 00 00 || mHash || salt;
     //
     // M' is an octet string of length 8 + hLen + sLen with eight
     // initial zero octets.
-    ByteArray initial(8, 0);
-    ByteArray mPrime;
+    ByteArray mPrime(8, 0);
     mPrime.append(mHash);;
     mPrime.append(salt);
 
@@ -101,6 +102,8 @@ ByteArray PSSrsassa::emsaPSSEncode(const ByteArray& M, int emBits) {
     DB.append(0x01);
     DB.append(salt);
 
+    //std:: cout << "emsaPSSEncode DB = " << DB << std::endl << std::endl;
+
     // 9.  Let dbMask = MGF(H, emLen - hLen - 1).
     PSSmgf1 dbmgf(digest);
     ByteArray dbMask;
@@ -112,15 +115,23 @@ ByteArray PSSrsassa::emsaPSSEncode(const ByteArray& M, int emBits) {
         return false;
     }
 
+    //std:: cout << "emsaPSSEncode dbMask = " << dbMask << std::endl << std::endl;
+
     // 10. Let maskedDB = DB \xor dbMask.
     ByteArray maskedDB(rsaXor(DB, dbMask));
+
+    //std::cout << "emsaPSSEncode maskedDB = " << maskedDB << std::endl
+    //        << std::endl << "emsaPSSEncode H = " << H << std::endl;
 
     // 11. Set the leftmost 8emLen - emBits bits of the leftmost octet in
     //     maskedDB to zero.
     unsigned char bitmask = 0xff;
-    for (int i = 0; i < (8 * emLen) - emBits; i++) {
-        bitmask = bitmask >> 1;
-    }
+    bitmask = bitmask >> ((8 * emLen) - emBits);
+    //for (int i = 0; i < (8 * emLen) - emBits; i++) {
+    //    bitmask = bitmask >> 1;
+    //}
+    //int ibit = bitmask;
+    //std::cout << "emsaPSSEncode bitmask = " << ibit << std::endl << std::endl;
     maskedDB[0] = maskedDB[0] & bitmask;
 
     // 12. Let EM = maskedDB || H || 0xbc.
@@ -128,6 +139,8 @@ ByteArray PSSrsassa::emsaPSSEncode(const ByteArray& M, int emBits) {
     EM.append(maskedDB);
     EM.append(H);
     EM.append(0xbc);
+
+    //std::cout << "emsaPSSencode EM = " << EM << std::endl;;
 
     // 13. Output EM.
     return EM;
@@ -146,6 +159,8 @@ ByteArray PSSrsassa::emsaPSSEncode(const ByteArray& M, int emBits) {
 bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM, 
                                                         int emBits) {
 
+    //std::cout << "emsaPSSVerify EM = " << EM << std::endl;
+
     // 1.  If the length of M is greater than the input limitation for the
     //     hash function (2^61 - 1 octets for SHA-1), output "inconsistent"
     //     and stop.
@@ -158,9 +173,10 @@ bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
     ByteArray mHash(digest->digest(M));
 
     // 3.  If emLen < hLen + sLen + 2, output "inconsistent" and stop.
+
     int hLen = digest->getDigestLength();
-    double doubleEMBits = emBits;
-    int emLen = std::ceil(doubleEMBits / 8);
+    double emDouble = emBits;
+    int emLen = std::ceil(emDouble / 8);
     if (emLen < hLen + saltLength + 2) {
         return false;
     }
@@ -175,7 +191,10 @@ bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
     //     let H be the next hLen octets.
     int maskLength = emLen - hLen - 1;
     ByteArray maskedDB(EM.range(0, maskLength));
-    ByteArray H(EM.range(maskLength, maskedDB.getLength() - maskLength));
+    ByteArray H(EM.range(maskLength, hLen));
+
+    //std::cout << "emsaPSSVerify maskedDB = " << maskedDB << std::endl
+    //        << std::endl << "emsaPSSVerify H = " << H << std::endl;
 
     // 6.  If the leftmost 8emLen - emBits bits of the leftmost octet in
     //     maskedDB are not all equal to zero, output "inconsistent" and
@@ -184,6 +203,7 @@ bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
     bitmask = bitmask >> ((8 * emLen) - emBits);
     unsigned char invert = bitmask ^ 0xff;
     if ((maskedDB[0] & invert) != 0) {
+        //std::cout << "Mask failed" << std::endl;
         return false;
     }
 
@@ -198,6 +218,8 @@ bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
         return false;
     }
 
+    //std:: cout << "emsaPSSVerify dbMask = " << dbMask << std::endl;
+
     // 8.  Let DB = maskedDB \xor dbMask.
     ByteArray DB;
     try {
@@ -208,10 +230,14 @@ bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
         return false;
     }
 
+    //std:: cout << std::endl << "emsaPSSVerify DB = " << DB << std::endl;
+
     // 9.  Set the leftmost 8emLen - emBits bits of the leftmost octet in DB
     //     to zero.
     bitmask = 0xff;
     bitmask = bitmask >> ((8 * emLen) - emBits);
+    //int ibit = bitmask;
+    //std::cout << std::endl << "emsaPSSVerify bitmask = " << ibit << std::endl << std::endl;
     DB[0] = DB[0] & bitmask;
 
     // 10. If the emLen - hLen - sLen - 2 leftmost octets of DB are not zero
@@ -222,23 +248,29 @@ bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
     for (int i = 0; i < emLen - hLen - saltLength - 2; ++i) {
         if (DB[i] != 0) {
             return false;
+            //std::cout << "Zero check failed" << std::endl;
         }
     }
-    if (DB[emLen - hLen - saltLength - 1] != 0x01) {
+    // Subtract 2 at the end because it is relative to element 1of the array.
+    if (DB[emLen - hLen - saltLength - 2] != 0x01) {
+        //int idb = DB[emLen - hLen - saltLength - 1];
+        //std::cout << "0x01 check failed. emLen - hLen - saltLength - 1 = " 
+        //        << emLen - hLen - saltLength - 1 
+        //        << " byte = " << idb << std::endl;
         return false;
     }
 
     // 11.  Let salt be the last sLen octets of DB.
     ByteArray salt(DB.range(DB.getLength() - saltLength, saltLength));
 
+    //std::cout << "emsaPSSVerify salt = " << salt << std::endl << std::endl;
+
     // 12.  Let
     //        M' = (0x)00 00 00 00 00 00 00 00 || mHash || salt ;
     //
     // M' is an octet string of length 8 + hLen + sLen with eight
     // initial zero octets.
-    ByteArray fill(8, 0);
-    ByteArray mPrime;
-    mPrime.append(fill);
+    ByteArray mPrime(8, 0);
     mPrime.append(mHash);
     mPrime.append(salt);
 
@@ -246,9 +278,16 @@ bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
     // hash.reset(); Not needed. CK digests don't retail state.
     ByteArray hPrime(digest->digest(mPrime));
 
+    //std::cout << std::endl << "emsa PSSVerify hPrime = " << hPrime << std::endl;
+
     // 14. If H = H', output "consistent." Otherwise, output "inconsistent."
     return H == hPrime;
 
+}
+
+ByteArray
+PSSrsassa::encrypt(const RSAPublicKey& K, const ByteArray& C) {
+    throw IllegalOperationException("Unsupported signature operation");
 }
 
 /**
@@ -300,11 +339,6 @@ ByteArray PSSrsassa::sign(const RSAPrivateKey& K, const ByteArray& M) {
     unsigned k = K.getBitLength() / 8;
     return i2osp(s, k);
 
-}
-
-ByteArray
-PSSrsassa::encrypt(const RSAPublicKey& K, const ByteArray& C) {
-    throw IllegalOperationException("Unsupported signature operation");
 }
 
 /**
