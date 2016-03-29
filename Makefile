@@ -1,9 +1,9 @@
+DEV_HOME=$(HOME)/dev
+
 LD= g++
-LDPATHS= -LNTL/lib
+LDPATHS= -L$(DEV_HOME)/lib
 LDLIBS=  -lrt -lntl -lgmp
 LDFLAGS= -Wall -g -shared $(LDPATHS) $(LDLIBS)
-
-LIBRARY= libcryptokitty.so
 
 CIPHER_OBJECT= cipher/PKCS1rsassa.o cipher/PSSmgf1.o cipher/PSSrsassa.o \
 			   cipher/RSA.o
@@ -39,6 +39,8 @@ SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
 
 LDOBJECT= $(CIPHER_OBJECT) $(DATA_OBJECT) $(DIGEST_OBJECT) $(KEYS_OBJECT) \
 		  $(RANDOM_OBJECT) $(SIGNATURE_OBJECT)
+
+LIBRARY= $(DEV_HOME)/lib/libcryptokitty.so
 
 .SUFFIXES:
 

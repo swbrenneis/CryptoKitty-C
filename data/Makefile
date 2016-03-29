@@ -1,6 +1,8 @@
+DEV_HOME=$(HOME)/dev
+
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
-CPPINCLUDES= -I../include -I../NTL/include
+CPPINCLUDES= -I../include -I$(DEV_HOME)/include
 CPPFLAGS= -Wall -g -MMD -fPIC -std=c++11 $(CPPDEFINES) $(CPPINCLUDES)
 
 CPP_SOURCES= BigInteger.cc ByteArray.cc NanoTime.cc Scalar32.cc Scalar64.cc
