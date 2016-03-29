@@ -5,6 +5,7 @@
 #include "exceptions/BadParameterException.h"
 #include "exceptions/SignatureException.h"
 #include <cmath>
+#include <time.h>
 
 namespace CK {
 
@@ -71,16 +72,14 @@ BigInteger RSA::rsavp1(const RSAPublicKey& K, const BigInteger& s) {
         throw SignatureException("Signature representative out of range");
     }
 
-    // Randomize the amount of time to decrypt to prevent timing attacks.
+    // Randomize the amount of time to verify to prevent timing attacks.
     CMWCRandom rnd;
     NanoTime nt;
     rnd.setSeed(nt.getFullTime());
-    int count = std::abs(rnd.nextInt());
-    count = count % 65536;
-    for (int n = 0; n < count; ++n){
-        int s = n * count;
-        s = s * count;
-    }
+    timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = rnd.nextInt();
+    nanosleep(&ts, 0);
 
     //std:: cout << "rsavp1 s = " << s << std::endl;
     // 2. Let m = s^e mod n.
