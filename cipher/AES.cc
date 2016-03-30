@@ -1,6 +1,5 @@
 #include "cipher/AES.h"
 #include "exceptions/BadParameterException.h"
-#include "data/ByteArray.h"
 
 namespace CK {
 
@@ -139,7 +138,7 @@ void AES::ExpandKey(const ByteArray& key, ByteArray& expandedKey) const {
     }
 
     // Copy the key into the expanded key.
-    expandedKey.copy(key, 0, keySize);
+    expandedKey.copy(0, key, 0, keySize);
     unsigned currentSize = keySize;
     ByteArray temp(4, 0);
     int rconIter;
@@ -149,13 +148,22 @@ void AES::ExpandKey(const ByteArray& key, ByteArray& expandedKey) const {
         }
         // Every keySize bytes apply the KeyCoreSchedule.
         if (currentSize % keySize == 0) {
-            KeyCoreSchedule(temp, rconIter++);
+            KeyScheduleCore(temp, rconIter++);
         }
         // 256 bit keys have an extra S-Box substitution.
-        if(keySize == AES256 && ((currentSize % size) == 16)) {
-            for(int n = 0; n < 4; n++) {
-                temp[i] = getSBoxValue(t[i]);
-                                    }
+        if(keySize == AES256 && ((currentSize % keySize) == 16)) {
+            for(int n = 0; n < 4; ++n) {
+                temp[n] = Sbox[temp[n]];
+            }
+        }
+        // temp is "added" to the corresponding bytes from
+        // the beginning of the key + currentSize to form
+        // the next four bytes of the expandedKey.
+        for(int n = 0; n < 4; ++n) {
+            expandedKey[currentSize] =
+                    expandedKey[currentSize - keySize] ^ temp[n];
+            currentSize++;
+        }
     }
 
 }

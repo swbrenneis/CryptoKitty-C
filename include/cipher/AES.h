@@ -1,6 +1,7 @@
 #ifndef AES_H_INCLUDED
 #define AES_H_INCLUDED
 
+#include "data/ByteArray.h"
 #include <cstdint>
 
 namespace CK {
@@ -31,6 +32,8 @@ class AES {
     private:
         void AddRoundKey(const StateArray& a, const StateArray& b,
                                         StateArray& c) const;
+        void Cipher(const ByteArray& plaintext, ByteArra& ciphertext,
+                                                const ByteArray& expandedKey);
         void ExpandKey(const ByteArray& key, ByteArray& expandedKey) const;
         void KeyScheduleCore(ByteArray& w, int i) const;
         uint8_t RijndaelAdd(uint8_t a, uint8_t b) const;
@@ -43,6 +46,7 @@ class AES {
         unsigned expandedKeySize;
         int Nk;
         int Nr;
+        ByteArray state;
 
         static const uint8_t Rcon[256];
         static const uint8_t Sbox[256];
