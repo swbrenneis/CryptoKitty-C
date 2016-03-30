@@ -33,7 +33,7 @@ class RSA {
         ByteArray i2osp(const BigInteger& X, unsigned xLen);
         BigInteger os2ip(const ByteArray& X);
         BigInteger rsavp1(const RSAPublicKey& K, const BigInteger& s); 
-        ByteArray rsaXor(const ByteArray& a, const ByteArray& b) const;
+        //ByteArray rsaXor(const ByteArray& a, const ByteArray& b) const;
 
 };
 

@@ -118,7 +118,8 @@ ByteArray PSSrsassa::emsaPSSEncode(const ByteArray& M, int emBits) {
     //std:: cout << "emsaPSSEncode dbMask = " << dbMask << std::endl << std::endl;
 
     // 10. Let maskedDB = DB \xor dbMask.
-    ByteArray maskedDB(rsaXor(DB, dbMask));
+    //ByteArray maskedDB(rsaXor(DB, dbMask));
+    ByteArray maskedDB(DB ^ dbMask);
 
     //std::cout << "emsaPSSEncode maskedDB = " << maskedDB << std::endl
     //        << std::endl << "emsaPSSEncode H = " << H << std::endl;
@@ -223,7 +224,8 @@ bool PSSrsassa::emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
     // 8.  Let DB = maskedDB \xor dbMask.
     ByteArray DB;
     try {
-        DB = rsaXor(maskedDB, dbMask);
+        //DB = rsaXor(maskedDB, dbMask);
+        DB = maskedDB ^ dbMask;
     }
     catch (BadParameterException& e) {
         // Fail silently

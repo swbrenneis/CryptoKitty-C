@@ -18,10 +18,13 @@ class SHA256 : public DigestBase {
         SHA256(const SHA256& other);
         SHA256& operator= (const SHA256& other);
 
+    public:
+        unsigned getBlockSize() const { return 64; }
+        unsigned getDigestLength() const { return 32; }
+
     protected:
         ByteArray finalize(const ByteArray& bytes);
         const ByteArray& getDER() const;
-        unsigned getDigestLength() const { return 32; }
 
     private:
         unsigned Ch(unsigned x, unsigned y, unsigned z);

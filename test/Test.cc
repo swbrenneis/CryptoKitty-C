@@ -1,4 +1,5 @@
 #include "DigestTest.h"
+#include "MACTest.h"
 #include "RandomTest.h"
 #include "SignatureTest.h"
 #include <string>
@@ -78,6 +79,20 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::cout << "RSA EMSA-PSS signature test passed." << std::endl << std::endl;
+
+    }
+
+    if (tests == "mac" || tests == "all") {
+
+        std::cout << "HMAC test." << std::endl << std::endl;
+
+        MACTest mac;
+        if (!mac.HMACTest()) {
+            std::cout << std::endl << "HMAC test failed." << std::endl;
+            return -1;
+        }
+        std::cout << std::endl << "HMAC test passed." << std::endl;
+
     }
 
     return 0;

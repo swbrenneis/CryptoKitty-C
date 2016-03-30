@@ -28,6 +28,9 @@ KEYS_HEADER= include/keys/PrivateKey.h \
 			 include/keys/RSAPrivateKey.h include/keys/RSAPrivateCrtKey.h \
 			 include/keys/RSAPrivateModKey.h include/keys/RSAPublicKey.h
 KEYS_SOURCE= $(KEYS_OBJECT:.o=.cc)
+MAC_OBJECT= mac/HMAC.o
+MAC_HEADER= include/mac/HMAC.h
+MAC_SOURCE= $(MAC_OBJECT:.o=.cc)
 RANDOM_OBJECT= random/BBSSecureRandom.o random/CMWCRandom.o random/Random.o \
 			   random/SecureRandom.o
 RANDOM_HEADER= include/random/BBSSecureRandom.h include/random/CMWCRandom.h \
@@ -38,7 +41,7 @@ SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
 
 LDOBJECT= $(CIPHER_OBJECT) $(DATA_OBJECT) $(DIGEST_OBJECT) $(KEYS_OBJECT) \
-		  $(RANDOM_OBJECT) $(SIGNATURE_OBJECT)
+		  $(MAC_OBJECT) $(RANDOM_OBJECT) $(SIGNATURE_OBJECT)
 
 LIBRARY= $(DEV_HOME)/lib/libcryptokitty.so
 
@@ -60,6 +63,9 @@ $(DIGEST_OBJECT): $(DIGEST_SOURCE) $(DIGEST_HEADER)
 $(KEYS_OBJECT): $(KEYS_SOURCE) $(KEYS_HEADER)
 	$(MAKE) -C keys
 
+$(MAC_OBJECT): $(MAC_SOURCE) $(MAC_HEADER)
+	$(MAKE) -C mac
+
 $(RANDOM_OBJECT): $(RANDOM_SOURCE) $(RANDOM_HEADER)
 	$(MAKE) -C random
 
@@ -75,6 +81,7 @@ clean:
 	cd data && $(MAKE) clean
 	cd digest && $(MAKE) clean
 	cd keys && $(MAKE) clean
+	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
 

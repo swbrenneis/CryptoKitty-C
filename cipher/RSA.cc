@@ -92,18 +92,16 @@ BigInteger RSA::rsavp1(const RSAPublicKey& K, const BigInteger& s) {
 /*
  * Byte array bitwise exclusive or.
  */
-ByteArray RSA::rsaXor(const ByteArray& a, const ByteArray& b) const {
+//ByteArray RSA::rsaXor(const ByteArray& a, const ByteArray& b) const {
 
-    if (a.getLength() != b.getLength()) {
+    /*if (a.getLength() != b.getLength()) {
         throw BadParameterException("Xor byte arrays must be same length");
-    }
+    }*/
 
-    ByteArray result(a.getLength());
-    for (unsigned i = 0; i < a.getLength(); ++i) {
-        result[i] = a[i] ^ b[i];
-    }
-    return result;
+    //ByteArray result(a.getLength());
+//    ByteArray result(a ^ b);
+//    return result;
 
-}
+//}
 
 }

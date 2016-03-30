@@ -66,6 +66,7 @@ class ByteArray {
 // Global operators
 bool operator== (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 bool operator!= (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
+CK::ByteArray operator^ (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 std::ostream& operator <<(std::ostream& out, const CK::ByteArray& bytes);
 
 #endif // BYTEARRAY_H_INCLUDED

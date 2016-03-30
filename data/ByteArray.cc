@@ -1,5 +1,6 @@
 #include "data/ByteArray.h"
 #include "exceptions/OutOfRangeException.h"
+#include "exceptions/BadParameterException.h"
 
 namespace CK {
 
@@ -260,3 +261,19 @@ std::ostream& operator <<(std::ostream& out, const CK::ByteArray& bytes) {
     return out;
 
 }
+
+CK::ByteArray operator^ (const CK::ByteArray& lhs, const CK::ByteArray& rhs) {
+
+    if (lhs.getLength() != rhs.getLength()) {
+        throw CK::BadParameterException("XOR operator: Array sizes not equal.");
+    }
+
+    CK::ByteArray result(lhs.getLength());
+    for (unsigned n = 0; n < lhs.getLength(); ++n) {
+        result[n] = lhs[n] ^ rhs[n];
+    }
+
+    return result;
+
+}
+

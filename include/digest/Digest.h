@@ -25,6 +25,7 @@ class Digest {
     public:
         virtual ByteArray digest()=0;
         virtual ByteArray digest(const ByteArray& bytes)=0;
+        virtual unsigned getBlockSize() const=0; // Used for HMAC
         virtual const ByteArray& getDER() const=0;
         virtual unsigned getDigestLength() const=0;
         virtual void reset()=0;
