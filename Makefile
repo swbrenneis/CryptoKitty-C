@@ -11,6 +11,9 @@ CIPHER_HEADER= include/cipher/AES.h include/cipher/PKCS1rsassa.h \
 			   include/cipher/PSSmgf1.h include/cipher/PSSrsassa.h \
 			   include/cipher/RSA.h
 CIPHER_SOURCE= $(CIPHER_OBJECT:.o=.cc)
+CIPHERMODES_OBJECT= ciphermodes/CBC.o
+CIPHERMODES_HEADER= include/ciphermodes/CBC.h
+CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
 DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/NanoTime.o data/Scalar32.o \
 			 data/Scalar64.o
 DATA_HEADER= include/data/BigInteger.h include/data/ByteArray.h \
@@ -41,8 +44,9 @@ SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
 
-LDOBJECT= $(CIPHER_OBJECT) $(DATA_OBJECT) $(DIGEST_OBJECT) $(KEYS_OBJECT) \
-		  $(MAC_OBJECT) $(RANDOM_OBJECT) $(SIGNATURE_OBJECT)
+LDOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
+		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
+		  $(SIGNATURE_OBJECT)
 
 LIBRARY= $(DEV_HOME)/lib/libcryptokitty.so
 
@@ -54,6 +58,9 @@ all: $(LIBRARY)
 
 $(CIPHER_OBJECT): $(CIPHER_SOURCE) $(CIPHER_HEADER)
 	$(MAKE) -C cipher
+
+$(CIPHERMODES_OBJECT): $(CIPHERMODES_SOURCE) $(CIPHERMODES_HEADER)
+	$(MAKE) -C ciphermodes
 
 $(DATA_OBJECT): $(DATA_SOURCE) $(DATA_HEADER)
 	$(MAKE) -C data
@@ -79,6 +86,7 @@ $(LIBRARY): $(LDOBJECT)
 clean:
 	rm -f $(LIBRARY)
 	cd cipher && $(MAKE) clean
+	cd ciphermodes && $(MAKE) clean
 	cd data && $(MAKE) clean
 	cd digest && $(MAKE) clean
 	cd keys && $(MAKE) clean

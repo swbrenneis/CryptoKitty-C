@@ -2,13 +2,14 @@
 #define AES_H_INCLUDED
 
 #include "data/ByteArray.h"
+#include "cipher/Cipher.h"
 #include <cstdint>
 
 namespace CK {
 
 class ByteArray;
 
-class AES {
+class AES : public Cipher {
 
    public:
        enum KeySize { AES128=16, AES192=24, AES256=32 };
@@ -22,6 +23,7 @@ class AES {
         AES& operator= (const AES& other);
 
     public:
+        unsigned blockSize() const { return 16; }
         ByteArray decrypt(const ByteArray& ciphertext, const ByteArray& key);
         ByteArray encrypt(const ByteArray& plaintext, const ByteArray& key);
 

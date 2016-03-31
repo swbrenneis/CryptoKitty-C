@@ -1,6 +1,8 @@
 #include "CipherTest.h"
 #include "cipher/AES.h"
+#include "ciphermodes/CBC.h"
 #include "data/ByteArray.h"
+#include "random/CMWCRandom.h"
 #include <iostream>
 
 
@@ -11,6 +13,11 @@ CipherTest::~CipherTest() {
 }
 
 bool CipherTest::AESTest() {
+
+    uint8_t tk192[] = { 0x8e, 0x73, 0xb0, 0xf7, 0xda, 0x0e, 0x64, 0x52,
+                        0xc8, 0x10, 0xf3, 0x2b, 0x80, 0x90, 0x79, 0xe5,
+                        0x62, 0xf8, 0xea, 0xd2, 0x52, 0x2c, 0x6b, 0x7b };
+    CK::ByteArray testKey192(tk192, 24);
 
     uint8_t k128[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
                     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
@@ -68,7 +75,7 @@ bool CipherTest::AESTest() {
     std::cout << "Plaintext = " << plaintext1 << std::endl;
     std::cout << "Vector = " << vector192 << std::endl;
     CK::AES cipher192(CK::AES::AES192);
-    CK::ByteArray ciphertext192(cipher192.encrypt(plaintext1, key192));
+    CK::ByteArray ciphertext192(cipher192.encrypt(plaintext1,key192));
     std::cout << "Ciphertext = " << ciphertext192 << std::endl;
     if (ciphertext192 != vector192) {
         std::cout << "Ciphertext doesn't match." << std::endl;
@@ -101,7 +108,21 @@ bool CipherTest::AESTest() {
         std::cout << "AES 256 round trip failed." << std::endl;
         return false;
     }
-    std::cout << "AES 256 test passed." << std::endl;
+    std::cout << "AES 256 test passed." << std::endl << std::endl;
+
+    std::cout << "AES-256 CBC mode test." << std::endl;
+    std::string rickroll("Never gonna give you up Never gonna let you down Never gonna run around and desert you Never gonna make you cry Never gonna say goodbye Never gonna tell a lie and hurt you");
+    CK::ByteArray plaintext2(rickroll);
+    std::cout << "Plaintext = " << plaintext2 << std::endl;
+    CK::CMWCRandom rnd;
+    rnd.setSeed(1546293757762033520);
+    CK::ByteArray iv(16);
+    rnd.nextBytes(iv);
+    CK::CBC cbc(new CK::AES(CK::AES::AES256), iv);
+    CK::ByteArray ciphertextCBC(cbc.encrypt(plaintext2, key256));
+    std::cout << "Ciphertext = " << ciphertextCBC << std::endl;
+    CK::ByteArray roundtripCBC(cbc.decrypt(ciphertextCBC, key256));
+    std::cout << "Plaintext = " << roundtripCBC << std::endl;
 
     return true;
 

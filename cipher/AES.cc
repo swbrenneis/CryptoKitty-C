@@ -81,11 +81,11 @@ AES::AES(KeySize ks)
             Nr = 10;
             break;
         case AES192:
-            Nk = 5;
+            Nk = 6;
             Nr = 12;
             break;
         case AES256:
-            Nk = 6;
+            Nk = 8;
             Nr = 14;
             break;
     }
