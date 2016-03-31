@@ -21,36 +21,70 @@ class AES {
         AES(const AES& other);
         AES& operator= (const AES& other);
 
+    public:
+        ByteArray decrypt(const ByteArray& ciphertext, const ByteArray& key);
+        ByteArray encrypt(const ByteArray& plaintext, const ByteArray& key);
+
     private:
+        typedef uint8_t Word[4];
+        inline void copy(Word& a, const Word& b) const {
+            a[0] = b[0]; a[1] = b[1]; a[2] = b[2]; a[3] = b[3];
+        }
+        void rol(int count, Word& a) const {
+            uint8_t tmp;
+            for (int n = 0; n < count; ++n) {
+                tmp = a[3];
+                a[3] = a[2];
+                a[2] = a[1];
+                a[1] = a[0];
+                a[0] = tmp;
+            }
+        }
+        void ror(int count, Word& a) const {
+            uint8_t tmp;
+            for (int n = 0; n < count; ++n) {
+                tmp = a[0];
+                a[0] = a[1];
+                a[1] = a[2];
+                a[2] = a[3];
+                a[3] = tmp;
+            }
+        }
         struct StateArray {
-            uint8_t row0[4];
-            uint8_t row1[4];
-            uint8_t row2[4];
-            uint8_t row3[4];
+            Word row0;
+            Word row1;
+            Word row2;
+            Word row3;
         };
 
     private:
-        void AddRoundKey(const StateArray& a, const StateArray& b,
-                                        StateArray& c) const;
-        void Cipher(const ByteArray& plaintext, ByteArra& ciphertext,
-                                                const ByteArray& expandedKey);
-        void ExpandKey(const ByteArray& key, ByteArray& expandedKey) const;
-        void KeyScheduleCore(ByteArray& w, int i) const;
-        uint8_t RijndaelAdd(uint8_t a, uint8_t b) const;
-        uint8_t RijndaelMultiply(uint8_t lhs, uint8_t rhs) const;
-        void Rotate(ByteArray& word) const;
-        void ShiftRow(const StateArray& a, StateArray& b) const;
+        void AddRoundKey(const Word *roundKey);
+        void Cipher(const ByteArray& plaintext, const Word *keySchedule);
+        void InvCipher(const ByteArray& ciphertext, const Word *KeySchedule);
+        void InvMixColumns();
+        void InvShiftRows();
+        void InvSubBytes();
+        void KeyExpansion(const ByteArray& key, Word *keySchedule) const;
+        void MixColumns();
+        uint8_t RijndaelMult(uint8_t lhs, uint8_t rhs) const;
+        void Rotate(ByteArray& w) const;
+        void ShiftRows();
+        void SubBytes();
 
     private:
         KeySize keySize;
-        unsigned expandedKeySize;
+        unsigned keyScheduleSize;
         int Nk;
         int Nr;
-        ByteArray state;
-
+        StateArray state;
+    
         static const uint8_t Rcon[256];
         static const uint8_t Sbox[256];
         static const uint8_t InvSbox[256];
+        static const int Nb;
+        static const StateArray cx;
+        static const StateArray invax;
+
 
 };
 

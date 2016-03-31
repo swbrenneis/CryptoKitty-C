@@ -1,5 +1,6 @@
 #ifndef SCALAR32_H_INCLUDED
 #define SCALAR32_H_INCLUDED
+#include <cstdlib>
 
 #include "ByteArray.h"
 
@@ -9,7 +10,7 @@ class Scalar32 {
 
     public:
         Scalar32();
-        Scalar32(int v);
+        Scalar32(int32_t v);
         Scalar32(const ByteArray& encoded);
         Scalar32(const ByteArray& encoded, int endian);
         Scalar32(const Scalar32& other);
@@ -25,11 +26,11 @@ class Scalar32 {
         // Returns an encoded array in the specified endian order.
         ByteArray getEncoded(int endian) const;
         // Returns a signed integer.
-        int getIntValue() const;
+        int32_t getIntValue() const;
 
     public:
-        static ByteArray encode(int value);
-        static int decode(const ByteArray& value);
+        static ByteArray encode(int32_t value);
+        static int32_t decode(const ByteArray& value);
                 
     private:
         void decode(const ByteArray& encoded, int endian);
@@ -40,7 +41,7 @@ class Scalar32 {
         static const int LITTLEENDIAN;
 
     private:
-        int value;
+        int32_t value;
         static int endian;
 
 };

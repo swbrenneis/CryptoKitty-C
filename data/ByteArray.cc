@@ -20,7 +20,7 @@ ByteArray::ByteArray(const ByteArray& other, unsigned offset, unsigned length) {
         throw OutOfRangeException("Array parameters out of range");
     }
 
-    unsigned char *array = other.range(offset, length).asArray();
+    uint8_t *array = other.range(offset, length).asArray();
     bytes = Array(array, array+length);
 
 }
@@ -28,7 +28,7 @@ ByteArray::ByteArray(const ByteArray& other, unsigned offset, unsigned length) {
 /*
  * Construct a ByteArray object from a C array.
  */
-ByteArray::ByteArray(const unsigned char *bytearray, unsigned length)
+ByteArray::ByteArray(const uint8_t *bytearray, unsigned length)
 : bytes(bytearray, bytearray+length) {
 }
 
@@ -37,8 +37,8 @@ ByteArray::ByteArray(const unsigned char *bytearray, unsigned length)
  */
 ByteArray::ByteArray(const std::string& str) {
 
-    const unsigned char *string =
-            reinterpret_cast<const unsigned char*>(str.c_str());
+    const uint8_t *string =
+            reinterpret_cast<const uint8_t*>(str.c_str());
     unsigned length = str.length();
     bytes = Array(string, string+length);
 
@@ -48,7 +48,7 @@ ByteArray::ByteArray(const std::string& str) {
  * Construct a ByteArray of a specified size. The content is
  * undefined.
  */
-ByteArray::ByteArray(unsigned size, unsigned char fill) {
+ByteArray::ByteArray(unsigned size, uint8_t fill) {
 
     bytes.resize(size, fill);
 
@@ -71,13 +71,13 @@ ByteArray& ByteArray::operator= (const ByteArray& other) {
 
 }
 
-unsigned char& ByteArray::operator[] (unsigned index) {
+uint8_t& ByteArray::operator[] (unsigned index) {
 
     return bytes[index];
 
 }
 
-unsigned char ByteArray::operator[] (unsigned index) const {
+uint8_t ByteArray::operator[] (unsigned index) const {
 
     return bytes[index];
 
@@ -98,23 +98,23 @@ void ByteArray::append(const ByteArray& other, unsigned offset, unsigned length)
 
 }
 
-void ByteArray::append(const unsigned char *byte, unsigned length) {
+void ByteArray::append(const uint8_t *byte, unsigned length) {
 
     Array appendix(byte, byte+length);
     bytes.insert(bytes.end(), appendix.begin(), appendix.end());
 
 }
 
-void ByteArray::append(unsigned char c) {
+void ByteArray::append(uint8_t c) {
 
     bytes.push_back(c);
 
 }
 
-unsigned char *ByteArray::asArray() const {
+uint8_t *ByteArray::asArray() const {
 
-    unsigned char *result = new unsigned char[bytes.size()];
-    unsigned char *resultptr = result;
+    uint8_t *result = new uint8_t[bytes.size()];
+    uint8_t *resultptr = result;
     ArrayConstIter it = bytes.begin();
     while (it != bytes.end()) {
         *resultptr = *it;
@@ -133,7 +133,7 @@ std::string ByteArray::asHex(unsigned index) const {
 
     std::string result("0x");
 
-    unsigned char u = bytes[index] >> 4;
+    uint8_t u = bytes[index] >> 4;
     if (u < 0x0a) {
         result += (u + '0');
     }
@@ -141,7 +141,7 @@ std::string ByteArray::asHex(unsigned index) const {
         result += ((u - 0x0a) + 'a');
     }
 
-    unsigned char l = bytes[index] & 0x0f;
+    uint8_t l = bytes[index] & 0x0f;
     if (l < 0x0a) {
         result += (l + '0');
     }
@@ -206,7 +206,7 @@ unsigned ByteArray::getLength() const {
 /*
  * Push a byte onto the front of the array.
  */
-void ByteArray::push(unsigned char b) {
+void ByteArray::push(uint8_t b) {
 
     bytes.push_front(b);
 

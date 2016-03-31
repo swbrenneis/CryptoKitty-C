@@ -14,7 +14,7 @@ Scalar32::Scalar32()
     endianTest();
 }
 
-Scalar32::Scalar32(int v) 
+Scalar32::Scalar32(int32_t v) 
 : value(v) {
 
     endianTest();
@@ -42,7 +42,7 @@ Scalar32::~Scalar32() {
  * Convenience function. Returns a long value decoded
  * from a byte array in native endian order.
  */
-int Scalar32::decode(const ByteArray& encoded) {
+int32_t Scalar32::decode(const ByteArray& encoded) {
 
     return Scalar32(encoded).getIntValue();
 
@@ -77,7 +77,7 @@ void Scalar32::decode(const ByteArray& encoded, int eType) {
  * Convenience function. Returns encoded array in native
  * endian format.
  */
-ByteArray Scalar32::encode(int v) {
+ByteArray Scalar32::encode(int32_t v) {
 
     return Scalar32(v).getEncoded();
 
@@ -141,7 +141,7 @@ ByteArray Scalar32::getEncoded(int eType) const {
 /*
  * Returns a signed integer value.
  */
-int Scalar32::getIntValue() const {
+int32_t Scalar32::getIntValue() const {
 
     return value;
 

@@ -2,6 +2,7 @@
 #define SCALAR64_H_INCLUDED
 
 #include "ByteArray.h"
+#include <cstdlib>
 
 namespace CK {
 
@@ -9,7 +10,7 @@ class Scalar64 {
 
     public:
         Scalar64();
-        Scalar64(long v);
+        Scalar64(int64_t v);
         Scalar64(const ByteArray& encoded);
         Scalar64(const ByteArray& encoded, int endian);
         Scalar64(const Scalar64& other);
@@ -25,11 +26,11 @@ class Scalar64 {
         // Returns an encoded array in the specified endian order.
         ByteArray getEncoded(int endian) const;
         // Returns a signed long integer.
-        long getLongValue() const;
+        int64_t getLongValue() const;
 
     public:
-        static ByteArray encode(long value);
-        static long decode(const ByteArray& value);
+        static ByteArray encode(int64_t value);
+        static int64_t decode(const ByteArray& value);
                 
     private:
         void decode(const ByteArray& encoded, int endian);
@@ -40,7 +41,7 @@ class Scalar64 {
         static const int LITTLEENDIAN;
 
     private:
-        long value;
+        int64_t value;
         static int endian;
 
 };

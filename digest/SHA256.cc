@@ -1,5 +1,4 @@
 #include "digest/SHA256.h"
-#include "data/ByteArray.h"
 #include "data/Scalar32.h"
 #include "data/Scalar64.h"
 #include <string.h>

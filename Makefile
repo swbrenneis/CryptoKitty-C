@@ -5,10 +5,11 @@ LDPATHS= -L$(DEV_HOME)/lib
 LDLIBS=  -lrt -lntl -lgmp
 LDFLAGS= -Wall -g -shared $(LDPATHS) $(LDLIBS)
 
-CIPHER_OBJECT= cipher/PKCS1rsassa.o cipher/PSSmgf1.o cipher/PSSrsassa.o \
-			   cipher/RSA.o
-CIPHER_HEADER= include/cipher/PKCS1rsassa.h include/cipher/PSSmgf1.h \
-			   include/cipher/PSSrsassa.h include/cipher/RSA.h
+CIPHER_OBJECT= cipher/AES.o cipher/PKCS1rsassa.o cipher/PSSmgf1.o \
+			   cipher/PSSrsassa.o cipher/RSA.o
+CIPHER_HEADER= include/cipher/AES.h include/cipher/PKCS1rsassa.h \
+			   include/cipher/PSSmgf1.h include/cipher/PSSrsassa.h \
+			   include/cipher/RSA.h
 CIPHER_SOURCE= $(CIPHER_OBJECT:.o=.cc)
 DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/NanoTime.o data/Scalar32.o \
 			 data/Scalar64.o

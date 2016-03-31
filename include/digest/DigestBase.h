@@ -1,8 +1,8 @@
 #ifndef DIGESTBASE_H_INCLUDED
 #define DIGESTBASE_H_INCLUDED
 
-#include "Digest.h"
-#include "../data/ByteArray.h"
+#include "digest/Digest.h"
+#include "data/ByteArray.h"
 #include <string>
 
 namespace CK {

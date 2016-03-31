@@ -58,35 +58,20 @@ const uint8_t AES::InvSbox[256] =
     0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
     0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D };
 
-/*
-Constants: int Nb = 4; // but it might change someday
-           int Nr = 10, 12, or 14; // rounds, for Nk = 4, 6, or 8
-Inputs: array in  of 4*Nb bytes // input plaintext
-        array out of 4*Nb bytes // output ciphertext
-        array w of 4*Nb*(Nr+1) bytes // expanded key
-        Internal work array:
-            state, 2-dim array of 4*Nb bytes, 4 rows and Nb cols
-        Algorithm:
+const int AES::Nb = 4;
 
-        void Cipher(byte[] in, byte[] out, byte[] w) {
-            byte[][] state = new byte[4][Nb];
-            state = in; // actual component-wise copy
-            AddRoundKey(state, w, 0, Nb - 1); // see Section 4 below
-            for (int round = 1; round < Nr; round++) {
-                SubBytes(state); // see Section 3 below
-                ShiftRows(state); // see Section 5 below
-                MixColumns(state); // see Section 5 below
-                AddRoundKey(state, w, 
-                round*Nb, (round+1)*Nb - 1); // Section 4 
-            }
-            SubBytes(state); // see Section 3 below
-            ShiftRows(state); // see Section 5 below
-            AddRoundKey(state, w, Nr*Nb, (Nr+1)*Nb - 1); // Section 4
-            out = state; // component-wise copy
-        }
+const AES::StateArray AES::cx =
+{   .row0 = { 2, 3, 1, 1 },
+    .row1 = { 1, 2, 3, 1 },
+    .row2 = { 1, 1, 2, 3 },
+    .row3 = { 3, 1, 1, 2 } };
 
+const AES::StateArray AES::invax =
+{   .row0 = { 0x0e, 0x0b, 0x0d, 0x09 },
+    .row1 = { 0x09, 0x0e, 0x0b, 0x0d },
+    .row2 = { 0x0d, 0x09, 0x0e, 0x0b },
+    .row3 = { 0x0b, 0x0d, 0x09, 0x0e } };
 
-*/
 AES::AES(KeySize ks)
 : keySize(ks) {
 
@@ -94,19 +79,17 @@ AES::AES(KeySize ks)
         case AES128:
             Nk = 4;
             Nr = 10;
-            expandedKeySize = 22;
             break;
         case AES192:
             Nk = 5;
             Nr = 12;
-            expandedKeySize = 26;
             break;
         case AES256:
             Nk = 6;
             Nr = 14;
-            expandedKeySize = 30;
             break;
     }
+    keyScheduleSize = Nb * (Nr + 1);
 
 }
 
@@ -114,56 +97,263 @@ AES::~AES() {
 }
 
 /*
- * Add (xor) the round key (a) to the state (b) and place the
- * result in c;
+ * Add (xor) the round key state.
  */
-void AES::AddRoundKey(const StateArray& a, const StateArray& b,
-                                            StateArray& c) const {
+void AES::AddRoundKey(const Word *roundKey) {
 
+    Word column;
     for (int col = 0; col < 4; ++col) {
-        c.row0[col] = a.row0[col] ^ b.row0[col];
-        c.row1[col] = a.row1[col] ^ b.row1[col];
-        c.row2[col] = a.row2[col] ^ b.row2[col];
-        c.row3[col] = a.row3[col] ^ b.row3[col];
+        copy(column, roundKey[col]);
+        state.row0[col] = state.row0[col] ^ column[0];
+        state.row1[col] = state.row1[col] ^ column[1];
+        state.row2[col] = state.row2[col] ^ column[2];
+        state.row3[col] = state.row3[col] ^ column[3];
     }
 
 }
 
-void AES::ExpandKey(const ByteArray& key, ByteArray& expandedKey) const {
+/*
+ * From FIPS 197
+ *
+ * Nb = 4 for this FIPS
+ * Nr = 10, 12, 14 for 128, 192, 256 bit keys respectively
+ * Nk = Number of 32 bit words in the cipher key. 4, 6, or 8.
+ * 
+ * Cipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])
+ *
+ * begin
+ *
+ *  byte state[4,Nb]
+ *
+ *  state = in
+ *
+ *  AddRoundKey(state, w[0, Nb-1]) // See Sec. 5.1.4
+ *
+ *  for round = 1 step 1 to Nr–1
+ *
+ *      SubBytes(state) // See Sec. 5.1.1
+ *
+ *      ShiftRows(state) // See Sec. 5.1.2
+ *
+ *      MixColumns(state) // See Sec. 5.1.3
+ *
+ *      AddRoundKey(state, w[round*Nb, (round+1)*Nb-1])
+ *
+ *  end for
+ *
+ *  SubBytes(state)
+ *
+ *  ShiftRows(state)
+ *
+ *  AddRoundKey(state, w[Nr*Nb, (Nr+1)*Nb-1])
+ *
+ *  out = state
+ *
+ * end
+ *  
+ */
+void AES::Cipher(const ByteArray& plaintext, const Word *keySchedule) {
 
-    // Key consistency check.
-    if (key.getLength() != keySize
-                    || expandedKey.getLength() != expandedKeySize) {
-            throw BadParameterException("ExpandKey: Invalid key sizes");
+    if (plaintext.getLength() != Nb * 4) {
+        throw BadParameterException("Cipher: Invalid block size.");
     }
 
-    // Copy the key into the expanded key.
-    expandedKey.copy(0, key, 0, keySize);
-    unsigned currentSize = keySize;
-    ByteArray temp(4, 0);
-    int rconIter;
-    while (currentSize < expandedKeySize) {
+    // Load the state
+    for (int n = 0; n < 4; ++n) {
+        state.row0[n] = plaintext[n*4];
+        state.row1[n] = plaintext[(n*4)+1];
+        state.row2[n] = plaintext[(n*4)+2];
+        state.row3[n] = plaintext[(n*4)+3];
+    }
+
+    Word roundKey[4];
+    for (int n = 0; n < 4; ++n) {
+        copy(roundKey[n], keySchedule[n]);
+    }
+    AddRoundKey(roundKey);
+
+    // Process rounds
+    for (int round = 1; round < Nr; ++round) {
+        SubBytes();
+        ShiftRows();
+        MixColumns();
         for (int n = 0; n < 4; ++n) {
-            temp[0] = expandedKey[(currentSize - 4) + 1];
+            copy(roundKey[n], keySchedule[(round * Nb)+n]);
         }
-        // Every keySize bytes apply the KeyCoreSchedule.
-        if (currentSize % keySize == 0) {
-            KeyScheduleCore(temp, rconIter++);
+        AddRoundKey(roundKey);
+    }
+
+    // Finish up.
+    SubBytes();
+    ShiftRows();
+    for (int n = 0; n < 4; ++n) {
+        copy(roundKey[n], keySchedule[(Nr*Nb)+n]);
+    }
+    AddRoundKey(roundKey);
+
+}
+
+/*
+ * Perform the block cipher on the plaintext using the
+ * supplied key.
+ */
+ByteArray AES::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
+
+    if (ciphertext.getLength() != Nb * 4) {
+        throw BadParameterException("encrypt: Illegal plaintet size");
+    }
+
+    if (key.getLength() != keySize) {
+        throw BadParameterException("encrypt: Invalid key");
+    }
+
+    Word *keySchedule = new Word[keyScheduleSize];
+    KeyExpansion(key, keySchedule);
+    InvCipher(ciphertext, keySchedule);
+    ByteArray plaintext;
+    for (int col = 0; col < 4; ++col) {
+        plaintext.append(state.row0[col]);
+        plaintext.append(state.row1[col]);
+        plaintext.append(state.row2[col]);
+        plaintext.append(state.row3[col]);
+    }
+
+    delete[] keySchedule;
+    return plaintext;
+
+}
+
+/*
+ * Perform the block cipher on the plaintext using the
+ * supplied key.
+ */
+ByteArray AES::encrypt(const ByteArray& plaintext, const ByteArray& key) {
+
+    if (plaintext.getLength() != Nb * 4) {
+        throw BadParameterException("encrypt: Illegal plaintet size");
+    }
+
+    if (key.getLength() != keySize) {
+        throw BadParameterException("encrypt: Invalid key");
+    }
+
+    Word *keySchedule = new Word[keyScheduleSize];
+    KeyExpansion(key, keySchedule);
+    Cipher(plaintext, keySchedule);
+    ByteArray ciphertext;
+    for (int col = 0; col < 4; ++col) {
+        ciphertext.append(state.row0[col]);
+        ciphertext.append(state.row1[col]);
+        ciphertext.append(state.row2[col]);
+        ciphertext.append(state.row3[col]);
+    }
+
+    delete[] keySchedule;
+    return ciphertext;
+
+}
+
+/*
+ * InvCipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])
+ *
+ * begin
+ *
+ *  byte state[4,Nb]
+ *
+ *  state = in
+ *
+ *  AddRoundKey(state, w[Nr*Nb, (Nr+1)*Nb-1]) // See Sec. 5.1.4
+ *
+ *  for round = Nr-1 step -1 downto 1
+ *
+ *      InvShiftRows(state) // See Sec. 5.3.1
+ *
+ *      InvSubBytes(state) // See Sec. 5.3.2
+ *
+ *      AddRoundKey(state, w[round*Nb, (round+1)*Nb-1])
+ *
+ *      InvMixColumns(state) // See Sec. 5.3.3
+ *
+ *  end for
+ *
+ *  InvShiftRows(state)
+ *
+ *  InvSubBytes(state)
+ *
+ *  AddRoundKey(state, w[0, Nb-1])
+ *
+ *  out = state
+ *
+ * end
+ */
+void AES::InvCipher(const ByteArray& ciphertext, const Word *keySchedule) {
+
+    if (ciphertext.getLength() != Nb * 4) {
+        throw BadParameterException("Cipher: Invalid block size.");
+    }
+
+    // Load the state
+    for (int n = 0; n < 4; ++n) {
+        state.row0[n] = ciphertext[n*4];
+        state.row1[n] = ciphertext[(n*4)+1];
+        state.row2[n] = ciphertext[(n*4)+2];
+        state.row3[n] = ciphertext[(n*4)+3];
+    }
+
+    Word roundKey[4];
+    for (int n = 0; n < 4; ++n) {
+        copy(roundKey[n], keySchedule[(Nr*Nb)+n]);
+    }
+    AddRoundKey(roundKey);
+
+    for (int round = Nr - 1; round >= 1; --round) {
+        InvShiftRows();
+        InvSubBytes();
+        for (int n = 0; n < 4; ++n) {
+            copy(roundKey[n], keySchedule[(round*Nb)+n]);
         }
-        // 256 bit keys have an extra S-Box substitution.
-        if(keySize == AES256 && ((currentSize % keySize) == 16)) {
-            for(int n = 0; n < 4; ++n) {
-                temp[n] = Sbox[temp[n]];
-            }
-        }
-        // temp is "added" to the corresponding bytes from
-        // the beginning of the key + currentSize to form
-        // the next four bytes of the expandedKey.
-        for(int n = 0; n < 4; ++n) {
-            expandedKey[currentSize] =
-                    expandedKey[currentSize - keySize] ^ temp[n];
-            currentSize++;
-        }
+        AddRoundKey(roundKey);
+        InvMixColumns();
+    }
+
+    InvShiftRows();
+    InvSubBytes();
+    for (int n = 0; n < 4; ++n) {
+        copy(roundKey[n], keySchedule[n]);
+    }
+    AddRoundKey(roundKey);
+
+}
+
+/*
+ * Matrix multiplication transformation.
+ *
+ * Each column in the state is multiplied and added as
+ * a 4 byte polynomial against the inverse polynomial
+ * function ax. The "multiplication" and "addition" are
+ * as defined in Rijndael finite field operations.
+ */
+void AES::InvMixColumns() {
+
+    StateArray m = state;
+
+    for (int c = 0; c < 4; ++c) {
+        state.row0[c] = RijndaelMult(invax.row0[0], m.row0[c])
+                        ^ RijndaelMult(invax.row0[1], m.row1[c])
+                        ^ RijndaelMult(invax.row0[2], m.row2[c])
+                        ^ RijndaelMult(invax.row0[3], m.row3[c]);
+        state.row1[c] = RijndaelMult(invax.row1[0], m.row0[c])
+                        ^ RijndaelMult(invax.row1[1], m.row1[c])
+                        ^ RijndaelMult(invax.row1[2], m.row2[c])
+                        ^ RijndaelMult(invax.row1[3], m.row3[c]);
+        state.row2[c] = RijndaelMult(invax.row2[0], m.row0[c])
+                        ^ RijndaelMult(invax.row2[1], m.row1[c])
+                        ^ RijndaelMult(invax.row2[2], m.row2[c])
+                        ^ RijndaelMult(invax.row2[3], m.row3[c]);
+        state.row3[c] = RijndaelMult(invax.row3[0], m.row0[c])
+                        ^ RijndaelMult(invax.row3[1], m.row1[c])
+                        ^ RijndaelMult(invax.row3[2], m.row2[c])
+                        ^ RijndaelMult(invax.row3[3], m.row3[c]);
     }
 
 }
@@ -173,33 +363,154 @@ void AES::ExpandKey(const ByteArray& key, ByteArray& expandedKey) const {
  *      row 0 rotated 0 left.
  *      row 1 rotated 1 left.
  *      row 2 rotated 2 left.
- *      row 3 rotated 4 left.
- * The result is placed in b.
+ *      row 3 rotated 3 left.
  */
-void AES::ShiftRow(const StateArray& a, StateArray& b) const {
+void AES::InvShiftRows() {
+
+    rol(1, state.row1);
+    rol(2, state.row2);
+    rol(3, state.row3);
+}
+
+/*
+ * Perform the inverse S-Box transformation.
+ * For each byte in the state s[r,c] substitute with
+ * the byte at InvSbox[s[r,c]].
+ */
+void AES::InvSubBytes() {
 
     for (int col = 0; col < 4; ++col) {
-        b.row0[col] = a.row0[col];
-        b.row1[col] = a.row1[(col+1) % 4];
-        b.row2[col] = a.row2[(col+2) % 4];
-        b.row3[col] = a.row3[(col+3) % 4];
+        state.row0[col] = InvSbox[state.row0[col]];
+        state.row1[col] = InvSbox[state.row1[col]];
+        state.row2[col] = InvSbox[state.row2[col]];
+        state.row3[col] = InvSbox[state.row3[col]];
     }
 
 }
 
-uint8_t AES::RijndaelAdd(uint8_t a, uint8_t b) const {
+/*
+ * KeyExpansion(byte key[4*Nk], word w[Nb*(Nr+1)], Nk)
+ *
+ *  begin
+ *
+ *      word temp
+ *
+ *      i = 0
+ *
+ *      while (i < Nk)
+ *
+ *          w[i] = word(key[4*i], key[4*i+1], key[4*i+2], key[4*i+3])
+ *
+ *          i = i+1
+ *
+ *      end while
+ *
+ *      i = Nk
+ *
+ *      while (i < Nb * (Nr+1)]
+ *
+ *          temp = w[i-1]
+ *
+ *          if (i mod Nk = 0)
+ *
+ *              temp = SubWord(RotWord(temp)) xor Rcon[i/Nk]
+ *
+ *          else if (Nk > 6 and i mod Nk = 4)
+ *
+ *              temp = SubWord(temp)
+ *
+ *          end if
+ *
+ *          w[i] = w[i-Nk] xor temp
+ *
+ *          i = i + 1
+ *
+ *      end while
+ *
+ * end
+ *  
+ */
+void AES::KeyExpansion(const ByteArray& key, Word *keySchedule) const {
 
-    return a ^ b;
+    // Key consistency check.
+    //if (key.getLength() != keySize
+    //                || keySchedule.getLength() != keyScheduleSize) {
+    //        throw BadParameterException("ExpandKey: Invalid key sizes");
+    //}
+
+    Word temp;
+
+    // Copy the key into the key schedule.
+    //keySchedule.copy(0, key, 0);
+    for (int i = 0; i < Nk; ++i) {
+        for (int n = 0; n < 4; ++n) {
+            keySchedule[i][n] = key[(i*4)+n];
+        }
+    }
+
+    for (int i = Nk; i < Nb * (Nr + 1); ++i) {
+        copy(temp, keySchedule[i-1]);
+        if (i % Nk == 0) {
+            // RotWord()
+            uint8_t t = temp[0];
+            temp[0] = temp[1];
+            temp[1] = temp[2];
+            temp[2] = temp[3];
+            temp[3] = t;
+            // SubWord()
+            for (int n = 0; n < 4; ++n) {
+                temp[n] = Sbox[temp[n]];
+            }
+            // xor Rcon
+            temp[0] = temp[0] ^ Rcon[i / Nk];
+                
+        }
+        else if (Nk > 6 && i % Nk == 4) { // 256 bit keys
+            // SubWord()
+            for (int n = 0; n < 4; ++n) {
+                temp[n] = Sbox[temp[n]];
+            }
+        }
+        Word wink;
+        copy(wink, keySchedule[i-Nk]);
+        for (int n = 0; n < 4; ++n) {
+            wink[n] = wink[n] ^ temp[n];
+        }
+        copy(keySchedule[i],wink);
+    }
 
 }
 
-void AES::KeyScheduleCore(ByteArray& w, int i) const {
+/*
+ * Matrix multiplication transformation.
+ *
+ * Each column in the state is multiplied and added as
+ * a 4 byte polynomial against the polynomial function cx.
+ * The "multiplication" and "addition" are as defined in
+ * Rijndael finite field operations.
+ */
+void AES::MixColumns() {
 
-    Rotate(w);
-    for (int n = 0; n < 4; ++n) {
-        w[i] = Sbox[w[i]];
+    StateArray m = state;
+
+    for (int c = 0; c < 4; ++c) {
+        state.row0[c] = RijndaelMult(cx.row0[0], m.row0[c])
+                        ^ RijndaelMult(cx.row0[1], m.row1[c])
+                        ^ RijndaelMult(cx.row0[2], m.row2[c])
+                        ^ RijndaelMult(cx.row0[3], m.row3[c]);
+        state.row1[c] = RijndaelMult(cx.row1[0], m.row0[c])
+                        ^ RijndaelMult(cx.row1[1], m.row1[c])
+                        ^ RijndaelMult(cx.row1[2], m.row2[c])
+                        ^ RijndaelMult(cx.row1[3], m.row3[c]);
+        state.row2[c] = RijndaelMult(cx.row2[0], m.row0[c])
+                        ^ RijndaelMult(cx.row2[1], m.row1[c])
+                        ^ RijndaelMult(cx.row2[2], m.row2[c])
+                        ^ RijndaelMult(cx.row2[3], m.row3[c]);
+        state.row3[c] = RijndaelMult(cx.row3[0], m.row0[c])
+                        ^ RijndaelMult(cx.row3[1], m.row1[c])
+                        ^ RijndaelMult(cx.row3[2], m.row2[c])
+                        ^ RijndaelMult(cx.row3[3], m.row3[c]);
     }
-    w[0] = w[0] ^ Rcon[i];
 
 }
 
@@ -224,7 +535,19 @@ void AES::KeyScheduleCore(ByteArray& w, int i) const {
  *    carry add modulo 2 to 0.
  *
  */
-uint8_t AES::RijndaelMultiply(uint8_t lhs, uint8_t rhs) const {
+uint8_t AES::RijndaelMult(uint8_t lhs, uint8_t rhs) const {
+
+    if (lhs == 0 || rhs == 0) {
+        return 0;
+    }
+
+    if (lhs == 1) {
+        return rhs;
+    }
+
+    if (rhs == 1) {
+        return lhs;
+    }
 
     uint8_t a = lhs;
     uint8_t b = rhs;
@@ -245,13 +568,54 @@ uint8_t AES::RijndaelMultiply(uint8_t lhs, uint8_t rhs) const {
 
 }
 
-void AES::Rotate(ByteArray& word) const {
+/*
+ * Rotate a word left one byte.
+ */
+void AES::Rotate(ByteArray& w) const {
 
-    uint8_t temp = word[3];
-    word[3] = word[2];
-    word[2] = word[1];
-    word[1] = word[0];
-    word[0] = temp;
+    unsigned char t = w[3];
+    w[3] = w[2];
+    w[2] = w[1];
+    w[1] = w[0];
+    w[0] = t;
+
+}
+
+/*
+ * Columns are rotated as follows:
+ *      row 0 rotated 0 left.
+ *      row 1 rotated 1 left.
+ *      row 2 rotated 2 left.
+ *      row 3 rotated 3 left.
+ */
+void AES::ShiftRows() {
+
+    /*StateArray temp = state;
+    for (int col = 0; col < 4; ++col) {
+        state.row0[col] = temp.row0[col];
+        state.row1[col] = temp.row1[(col+1) % 4];
+        state.row2[col] = temp.row2[(col+2) % 4];
+        state.row3[col] = temp.row3[(col+3) % 4];
+    }*/
+    ror(1, state.row1);
+    ror(2, state.row2);
+    ror(3, state.row3);
+
+}
+
+/*
+ * Perform the S-Box transformation.
+ * For each byte in the state s[r,c] substitute with
+ * the byte at Sbox[s[r,c]].
+ */
+void AES::SubBytes() {
+
+    for (int col = 0; col < 4; ++col) {
+        state.row0[col] = Sbox[state.row0[col]];
+        state.row1[col] = Sbox[state.row1[col]];
+        state.row2[col] = Sbox[state.row2[col]];
+        state.row3[col] = Sbox[state.row3[col]];
+    }
 
 }
 

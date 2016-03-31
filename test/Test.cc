@@ -2,6 +2,7 @@
 #include "MACTest.h"
 #include "RandomTest.h"
 #include "SignatureTest.h"
+#include "CipherTest.h"
 #include <string>
 #include <iostream>
 
@@ -92,6 +93,19 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::cout << std::endl << "HMAC test passed." << std::endl;
+
+    }
+
+    if (tests == "cipher" || tests == "all") {
+
+        std::cout << "AES test." << std::endl << std::endl;
+
+        CipherTest cipher;
+        if (!cipher.AESTest()) {
+            std::cout << std::endl << "AES test failed." << std::endl;
+            return -1;
+        }
+        std::cout << std::endl << "AES test passed." << std::endl;
 
     }
 

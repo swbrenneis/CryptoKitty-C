@@ -14,7 +14,7 @@ Scalar64::Scalar64()
     endianTest();
 }
 
-Scalar64::Scalar64(long v) 
+Scalar64::Scalar64(int64_t v) 
 : value(v) {
 
     endianTest();
@@ -77,7 +77,7 @@ void Scalar64::decode(const ByteArray& encoded, int eType) {
  * Convenience function. Returns encoded array in native
  * endian format.
  */
-ByteArray Scalar64::encode(long v) {
+ByteArray Scalar64::encode(int64_t v) {
 
     return Scalar64(v).getEncoded();
 
@@ -141,7 +141,7 @@ ByteArray Scalar64::getEncoded(int eType) const {
 /*
  * Returns a signed long value.
  */
-long Scalar64::getLongValue() const {
+int64_t Scalar64::getLongValue() const {
 
     return value;
 
