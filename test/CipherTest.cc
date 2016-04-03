@@ -1,7 +1,10 @@
 #include "CipherTest.h"
 #include "cipher/AES.h"
 #include "ciphermodes/CBC.h"
+#include "ciphermodes/MtE.h"
 #include "data/ByteArray.h"
+#include "mac/HMAC.h"
+#include "digest/SHA256.h"
 #include "random/CMWCRandom.h"
 #include <iostream>
 
@@ -123,6 +126,32 @@ bool CipherTest::AESTest() {
     std::cout << "Ciphertext = " << ciphertextCBC << std::endl;
     CK::ByteArray roundtripCBC(cbc.decrypt(ciphertextCBC, key256));
     std::cout << "Plaintext = " << roundtripCBC << std::endl;
+    if (roundtripCBC != plaintext2) {
+        std::cout << "AES-256 CBC mode test failed" << std::endl;
+        return false;
+    }
+    std::cout << "AES-256 CBC mode test passed." << std::endl << std::endl;
+
+    std::cout << "AES-256 CBC mode AEAD test." << std::endl;
+    std::cout << "Plaintext = " << plaintext2 << std::endl;
+    rnd.nextBytes(iv);
+    CK::CBC *aeadS = new CK::CBC(new CK::AES(CK::AES::AES256), iv);
+    CK::MtE mteSnd(aeadS, new CK::HMAC(new CK::SHA256));
+    CK::ByteArray ciphertextAEAD(mteSnd.encrypt(plaintext2, key256));
+    std::cout << "Ciphertext = " << ciphertextAEAD << std::endl;
+    CK::CBC *aeadR = new CK::CBC(new CK::AES(CK::AES::AES256), iv);
+    CK::MtE mteRcv(aeadR, new CK::HMAC(new CK::SHA256));
+    CK::ByteArray roundtripAEAD(mteRcv.decrypt(ciphertextAEAD, key256));
+    std::cout << "Plaintext = " << roundtripAEAD << std::endl;
+    if (roundtripAEAD != plaintext2) {
+        std::cout << "AES-256 CBC mode AEAD round trip failed" << std::endl;
+        return false;
+    }
+    if (!mteRcv.authenticate()) {
+        std::cout << "AES-256 CBC mode AEAD authentication failed" << std::endl;
+        return false;
+    }
+    std::cout << "AES-256 CBC mode AEAD test passed." << std::endl << std::endl;
 
     return true;
 

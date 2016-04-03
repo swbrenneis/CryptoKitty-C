@@ -13,7 +13,7 @@ class DataException : public Exception {
 
     public:
         DataException(const std::string& msg) : Exception(msg) {}
-        DataException(const DataException& other)
+        DataException(const Exception& other)
                 : Exception(other) {}
 
     private:

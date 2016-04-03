@@ -144,8 +144,68 @@ struct TLSCiphertext {
     S fragment;
 };
 
+// 6.2.3.1
+// MAC is seq_num + TLSCompressed.type
+//                  + TLSCompressed.version
+//                  + TLSCompressed.length
+//                  + TLSCompressed.fragment
+//
+// Key is MAC_write_key
+// stream-ciphered
+struct GenericStreamCipher {
+    // TLSCompressed.length    
+    opaque *content;
+    // SecurityParameters.mac_length
+    opaque *MAC;
+};
+
+// Section 6.3.2.2
+struct GenericBlockCipher {
+    // SecurityParameters.record_iv_length;
+    opaque *IV;
+    // block-ciphered
+    struct {
+        // TLSCompressed.length;
+        opaque *content;
+        // SecurityParameters.mac_length
+        opaque *MAC;
+        // GenericBlockCipher.padding_length
+        uint8_t *padding;
+        uint8_t padding_length;
+    };
+};
+
+// Section 6.3.2.3
+// additional_data = seq_num + TLSCompressed.type +
+//                         TLSCompressed.version + TLSCompressed.length
+struct GenericAEADCipher {
+    // SecurityParameters.record_iv_length
+    opaque *nonce_explicit;
+    // aead-ciphered
+    struct {
+        // TLSCompressed.length
+        opaque *content;
+    };
+};
+
+// Alert protocol - Section 7.2
+// Handled as uint8_t
+enum Alert Level { warning=1, fatal=2 };
+
+enum AlertDescription { close_notify=0, unexpected_message=10, bad_record_mac=20,
+       decryption_failed_RESERVED=21, record_overflow=22, decompression_failure=30,
+       handshake_failure=40, no_certificate_RESERVED=41, bad_certificate=42,
+       unsupported_certificate=43, certificate_revoked=44, certificate_expired=45,
+       certificate_unknown=46, illegal_parameter=47, unknown_ca=48,
+       access_denied=49, decode_error=50, decrypt_error=51,
+       export_restriction_RESERVED=60, protocol_version=70, insufficient_security=71,
+       internal_error=80, user_canceled=90, no_renegotiation=100,
+       unsupported_extension=110 };
+
+struct Alert {
+    AlertLevel level;
+    AlertDescription description;
+};
 
 
-
-   
 }

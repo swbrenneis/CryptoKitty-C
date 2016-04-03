@@ -51,6 +51,12 @@ ByteArray HMAC::generateKey(unsigned bitsize) {
 
 }
 
+unsigned HMAC::getDigestLength() const {
+
+    return hash->getDigestLength();
+
+}
+
 /*
  * Generate the HMAC.
  *

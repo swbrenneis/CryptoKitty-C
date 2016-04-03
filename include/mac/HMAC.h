@@ -27,6 +27,7 @@ class HMAC {
     public:
         bool authenticate(const ByteArray& hmac);
         ByteArray generateKey(unsigned bitsize);
+        unsigned getDigestLength() const;
         ByteArray getHMAC();
         void setKey(const ByteArray& k);
         void setMessage(const ByteArray& m);

@@ -40,25 +40,46 @@ ByteArray CBC::encrypt(const ByteArray& iv, const ByteArray& block,
 ByteArray CBC::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
 
     ByteArray plaintext;
-    ByteArray padded(ciphertext);
-    std::deque<ByteArray> blocks;
+    ByteArray padded;
     unsigned textSize = ciphertext.getLength();
     unsigned blockOffset = 0;
     ByteArray cblock;
-    while (textSize > blockSize) {
-        cblock = ciphertext.range(blockOffset, blockSize);
-        textSize -= blockSize;
+    if (textSize % blockSize != 0) {
+        while (textSize > blockSize) {
+            cblock = ciphertext.range(blockOffset, blockSize);
+            textSize -= blockSize;
+            blockOffset += blockSize;
+        }
+        // Decrypt second to last block.
+        ByteArray padBlock(cipher->decrypt(cblock, key));
+        // Get padding bits.
+        ByteArray padBytes(padBlock.range(textSize, blockSize - textSize));
+        padded = ciphertext;
+        // Pad the original ciphertext.
+        padded.append(padBytes);
+        // Extract the last 2 blocks.
+        ByteArray b1(padded.range(padded.getLength()-(blockSize*2), blockSize));
+        ByteArray b2(padded.range(padded.getLength()-(blockSize), blockSize));
+        // Swap blocks.
+        padded = padded.range(0, padded.getLength()-(blockSize*2));
+        padded.append(b2);
+        padded.append(b1);
+    }
+    else {
+        padded = ciphertext;
+    }
+    textSize = padded.getLength();
+    blockOffset = 0;
+    ByteArray input(iv);
+    while (textSize > 0) {
+        ByteArray cipherblock(padded.range(blockOffset, blockSize));
+        ByteArray plainblock(decrypt(input, cipherblock, key));
+        plaintext.append(plainblock);
+        input = cipherblock;
         blockOffset += blockSize;
+        textSize -= blockSize;
     }
-    if (textSize > 0) { // Need to steal
-        ByteArray padblock = blocks.back();
-        blocks.pop_back();
-        ByteArray pad(cipher->decrypt(padblock, key));
-        pad = pad.range(textLength, blockSize-textLength);
-        
-    }
-    
-    return plaintext.range(0, ciphertext.getLength());;
+    return plaintext.range(0, ciphertext.getLength());
 
 }
 

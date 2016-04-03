@@ -11,8 +11,8 @@ CIPHER_HEADER= include/cipher/AES.h include/cipher/PKCS1rsassa.h \
 			   include/cipher/PSSmgf1.h include/cipher/PSSrsassa.h \
 			   include/cipher/RSA.h
 CIPHER_SOURCE= $(CIPHER_OBJECT:.o=.cc)
-CIPHERMODES_OBJECT= ciphermodes/CBC.o
-CIPHERMODES_HEADER= include/ciphermodes/CBC.h
+CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/MtE.o
+CIPHERMODES_HEADER= include/ciphermodes/CBC.h include/ciphermodes/MtE.h
 CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
 DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/NanoTime.o data/Scalar32.o \
 			 data/Scalar64.o
@@ -43,16 +43,20 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
+TLS_OBJECT= tls/TCPConnection.o tls/TlsServerHandshake.o
+TLS_HEADER= include/tls/TCPConnection.h include/tls/TlsHandshake.h \
+			include/tls/TlsServerHandshake.h
+TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 LDOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
 		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
-		  $(SIGNATURE_OBJECT)
+		  $(SIGNATURE_OBJECT) $(TLS_OBJECT)
 
-LIBRARY= $(DEV_HOME)/lib/libcryptokitty.so
+LIBRARY= libcryptokitty.so
 
 .SUFFIXES:
 
-.PHONY: clean
+.PHONY: clean install
 
 all: $(LIBRARY)
 
@@ -80,8 +84,25 @@ $(RANDOM_OBJECT): $(RANDOM_SOURCE) $(RANDOM_HEADER)
 $(SIGNATURE_OBJECT): $(SIGNATURE_SOURCE) $(SIGNATURE_HEADER)
 	$(MAKE) -C signature
 
+$(TLS_OBJECT): $(TLS_SOURCE) $(TLS_HEADER)
+	$(MAKE) -C tls
+
 $(LIBRARY): $(LDOBJECT)
 	    $(LD) -o $@ $(LDOBJECT) $(LDFLAGS)
+
+install: $(LIBRRY)
+	cp $(LIBRARY) $(DEV_HOME)/lib
+	cp -af include/cipher $(DEV_HOME)/include/CryptoKitty
+	cp -af include/ciphermodes $(DEV_HOME)/include/CryptoKitty
+	cp -af include/data $(DEV_HOME)/include/CryptoKitty
+	cp -af include/digest $(DEV_HOME)/include/CryptoKitty
+	cp -af include/exceptions $(DEV_HOME)/include/CryptoKitty
+	cp -af include/cipher $(DEV_HOME)/include/CryptoKitty
+	cp -af include/keys $(DEV_HOME)/include/CryptoKitty
+	cp -af include/mac $(DEV_HOME)/include/CryptoKitty
+	cp -af include/random $(DEV_HOME)/include/CryptoKitty
+	cp -af include/signature $(DEV_HOME)/include/CryptoKitty
+	cp -af include/tls $(DEV_HOME)/include/CryptoKitty
 
 clean:
 	rm -f $(LIBRARY)
@@ -93,4 +114,5 @@ clean:
 	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
+	cd tls && $(MAKE) clean
 
