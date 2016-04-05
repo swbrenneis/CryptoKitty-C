@@ -35,6 +35,17 @@ Scalar32::Scalar32(const ByteArray& encoded, int eType) {
 
 }
 
+Scalar32::Scalar32(const Scalar32& other)
+: value(other.value) {
+}
+
+Scalar32& Scalar32::operator= (const Scalar32& other) {
+
+    value = other.value;
+    return *this;
+
+}
+
 Scalar32::~Scalar32() {
 }
 

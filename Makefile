@@ -43,9 +43,8 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
-TLS_OBJECT= tls/TCPConnection.o tls/TlsServerHandshake.o
-TLS_HEADER= include/tls/TCPConnection.h include/tls/TlsHandshake.h \
-			include/tls/TlsServerHandshake.h
+TLS_OBJECT= 
+TLS_HEADER= 
 TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 LDOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \

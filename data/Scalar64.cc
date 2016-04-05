@@ -35,6 +35,17 @@ Scalar64::Scalar64(const ByteArray& encoded, int eType) {
 
 }
 
+Scalar64::Scalar64(const Scalar64& other)
+: value(other.value) {
+}
+
+Scalar64& Scalar64::operator= (const Scalar64& other) {
+
+    value = other.value;
+    return *this;
+
+}
+
 Scalar64::~Scalar64() {
 }
 
