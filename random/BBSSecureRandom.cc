@@ -1,9 +1,10 @@
 #include "random/BBSSecureRandom.h"
 #include "random/CMWCRandom.h"
 #include "data/BigInteger.h"
-#include "data/NanoTime.h"
 #include "data/Scalar64.h"
 #include "data/Scalar32.h"
+#include <cstdlib>
+#include <linux/random.h>
 
 namespace CK {
 
@@ -41,8 +42,9 @@ void BBSSecureRandom::initialize() {
     // Compute the modulus
     M = p * q;
     // Compute the initial seed.
-    NanoTime nt;
-    setState(nt.getFullTime());
+    uint8_t seedbytes[8];
+    getrandom(seedbytes, 8, 0);
+    setState(Scalar64::decode(ByteArray(seedbytes, 8)));
 
 }
 
@@ -56,8 +58,9 @@ void BBSSecureRandom::nextBytes(ByteArray& bytes) {
     }
 
     if (reseed + bytes.getLength() > RESEED) {
-        NanoTime nt;
-        setState(nt.getFullTime());
+        uint8_t seedbytes[8];
+        getrandom(seedbytes, 8, 0);
+        setState(Scalar64::decode(ByteArray(seedbytes, 8)));
         reseed = 0;
     }
     reseed += bytes.getLength();
@@ -121,7 +124,7 @@ long BBSSecureRandom::nextLong() {
 /*
  * Set the RNG state.
  */
-void BBSSecureRandom::setState(unsigned long seed) {
+void BBSSecureRandom::setState(uint64_t seed) {
 
     CMWCRandom rnd;
     rnd.setSeed(seed);

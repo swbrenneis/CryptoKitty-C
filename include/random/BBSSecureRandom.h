@@ -3,6 +3,7 @@
 
 #include "SecureRandom.h"
 #include "data/BigInteger.h"
+#include <cstdint>
 
 namespace CK {
 
@@ -22,7 +23,7 @@ class BBSSecureRandom : public SecureRandom {
 
     private:
         void initialize();
-        void setState(unsigned long seed);
+        void setState(uint64_t seed);
 
     private:
         bool initialized;

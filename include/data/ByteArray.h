@@ -35,6 +35,7 @@ class ByteArray {
 
     public:
         ByteArray& operator= (const ByteArray& other);
+        ByteArray& operator= (const std::string& str);
         uint8_t& operator[] (unsigned index);
         uint8_t operator[] (unsigned index) const;
 
