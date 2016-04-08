@@ -1,4 +1,6 @@
 #include "tls/RecordProtocol.h"
+#include "tls/HandshakeRecord.h"
+#include "exceptions/tls/RecordException.h"
 
 namespace CKTLS {
 
@@ -13,14 +15,51 @@ RecordProtocol::RecordProtocol(ContentType c)
 RecordProtocol::~RecordProtocol() {
 }
 
-CK::ByteArray RecordProtocol::encode() const {
+uint16_t RecordProtocol::getFragmentLength() const {
 
-    CK::ByteArray encoded(static_cast<uint8_t>(content));
-    encoded.append(MAJOR);
-    encoded.append(MINOR);
-    encoded.append(fragLength.encode(CK::Scalar16::BIGENDIAN));
-    encoded.append(fragment);
-    return encoded;
+    return fragLength;
+
+}
+
+uint8_t RecordProtocol::getRecordMajorVersion() const {
+
+    return recordMajorVersion;
+
+}
+
+uint8_t RecordProtocol::getRecordMinorVersion() const {
+
+    return recordMinorVersion;
+
+}
+
+CKTLS::RecordProtocol::ContentType RecordProtocol::getType() const {
+
+    return content;
+
+}
+
+void RecordProtocol::setFragmentLength(uint16_t len) {
+
+    fragLength = len;
+
+}
+
+void RecordProtocol::setRecordMajorVersion(uint8_t major) {
+
+    recordMajorVersion = major;
+
+}
+
+void RecordProtocol::setRecordMinorVersion(uint8_t minor) {
+
+    recordMinorVersion = minor;
+
+}
+
+void RecordProtocol::setType(CKTLS::RecordProtocol::ContentType c) {
+
+    content = c;
 
 }
 

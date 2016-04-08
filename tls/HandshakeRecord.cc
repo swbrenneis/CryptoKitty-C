@@ -1,16 +1,23 @@
 #include "tls/HandshakeRecord.h"
 #include "tls/HelloRequest.h"
 #include "tls/ClientHello.h"
+#include "tls/ServerHello.h"
+#include "data/Scalar16.h"
+#include "data/Scalar32.h"
 #include "exceptions/tls/RecordException.h"
 
 namespace CKTLS {
 
 HandshakeRecord::HandshakeRecord()
-: RecordProtocol(handshake) {
+: Plaintext(handshake),
+  body(0),
+  length(0) {
 }
 
 HandshakeRecord::HandshakeRecord(HandshakeType h)
-: RecordProtocol(handshake),
+: Plaintext(handshake),
+  body(0),
+  length(0),
   type(h) {
 
     switch (type) {
@@ -21,6 +28,10 @@ HandshakeRecord::HandshakeRecord(HandshakeType h)
         case client_hello:
             // TODO: Validate that this is a client.
             body = new ClientHello;
+            break;
+        case server_hello:
+            // TODO: Validate that this is a server.
+            body = new ServerHello;
             break;
         default:
             throw RecordException("Invalid handshake type");
@@ -41,7 +52,7 @@ void HandshakeRecord::decode(const CK::ByteArray& stream) {
 
     type = static_cast<HandshakeType>(stream[0]);
     // Decode the body length.
-    uint32_t length = 0;
+    length = 0;
     for (int n = 1; n < 4; ++n) {
         length = length << 8;
         length |= stream[n];
@@ -61,6 +72,10 @@ void HandshakeRecord::decode(const CK::ByteArray& stream) {
             // TODO: Validate that this is a server.
             body = new ClientHello;
             break;
+        case server_hello:
+            // TODO: Validate that this is a server.
+            body = new ServerHello;
+            break;
         default:
             throw RecordException("Invalid handshake type");
     }
@@ -68,12 +83,46 @@ void HandshakeRecord::decode(const CK::ByteArray& stream) {
 
 }
 
-CK::ByteArray HandshakeRecord::encode() const {
+CK::ByteArray HandshakeRecord::encode() {
+
+    fragment.clear();
+    fragment.append(type);
+    CK::ByteArray encBody(body->encode());
+    length = encBody.getLength();
+    CK::Scalar32 bodyLen(length);
+    CK::ByteArray bl = bodyLen.encode(CK::Scalar32::BIGENDIAN);
+    fragment.append(bl.range(0, 3));
+    fragment.append(encBody);
+    fragLength = fragment.getLength();
 
     CK::ByteArray encoded;
-    encoded.append(type);
-    encoded.append(body->encode());
+    encoded.append(content);
+    encoded.append(recordMajorVersion);
+    encoded.append(recordMinorVersion);
+    CK::Scalar16 fl(fragLength);
+    encoded.append(fl.encode(CK::Scalar16::BIGENDIAN));
+    encoded.append(fragment);
+
     return encoded;
+
+}
+
+HandshakeBody *HandshakeRecord::getBody() {
+
+    return body;
+
+}
+
+HandshakeRecord::HandshakeType HandshakeRecord::getType() const {
+
+    return type;
+
+}
+
+void HandshakeRecord::setBody(HandshakeBody *hs) {
+
+    delete body;
+    body = hs;
 
 }
 

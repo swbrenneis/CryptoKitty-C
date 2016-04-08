@@ -1,10 +1,14 @@
 #include "random/BBSSecureRandom.h"
 #include "random/CMWCRandom.h"
-#include "data/BigInteger.h"
+#include "data/NanoTime.h"
 #include "data/Scalar64.h"
 #include "data/Scalar32.h"
 #include <cstdlib>
+#ifdef VMRANDOM
+#include <fstream>
+#else
 #include <linux/random.h>
+#endif
 
 namespace CK {
 
@@ -14,6 +18,9 @@ const BigInteger BBSSecureRandom::THREE(3);
 const BigInteger BBSSecureRandom::FOUR(4);
 // Reseed every 900 KBytes.
 static const unsigned RESEED = 900 * 1024;
+#ifdef VMRANDOM
+bool BBSSecureRandom::seeded = false;
+#endif
 
 BBSSecureRandom::BBSSecureRandom()
 : initialized(false),
@@ -23,12 +30,46 @@ BBSSecureRandom::BBSSecureRandom()
 BBSSecureRandom::~BBSSecureRandom() {
 }
 
+
+/*
+ * Collect entropy from getrandom or directly from /dev/random.
+ */
+void BBSSecureRandom::getEntropy(ByteArray bytes) const {
+
+    char seedbytes[8];
+
+// Don't get entropy from getrandom is this is a VM.
+#ifdef VMRANDOM
+    if (!seeded) {
+        CMWCRandom rnd;
+        NanoTime nt;
+        rnd.setSeed(nt.getFullTime());
+        ByteArray seed(10);
+        rnd.nextBytes(seed);
+        std::ofstream out("/dev/random");
+        out << seed;
+        out.close();
+        seeded = true;
+    }
+    std::ifstream in("/dev/random");
+    in.get(seedbytes, 8);
+    in.close();
+#else
+    getrandom(seedbytes, 8, 0);
+#endif
+    bytes.copy(0, reinterpret_cast<const uint8_t*>(seedbytes),
+                                                        0, 8);
+
+}
+
 /*
  * Initialize the RNG state.
  */
 void BBSSecureRandom::initialize() {
 
     CMWCRandom rnd;
+    NanoTime nt;
+    rnd.setSeed(nt.getFullTime());
     BigInteger p(512, false, rnd);
     // Check for congruence to 3 (mod 4). Generate new prime if not.
     while (p % FOUR != THREE) {
@@ -42,9 +83,9 @@ void BBSSecureRandom::initialize() {
     // Compute the modulus
     M = p * q;
     // Compute the initial seed.
-    uint8_t seedbytes[8];
-    getrandom(seedbytes, 8, 0);
-    setState(Scalar64::decode(ByteArray(seedbytes, 8)));
+    ByteArray seedbytes(8);
+    getEntropy(seedbytes);
+    setState(Scalar64::decode(seedbytes));
 
 }
 
@@ -58,9 +99,9 @@ void BBSSecureRandom::nextBytes(ByteArray& bytes) {
     }
 
     if (reseed + bytes.getLength() > RESEED) {
-        uint8_t seedbytes[8];
-        getrandom(seedbytes, 8, 0);
-        setState(Scalar64::decode(ByteArray(seedbytes, 8)));
+        ByteArray seedbytes(8);
+        getEntropy(seedbytes);
+        setState(Scalar64::decode(seedbytes));
         reseed = 0;
     }
     reseed += bytes.getLength();

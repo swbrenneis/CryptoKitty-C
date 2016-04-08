@@ -7,6 +7,8 @@
 
 namespace CKTLS {
 
+class HandshakeBody;
+
 class RecordProtocol {
 
     public:
@@ -25,13 +27,22 @@ class RecordProtocol {
         virtual ~RecordProtocol();
 
     public:
-        static RecordProtocol *startRecord(uint8_t *rec);
-
-        virtual CK::ByteArray encode() const;
+        virtual void decode(const CK::ByteArray& frag)=0;
+        virtual CK::ByteArray encode()=0;
+        uint16_t getFragmentLength() const;
+        uint8_t getRecordMajorVersion() const;
+        uint8_t getRecordMinorVersion() const;
+        ContentType getType() const;
+        void setFragmentLength(uint16_t len);
+        void setRecordMajorVersion(uint8_t major);
+        void setRecordMinorVersion(uint8_t minor);
+        void setType(ContentType c);
 
     protected:
         ContentType content;
-        CK::Scalar16 fragLength;
+        uint8_t recordMajorVersion;
+        uint8_t recordMinorVersion;
+        uint16_t fragLength;
         CK::ByteArray fragment;
 
         static const uint8_t MAJOR;

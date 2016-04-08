@@ -195,6 +195,15 @@ BigInteger BigInteger::add(const BigInteger& addend) const {
 }
 
 /*
+ * Returns a BigInteger equal to bitwise and of this and logical.
+ */
+BigInteger BigInteger::And(const BigInteger& logical) const {
+
+    return BigInteger(new NTL::ZZ(*number & *logical.number));
+
+}
+
+/*
  * Returns the position of the most significant bit that is
  * different than the sign bit.
  */
@@ -256,6 +265,29 @@ bool BigInteger::equals(const BigInteger& other) const {
 BigInteger BigInteger::gcd(const BigInteger& a) const {
 
     return BigInteger(new NTL::ZZ(NTL::GCD(*number, *a.number)));
+
+}
+
+/*
+ * Returns a BigInteger that is the bitwise inversion of this.
+ */
+BigInteger BigInteger::invert() const {
+
+    int bits = bitLength();
+    NTL::ZZ mask;
+    for (int i = 0; i < bits; ++i) {
+        NTL::SetBit(mask, i);
+    }
+    return BigInteger(new NTL::ZZ(*number ^ mask));
+
+}
+
+/*
+ * Returns a BigInteger that is this shifted left count times.
+ */
+BigInteger BigInteger::leftShift(long count) const {
+
+    return BigInteger(new NTL::ZZ(*number << count));
 
 }
 
@@ -391,6 +423,15 @@ BigInteger BigInteger::multiply(const BigInteger& multiplier) const {
 }
 
 /*
+ * Returns a BigInteger equal to bitwise or of this and logical.
+ */
+BigInteger BigInteger::Or(const BigInteger& logical) const {
+
+    return BigInteger(new NTL::ZZ(*number | *logical.number));
+
+}
+
+/*
  * Send the value to a standard output stream.
  */
 void BigInteger::out(std::ostream& o) const {
@@ -435,6 +476,15 @@ bool BigInteger::testBit(int bitnum) const {
 
 }
 
+/*
+ * Returns a BigInteger equal to bitwise xor of this and logical.
+ */
+BigInteger BigInteger::Xor(const BigInteger& logical) const {
+
+    return BigInteger(new NTL::ZZ(*number ^ *logical.number));
+
+}
+
 }
 
 // Global operators
@@ -460,6 +510,16 @@ CK::BigInteger operator/ (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.divide(rhs); }
 CK::BigInteger operator% (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.mod(rhs); }
+CK::BigInteger operator^ (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.Xor(rhs); }
+CK::BigInteger operator| (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.Or(rhs); }
+CK::BigInteger operator& (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
+{ return lhs.And(rhs); }
+CK::BigInteger operator~ (const CK::BigInteger& lhs)
+{ return lhs.invert(); }
+CK::BigInteger operator<< (const CK::BigInteger& lhs, long rhs)
+{ return lhs.leftShift(rhs); }
 CK::BigInteger operator>> (const CK::BigInteger& lhs, long rhs)
 { return lhs.rightShift(rhs); }
 std::ostream& operator<< (std::ostream& out, const CK::BigInteger& bi)

@@ -56,8 +56,11 @@ class BigInteger {
         ~BigInteger();
 
     public:
-        // Returns a BigInteger that is aht sum of this and addend.
+        // Returns a BigInteger that is the sum of this and addend.
         BigInteger add(const BigInteger& addend) const;
+        // Returns a BigInteger that is the bitwise and of this
+        // and logical.
+        BigInteger And(const BigInteger& logical) const;
         // Returns the number of significant bits.
         int bitLength() const;
         // Returns the total number of bits
@@ -70,6 +73,10 @@ class BigInteger {
         bool equals(const BigInteger& other) const;
         // Returns the greatest common denominator of this and a.
         BigInteger gcd(const BigInteger& a) const;
+        // Returns a BigInteger that is the bitwise inversion of this.
+        BigInteger invert() const;
+        // Returns a BigInteger equal to this shifted left count times.
+        BigInteger leftShift(long count) const;
         // Returns true if this < other.
         bool lessThan(const BigInteger& other) const;
         // Returns a BigInteger equal to this mod a.
@@ -81,6 +88,9 @@ class BigInteger {
         BigInteger modPow(const BigInteger& exp, const BigInteger& m) const;
         // Returns a BigInteger equal to this * multiplier.
         BigInteger multiply(const BigInteger& multiplier) const;
+        // Returns a BigInteger that is the bitwise or of this
+        // and logical.
+        BigInteger Or(const BigInteger& logical) const;
         // Returns a BigInteger equal to this raised to the exp power.
         BigInteger pow(long exp) const;
         // Returns a BigInteger equal to this shifted right count times.
@@ -89,6 +99,9 @@ class BigInteger {
         BigInteger subtract(const BigInteger& subtractor) const;
         // Returns true if the specified bit is set.
         bool testBit(int bitnum) const;
+        // Returns a BigInteger that is the bitwise exclusive or of this
+        // and logical.
+        BigInteger Xor(const BigInteger& logical) const;
 
     public:
         void out(std::ostream& o) const;
@@ -116,6 +129,10 @@ CK::BigInteger operator- (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
 CK::BigInteger operator* (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
 CK::BigInteger operator/ (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
 CK::BigInteger operator% (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator^ (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator| (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator& (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator~ (const CK::BigInteger& lhs);
 CK::BigInteger operator>> (const CK::BigInteger& lhs, long rhs);
 CK::BigInteger operator<< (const CK::BigInteger& lhs, long rhs);
 std::ostream& operator<< (std::ostream& out, const CK::BigInteger& bi);

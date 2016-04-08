@@ -1,6 +1,7 @@
 #include "CipherTest.h"
 #include "cipher/AES.h"
 #include "ciphermodes/CBC.h"
+#include "ciphermodes/GCM.h"
 #include "ciphermodes/MtE.h"
 #include "data/ByteArray.h"
 #include "mac/HMAC.h"
@@ -152,6 +153,26 @@ bool CipherTest::AESTest() {
         return false;
     }
     std::cout << "AES-256 CBC mode AEAD test passed." << std::endl << std::endl;
+
+    std::cout << "AES-128 GCM mode test." << std::endl;
+    std::cout << "Plaintext = " << plaintext2 << std::endl;
+    rnd.nextBytes(iv);
+    CK::GCM gcme(new CK::AES(CK::AES::AES128), iv);
+    CK::ByteArray authData("October 28, 1956");
+    gcme.setAuthData(authData);
+    CK::ByteArray ciphertextGCM(gcme.encrypt(plaintext2, key128));
+    std::cout << "Ciphertext = " << ciphertextGCM << std::endl;
+    CK::ByteArray tag(gcme.getAuthTag());
+    CK::GCM gcmd(new CK::AES(CK::AES::AES128), iv);
+    gcmd.setAuthTag(tag);
+    gcmd.setAuthData(authData);
+    CK::ByteArray roundtripGCM(gcmd.decrypt(ciphertextAEAD, key128));
+    std::cout << "Plaintext = " << roundtripGCM << std::endl;
+    if (roundtripAEAD != plaintext2) {
+        std::cout << "AES-128 GCM mode round trip failed" << std::endl;
+        return false;
+    }
+    std::cout << "AES-128 GCM mode test passed." << std::endl << std::endl;
 
     return true;
 

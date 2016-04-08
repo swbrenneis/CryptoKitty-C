@@ -3,6 +3,7 @@
 
 #include "SecureRandom.h"
 #include "data/BigInteger.h"
+#include "data/ByteArray.h"
 #include <cstdint>
 
 namespace CK {
@@ -22,6 +23,8 @@ class BBSSecureRandom : public SecureRandom {
         virtual long nextLong();
 
     private:
+        // Get 8 bytes of entropy
+        void getEntropy(ByteArray bytes) const;
         void initialize();
         void setState(uint64_t seed);
 
@@ -31,6 +34,9 @@ class BBSSecureRandom : public SecureRandom {
         BigInteger Xn;  // X(n)
         BigInteger Xn1; // X(n-1)
         unsigned reseed;
+#ifdef VMRANDOM
+        static bool seeded;
+#endif
 
     private:
         static const BigInteger TWO;

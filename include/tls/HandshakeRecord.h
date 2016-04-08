@@ -2,13 +2,13 @@
 #define HANDSHAKERECORD_H_INCLUDED
 
 #include "data/ByteArray.h"
-#include "tls/RecordProtocol.h"
+#include "tls/Plaintext.h"
 
 namespace CKTLS {
 
 class HandshakeBody;
 
-class HandshakeRecord : public RecordProtocol {
+class HandshakeRecord : public Plaintext {
 
     public:
         enum HandshakeType { hello_request=0, client_hello=1,
@@ -26,11 +26,15 @@ class HandshakeRecord : public RecordProtocol {
 
     public:
         void decode(const CK::ByteArray& stream);
-        CK::ByteArray encode() const;
+        CK::ByteArray encode();
+        HandshakeBody *getBody();
+        HandshakeType getType() const;
+        void setBody(HandshakeBody *hs);
 
     private:
-        HandshakeType type;
         HandshakeBody *body;
+        uint32_t length;
+        HandshakeType type;
 
 };
 

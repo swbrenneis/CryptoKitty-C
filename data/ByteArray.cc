@@ -71,6 +71,16 @@ ByteArray& ByteArray::operator= (const ByteArray& other) {
 
 }
 
+ByteArray& ByteArray::operator= (const std::string& str) {
+
+    const uint8_t *string =
+            reinterpret_cast<const uint8_t*>(str.c_str());
+    unsigned length = str.length();
+    bytes = Array(string, string+length);
+    return *this;
+
+}
+
 uint8_t& ByteArray::operator[] (unsigned index) {
 
     return bytes[index];
@@ -190,6 +200,16 @@ void ByteArray::copy(unsigned offset, const ByteArray& other,
 
 }
 
+/*
+ * Convenience copy method.
+ */
+void ByteArray::copy(unsigned offset, const uint8_t *other,
+                        unsigned otherOffset, unsigned length) {
+
+    copy(offset, ByteArray(other+otherOffset, length), 0);
+
+}
+
 bool ByteArray::equals(const ByteArray& other) const {
 
     return bytes == other.bytes;
@@ -271,6 +291,30 @@ CK::ByteArray operator^ (const CK::ByteArray& lhs, const CK::ByteArray& rhs) {
     CK::ByteArray result(lhs.getLength());
     for (unsigned n = 0; n < lhs.getLength(); ++n) {
         result[n] = lhs[n] ^ rhs[n];
+    }
+
+    return result;
+
+}
+
+CK::ByteArray operator<< (const CK::ByteArray& lhs, int shiftbits) {
+
+    CK::ByteArray result(lhs);
+    CK::ByteArray carryByte(1, 1);
+    for (int n = 0; n < shiftbits; ++n) {
+        int byteCount = lhs.getLength();
+        uint8_t carryBit = 0;
+        for (int i = 0; i < byteCount; ++i) {
+             result[i] |= carryBit;
+             carryBit = (result[i] & 0x80) != 0 ? 1 : 0;
+             result[i] = result[i] << 1;
+
+        }
+        if (carryBit != 0) {
+            CK::ByteArray temp(carryByte);
+            temp.append(result);
+            result = temp;
+        }
     }
 
     return result;

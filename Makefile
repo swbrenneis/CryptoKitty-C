@@ -11,14 +11,15 @@ CIPHER_HEADER= include/cipher/AES.h include/cipher/PKCS1rsassa.h \
 			   include/cipher/PSSmgf1.h include/cipher/PSSrsassa.h \
 			   include/cipher/RSA.h
 CIPHER_SOURCE= $(CIPHER_OBJECT:.o=.cc)
-CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/MtE.o
-CIPHERMODES_HEADER= include/ciphermodes/CBC.h include/ciphermodes/MtE.h
+CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/GCM.o ciphermodes/MtE.o
+CIPHERMODES_HEADER= include/ciphermodes/CBC.h include/ciphermodes/GCM.h \
+					include/ciphermodes/MtE.h
 CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
-DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/NanoTime.o data/Scalar32.o \
-			 data/Scalar64.o
+DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/NanoTime.o data/Scalar16.o \
+			 data/Scalar32.o data/Scalar64.o
 DATA_HEADER= include/data/BigInteger.h include/data/ByteArray.h \
-			 include/data/NanoTime.h include/data/Scalar32.h  \
-			include/data/Scalar64.h
+			 include/data/NanoTime.h include/data/Scalar16.h  \
+			include/data/Scalar32.h include/data/Scalar64.h
 DATA_SOURCE= $(DATA_OBJECT:.o=.cc)
 DIGEST_OBJECT= digest/SHA256.o digest/DigestBase.o
 DIGEST_HEADER= include/digest/SHA256.h include/digest/DigestBase.h
@@ -43,8 +44,13 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
-TLS_OBJECT= 
-TLS_HEADER= 
+TLS_OBJECT= tls/CipherSuiteManager.o tls/ClientHello.o tls/ConnectionState.o \
+			tls/HandshakeRecord.o tls/Plaintext.o tls/RecordProtocol.o \
+			tls/ServerHello.o
+TLS_HEADER= include/tls/CipherSuiteManager.h include/tls/ClientHello.h \
+			include/tls/ConnectionState.h include/tls/HandshakeRecord.h \
+			include/tls/Plaintext.h include/tls/RecordProtocol.h \
+		include/tls/ServerHello.h
 TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 LDOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \

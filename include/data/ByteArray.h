@@ -49,6 +49,8 @@ class ByteArray {
         void clear();
         void copy(unsigned offset, const ByteArray& other,
                         unsigned otherOffset, unsigned length=0);
+        void copy(unsigned offset, const uint8_t *other,
+                        unsigned otherOffset, unsigned length=0);
         bool equals(const ByteArray& other) const;
         unsigned getLength() const;
         void push(const ByteArray& b);
@@ -69,6 +71,8 @@ class ByteArray {
 bool operator== (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 bool operator!= (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 CK::ByteArray operator^ (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
+CK::ByteArray operator <<(const CK::ByteArray& lhs, int shiftbits);
 std::ostream& operator <<(std::ostream& out, const CK::ByteArray& bytes);
+std::ostream& operator >>(std::ostream& in, const CK::ByteArray& bytes);
 
 #endif // BYTEARRAY_H_INCLUDED

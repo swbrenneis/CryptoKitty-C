@@ -27,6 +27,8 @@ class Scalar64 {
         ByteArray getEncoded(int endian) const;
         // Returns a signed long integer.
         int64_t getLongValue() const;
+        // Returns an unsigned long integer.
+        uint64_t getUnsignedValue() const;
 
     public:
         static ByteArray encode(int64_t value);
@@ -42,6 +44,7 @@ class Scalar64 {
 
     private:
         int64_t value;
+        uint64_t uvalue;
         static int endian;
 
 };
