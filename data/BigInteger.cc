@@ -86,16 +86,18 @@ BigInteger::BigInteger(long initial)
 BigInteger::BigInteger(const ByteArray& bytes, int endian) {
 
     number = new NTL::ZZ(0L);
+    int bl = bytes.getLength(); // have to do this so the indexes
+                                // don't wrap.
     
     switch (endian) {
         case BIGENDIAN:
-            for (unsigned n = 0; n < bytes.getLength(); ++n) {
+            for (int n = 0; n < bl; ++n) {
                 *number = *number << 8;
                 *number |= bytes[n];
             }
             break;
         case LITTLEENDIAN:
-            for (unsigned n = bytes.getLength() - 1; n >= 0; --n) {
+            for (int n = bl - 1; n >= 0; --n) {
                 *number = *number << 8;
                 *number |= bytes[n];
             }

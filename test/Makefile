@@ -3,7 +3,7 @@ DEV_HOME=$(HOME)/dev
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
 CPPINCLUDES= -I../include
-CPPFLAGS= -Wall -g -MMD -std=c++11 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
+CPPFLAGS= -Wall -g -MMD -std=c++11 -O0 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
 LD= g++
 LD_FLAGS= -g -Wall -fpermissive

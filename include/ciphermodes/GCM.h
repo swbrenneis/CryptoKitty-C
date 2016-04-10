@@ -2,8 +2,8 @@
 #define GCM_H_INCLUDED
 
 #include "ciphermodes/CipherMode.h"
-#include "data/BigInteger.h"
 #include "data/ByteArray.h"
+#include "data/BigInteger.h"
 #include <cstdint>
 
 namespace CK {
@@ -32,11 +32,15 @@ class GCM : public CipherMode {
         void setAuthData(const ByteArray& ad);
 
     private:
-        ByteArray GCM_AE(const ByteArray& P);
+        ByteArray bitShift(const ByteArray& string) const;
+        ByteArray expand(const ByteArray& packed) const;
         ByteArray GCTR(const ByteArray& ICB, const ByteArray& X) const;
-        ByteArray GHASH(const ByteArray& X, const BigInteger& H) const;
-        BigInteger increment(const BigInteger& X, int bits) const;
-        BigInteger multiply(const BigInteger& X, const BigInteger& Y) const;
+        ByteArray GHASH(const ByteArray& H, const ByteArray& A,
+                                                const ByteArray& C) const;
+        ByteArray incr(const ByteArray& X) const;
+        ByteArray multiply(const ByteArray& X, const ByteArray& Y) const;
+        ByteArray pack(const ByteArray& string) const;
+        void shiftBlock(ByteArray& block) const;
 
     private:
         struct GCMNonce {
@@ -44,12 +48,13 @@ class GCM : public CipherMode {
             uint8_t nonce_explicit[8];
         };
         Cipher *cipher;
-        ByteArray K;    // Key.
         ByteArray T;    // Authentication tag;
         ByteArray IV;   // Initial value;
-        ByteArray AD;   // Authenticated data;
+        ByteArray A;   // Authenticated data;
 
-        static BigInteger R;
+        static ByteArray R;
+        static uint8_t t; // Authentication tag size;:w
+
 
 };
 

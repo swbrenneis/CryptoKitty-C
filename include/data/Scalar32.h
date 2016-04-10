@@ -11,6 +11,7 @@ class Scalar32 {
     public:
         Scalar32();
         Scalar32(int32_t v);
+        Scalar32(uint32_t v, bool u);
         Scalar32(const ByteArray& encoded);
         Scalar32(const ByteArray& encoded, int endian);
         Scalar32(const Scalar32& other);
@@ -22,11 +23,13 @@ class Scalar32 {
 
     public:
         // Returns an encoded array in the native endian order.
-        ByteArray getEncoded() const;
+        ByteArray getEncoded(bool u = false) const;
         // Returns an encoded array in the specified endian order.
-        ByteArray getEncoded(int endian) const;
+        ByteArray getEncoded(int endian, bool u = false) const;
         // Returns a signed integer.
         int32_t getIntValue() const;
+        // Returns an unsigned integer.
+        int32_t getUnsignedValue() const;
 
     public:
         static ByteArray encode(int32_t value);
@@ -39,9 +42,11 @@ class Scalar32 {
     public:
         static const int BIGENDIAN;
         static const int LITTLEENDIAN;
+        static const bool UNSIGNED;
 
     private:
         int32_t value;
+        uint32_t uvalue;
         static int endian;
 
 };

@@ -1,5 +1,6 @@
 #include "data/Scalar64.h"
 #include "exceptions/OutOfRangeException.h"
+#include <cmath>
 
 namespace CK {
 
@@ -9,7 +10,8 @@ const int Scalar64::LITTLEENDIAN = 2;
 int Scalar64::endian = 0;
 
 Scalar64::Scalar64() 
-: value(0) {
+: value(0),
+  uvalue(0) {
 
     endianTest();
 }
@@ -18,6 +20,7 @@ Scalar64::Scalar64(int64_t v)
 : value(v) {
 
     endianTest();
+    uvalue = abs(value);
 
 }
 
@@ -36,12 +39,14 @@ Scalar64::Scalar64(const ByteArray& encoded, int eType) {
 }
 
 Scalar64::Scalar64(const Scalar64& other)
-: value(other.value) {
+: value(other.value),
+  uvalue(other.uvalue) {
 }
 
 Scalar64& Scalar64::operator= (const Scalar64& other) {
 
     value = other.value;
+    uvalue = other.uvalue;
     return *this;
 
 }
@@ -68,19 +73,24 @@ void Scalar64::decode(const ByteArray& encoded, int eType) {
     switch (eType) {
         case BIGENDIAN:
             for (int n = 0; n < 8; ++n) {
-                value |= encoded[n];
                 value = value << 8;
+                value |= encoded[n];
+                uvalue = uvalue << 8;
+                uvalue |= encoded[n];
             }
             break;
         case LITTLEENDIAN:
-            for (int n = 8; n >= 0; --n) {
-                value |= encoded[n];
+            for (int n = 7; n >= 0; --n) {
                 value = value << 8;
+                value |= encoded[n];
+                uvalue = uvalue << 8;
+                uvalue |= encoded[n];
             }
             break;
         default:
             throw OutOfRangeException("Illegal endian value");
     }
+
 
 }
 
@@ -155,6 +165,15 @@ ByteArray Scalar64::getEncoded(int eType) const {
 int64_t Scalar64::getLongValue() const {
 
     return value;
+
+}
+
+/*
+ * Returns an unsigned long value.
+ */
+uint64_t Scalar64::getUnsignedValue() const {
+
+    return uvalue;
 
 }
 

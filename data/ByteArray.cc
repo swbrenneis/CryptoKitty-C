@@ -83,11 +83,19 @@ ByteArray& ByteArray::operator= (const std::string& str) {
 
 uint8_t& ByteArray::operator[] (unsigned index) {
 
+    if (index >= bytes.size()) {
+         throw OutOfRangeException("ByteArray index out of bounds");
+    }
+
     return bytes[index];
 
 }
 
 uint8_t ByteArray::operator[] (unsigned index) const {
+
+    if (index >= bytes.size()) {
+         throw OutOfRangeException("ByteArray index out of bounds");
+    }
 
     return bytes[index];
 
@@ -268,14 +276,17 @@ bool operator!= (const CK::ByteArray& lhs, const CK::ByteArray& rhs)
 { return !lhs.equals(rhs); }
 std::ostream& operator <<(std::ostream& out, const CK::ByteArray& bytes) {
 
-    int linecount = 0;
+    int column = 1;
     for (unsigned n = 0; n < bytes.getLength(); ++n) {
-        out << bytes.asHex(n) << ", ";
-        linecount++;
-        if (linecount == 16) {
-            out << std::endl;
-            linecount = 0;
+        out << bytes.asHex(n);
+        if (column < 16) {
+            out << ", ";
         }
+        else {
+            out << std::endl;
+            column = 0;
+        }
+        column++;
     }
 
     return out;
@@ -300,20 +311,31 @@ CK::ByteArray operator^ (const CK::ByteArray& lhs, const CK::ByteArray& rhs) {
 CK::ByteArray operator<< (const CK::ByteArray& lhs, int shiftbits) {
 
     CK::ByteArray result(lhs);
-    CK::ByteArray carryByte(1, 1);
-    for (int n = 0; n < shiftbits; ++n) {
-        int byteCount = lhs.getLength();
-        uint8_t carryBit = 0;
-        for (int i = 0; i < byteCount; ++i) {
-             result[i] |= carryBit;
-             carryBit = (result[i] & 0x80) != 0 ? 1 : 0;
-             result[i] = result[i] << 1;
-
+    for (int i = 0; i < shiftbits; ++i) {
+        for (int n = result.getLength() - 1; n >= 0; --n) {
+            uint8_t carry = 0;
+            if (n > 0 && (result[n-1] & 0x80) != 0) {
+                carry = 1;
+            }
+            result[n] = (result[n] << 1) | carry;
         }
-        if (carryBit != 0) {
-            CK::ByteArray temp(carryByte);
-            temp.append(result);
-            result = temp;
+    }
+
+    return result;
+
+}
+
+CK::ByteArray operator>> (const CK::ByteArray& lhs, int shiftbits) {
+
+    CK::ByteArray result(lhs);
+    for (int i = 0; i < shiftbits; ++i) {
+        for (unsigned n = 0; n < result.getLength(); ++n) {
+            uint8_t carry = 0;
+            if (n < (result.getLength() - 1)
+                            && (result[n+1] & 0x01) != 0) {
+                carry = 0x80;
+            }
+            result[n] = (result[n] >> 1) | carry;
         }
     }
 

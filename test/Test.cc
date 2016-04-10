@@ -3,6 +3,7 @@
 #include "RandomTest.h"
 #include "SignatureTest.h"
 #include "CipherTest.h"
+#include "exceptions/Exception.h"
 #include <string>
 #include <iostream>
 
@@ -98,14 +99,19 @@ int main(int argc, char** argv) {
 
     if (tests == "cipher" || tests == "all") {
 
-        std::cout << "AES test." << std::endl << std::endl;
+        try {
+            std::cout << "AES test." << std::endl << std::endl;
 
-        CipherTest cipher;
-        if (!cipher.AESTest()) {
-            std::cout << std::endl << "AES test failed." << std::endl;
-            return -1;
+            CipherTest cipher;
+            if (!cipher.AESTest()) {
+                std::cout << std::endl << "AES test failed." << std::endl;
+                return -1;
+            }
+            std::cout << std::endl << "AES test passed." << std::endl;
         }
-        std::cout << std::endl << "AES test passed." << std::endl;
+        catch (CK::Exception& e) {
+            std::cout << "Exception caught: " << e.what() << std::endl;
+        }
 
     }
 

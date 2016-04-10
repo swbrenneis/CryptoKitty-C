@@ -72,6 +72,7 @@ bool operator== (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 bool operator!= (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 CK::ByteArray operator^ (const CK::ByteArray& lhs, const CK::ByteArray& rhs);
 CK::ByteArray operator <<(const CK::ByteArray& lhs, int shiftbits);
+CK::ByteArray operator >>(const CK::ByteArray& lhs, int shiftbits);
 std::ostream& operator <<(std::ostream& out, const CK::ByteArray& bytes);
 std::ostream& operator >>(std::ostream& in, const CK::ByteArray& bytes);
 
