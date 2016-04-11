@@ -19,8 +19,8 @@ class SHA256 : public DigestBase {
         SHA256& operator= (const SHA256& other);
 
     public:
-        unsigned getBlockSize() const { return 64; }
-        unsigned getDigestLength() const { return 32; }
+        uint32_t getBlockSize() const { return 64; }
+        uint32_t getDigestLength() const { return 32; }
 
     protected:
         ByteArray finalize(const ByteArray& bytes);
@@ -39,10 +39,10 @@ class SHA256 : public DigestBase {
 
     private:
         // Hash constants
-        static const unsigned H1, H2, H3, H4,
+        static const uint32_t H1, H2, H3, H4,
                                 H5, H6, H7, H8;
         // Round constants
-        static const unsigned K[];
+        static const uint32_t K[];
         // ASN.1 identifier encoding.
         static const ByteArray DER;
 

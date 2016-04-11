@@ -2,7 +2,7 @@
 #include "data/NanoTime.h"
 #include "data/ByteArray.h"
 #include "data/BigInteger.h"
-#include "data/Scalar64.h"
+#include "data/Unsigned64.h"
 #include "digest/SHA256.h"
 #include <time.h>
 #include <climits>
@@ -12,8 +12,8 @@ namespace CK {
 
 // Static initializations
 unsigned CMWCRandom::i = 4095;
-const unsigned long long CMWCRandom::A(18782L);
-const unsigned long CMWCRandom::R = 0xfffffffe;
+const uint64_t CMWCRandom::A(18782L);
+const uint64_t CMWCRandom::R = 0xfffffffe;
 
 CMWCRandom::CMWCRandom() {
 
@@ -99,15 +99,15 @@ void CMWCRandom::seedGenerator() {
         if (context.getLength() != 0) {
             digest.update(context);
         }
-        digest.update(Scalar64::encode(nonce));
+        digest.update(Unsigned64::encode(nonce));
         nonce++;
-        digest.update(Scalar64::encode(nt.getFullTime()));
+        digest.update(Unsigned64::encode(nt.getFullTime()));
         context = digest.digest();
         fill.copy(filled, context, 0);
         filled += context.getLength();
     }
     for (int qi = 0; qi < 4088; qi += 8) {
-        q[qi] = Scalar64::decode(fill.range(qi, 8));
+        q[qi] = Unsigned64::decode(fill.range(qi, 8));
     }
     nt.newTime();
     c = nt.getFullTime() % 809430659;  // Reset the reseed counter.

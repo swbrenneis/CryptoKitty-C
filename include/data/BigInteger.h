@@ -67,12 +67,12 @@ class BigInteger {
         int bitSize() const;
         // Returns a BigInteger equal to this divided by divisor.
         BigInteger divide(const BigInteger& divisor) const;
-        // Returns a ByteArray in the specified encoding.
-        ByteArray encode(int endian) const;
         // Returns true if this = other.
         bool equals(const BigInteger& other) const;
         // Returns the greatest common denominator of this and a.
         BigInteger gcd(const BigInteger& a) const;
+        // Returns a ByteArray in the specified encoding.
+        ByteArray getEncoded(int endian) const;
         // Returns a BigInteger that is the bitwise inversion of this.
         BigInteger invert() const;
         // Returns a BigInteger equal to this shifted left count times.

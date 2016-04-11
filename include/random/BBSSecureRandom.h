@@ -4,7 +4,6 @@
 #include "SecureRandom.h"
 #include "data/BigInteger.h"
 #include "data/ByteArray.h"
-#include <cstdint>
 
 namespace CK {
 
@@ -19,8 +18,8 @@ class BBSSecureRandom : public SecureRandom {
 
     public:
         virtual void nextBytes(ByteArray& bytes);
-        virtual int nextInt();
-        virtual long nextLong();
+        virtual uint32_t nextInt();
+        virtual uint64_t nextLong();
 
     private:
         // Get 8 bytes of entropy

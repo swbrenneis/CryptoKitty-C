@@ -22,10 +22,10 @@ Random::~Random() {
  * than the long word size, the maximum available
  * bits will be returned.
  */
-unsigned long Random::next(int bits) {
+uint64_t Random::next(int bits) {
 
-    long rnd = random();
-    unsigned long mask = 1 << bits;
+    uint64_t rnd = random();
+    uint64_t mask = 1 << bits;
     return rnd & mask;
     
 }
@@ -42,7 +42,7 @@ void Random::nextBytes(ByteArray& bytes) {
     unsigned index = 0;
     while (l > 0) {
         int getBits = std::min(l, lSize);
-        long rnd = next(getBits);
+        uint64_t rnd = next(getBits);
         int shifted = lSize;
         while (shifted > 0 && l > 0 && index < bytes.getLength()) {
             bytes[index++] = rnd & 0xff;
@@ -54,27 +54,27 @@ void Random::nextBytes(ByteArray& bytes) {
 }
 
 /*
- * Return a random signed integer;
+ * Return a random unsigned integer;
  */
-int Random::nextInt() {
+uint32_t Random::nextInt() {
 
-    return next(sizeof(int) * 8) & ULONG_MAX;
+    return next(sizeof(uint32_t) * 8) & ULONG_MAX;
 
 }
 
 /*
  * Return a random signed long integer.
  */
-long Random::nextLong() {
+uint64_t Random::nextLong() {
 
-    return next(sizeof(long) * 8);
+    return next(sizeof(uint64_t) * 8);
 
 }
 
 /*
  * Does nothing.
  */
-void Random::setSeed(unsigned long newSeed) {
+void Random::setSeed(uint64_t newSeed) {
 }
 
 }

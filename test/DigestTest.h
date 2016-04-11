@@ -13,6 +13,7 @@ class DigestTest {
 
     public:
         bool sha256Test();
+        bool sha512Test();
 
 };
 

@@ -13,7 +13,7 @@ class CMWCRandom : public Random {
 
     public:
         CMWCRandom();
-        CMWCRandom(unsigned long seed);
+        CMWCRandom(uint64_t seed);
 
     private:    // No copying or assignment allowed
         CMWCRandom(const CMWCRandom& other);
@@ -23,24 +23,24 @@ class CMWCRandom : public Random {
         ~CMWCRandom();
 
     public:
-        void setSeed(unsigned long seedValue);
+        void setSeed(uint64_t seedValue);
 
     protected:
-        virtual unsigned long next(int bits);
+        virtual uint64_t next(int bits);
 
     private:
         long cmwc4096();
         void seedGenerator();
 
     private:
-        unsigned long seed; // Seed generator nonce.
-        unsigned long c; // Reset mask.
-        typedef std::deque<unsigned long> Q;    // Seed
+        uint64_t seed; // Seed generator nonce.
+        uint64_t c; // Reset mask.
+        typedef std::deque<uint64_t> Q;    // Seed
         Q q;
 
-        static unsigned i;  // Seed selector.
-        static const unsigned long long A;
-        static const unsigned long R;
+        static uint32_t i;  // Seed selector.
+        static const uint64_t A;
+        static const uint64_t R;
 
 };
 

@@ -32,14 +32,10 @@ class GCM : public CipherMode {
         void setAuthData(const ByteArray& ad);
 
     private:
-        ByteArray bitShift(const ByteArray& string) const;
-        ByteArray expand(const ByteArray& packed) const;
-        ByteArray GCTR(const ByteArray& ICB, const ByteArray& X) const;
         ByteArray GHASH(const ByteArray& H, const ByteArray& A,
                                                 const ByteArray& C) const;
         ByteArray incr(const ByteArray& X) const;
         ByteArray multiply(const ByteArray& X, const ByteArray& Y) const;
-        ByteArray pack(const ByteArray& string) const;
         void shiftBlock(ByteArray& block) const;
 
     private:
@@ -52,7 +48,6 @@ class GCM : public CipherMode {
         ByteArray IV;   // Initial value;
         ByteArray A;   // Authenticated data;
 
-        static ByteArray R;
         static uint8_t t; // Authentication tag size;:w
 
 

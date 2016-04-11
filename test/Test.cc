@@ -22,6 +22,13 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::cout << std::endl << "SHA-256 test passed." << std::endl;
+
+        std::cout << "SHA-512 test" << std::endl << std::endl;
+        if (!digest.sha512Test()) {
+            std::cout << std::endl << "SHA-512 test failed." << std::endl;
+            return -1;
+        }
+        std::cout << std::endl << "SHA-512 test passed." << std::endl;
     }
 
     std::cout << std::endl;

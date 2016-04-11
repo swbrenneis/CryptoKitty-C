@@ -1,21 +1,21 @@
 #include "digest/SHA256.h"
-#include "data/Scalar32.h"
-#include "data/Scalar64.h"
+#include "data/Unsigned32.h"
+#include "data/Unsigned64.h"
 #include <string.h>
 #include <climits>
 
 namespace CK {
 
 // Static initializers
-const unsigned SHA256::H1 = 0x6a09e667;
-const unsigned SHA256::H2 = 0xbb67ae85;
-const unsigned SHA256::H3 = 0x3c6ef372;
-const unsigned SHA256::H4 = 0xa54ff53a;
-const unsigned SHA256::H5 = 0x510e527f;
-const unsigned SHA256::H6 = 0x9b05688c;
-const unsigned SHA256::H7 = 0x1f83d9ab;
-const unsigned SHA256::H8 = 0x5be0cd19;
-const unsigned SHA256::K[] =
+const uint32_t SHA256::H1 = 0x6a09e667;
+const uint32_t SHA256::H2 = 0xbb67ae85;
+const uint32_t SHA256::H3 = 0x3c6ef372;
+const uint32_t SHA256::H4 = 0xa54ff53a;
+const uint32_t SHA256::H5 = 0x510e527f;
+const uint32_t SHA256::H6 = 0x9b05688c;
+const uint32_t SHA256::H7 = 0x1f83d9ab;
+const uint32_t SHA256::H8 = 0x5be0cd19;
+const uint32_t SHA256::K[] =
         { 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
           0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
           0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
@@ -24,10 +24,10 @@ const unsigned SHA256::K[] =
           0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
           0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
           0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2 };
-const unsigned char DERbytes[] = { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 
-                                    0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
-                                    0x00, 0x04, 0x20 };
-const ByteArray SHA256::DER(DERbytes, 19);
+const uint8_t DERbytes[] = { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 
+                                0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
+                                0x00, 0x04, 0x20 };
+const ByteArray SHA256::DER(DERbytes, sizeof(DERbytes));
 
 SHA256::SHA256(){
 }
@@ -159,21 +159,21 @@ ByteArray SHA256::finalize(const ByteArray& in) {
     ByteArray d;
 
     ByteArray encoded =
-        Scalar32(h1[n]).getEncoded(Scalar32::BIGENDIAN); 
+        Unsigned32(h1[n]).getEncoded(Unsigned32::BIGENDIAN); 
     d.append(encoded);
-    encoded = Scalar32(h2[n]).getEncoded(Scalar32::BIGENDIAN); 
+    encoded = Unsigned32(h2[n]).getEncoded(Unsigned32::BIGENDIAN); 
     d.append(encoded);
-    encoded = Scalar32(h3[n]).getEncoded(Scalar32::BIGENDIAN); 
+    encoded = Unsigned32(h3[n]).getEncoded(Unsigned32::BIGENDIAN); 
     d.append(encoded);
-    encoded = Scalar32(h4[n]).getEncoded(Scalar32::BIGENDIAN); 
+    encoded = Unsigned32(h4[n]).getEncoded(Unsigned32::BIGENDIAN); 
     d.append(encoded);
-    encoded = Scalar32(h5[n]).getEncoded(Scalar32::BIGENDIAN); 
+    encoded = Unsigned32(h5[n]).getEncoded(Unsigned32::BIGENDIAN); 
     d.append(encoded);
-    encoded = Scalar32(h6[n]).getEncoded(Scalar32::BIGENDIAN); 
+    encoded = Unsigned32(h6[n]).getEncoded(Unsigned32::BIGENDIAN); 
     d.append(encoded);
-    encoded = Scalar32(h7[n]).getEncoded(Scalar32::BIGENDIAN); 
+    encoded = Unsigned32(h7[n]).getEncoded(Unsigned32::BIGENDIAN); 
     d.append(encoded);
-    encoded = Scalar32(h8[n]).getEncoded(Scalar32::BIGENDIAN); 
+    encoded = Unsigned32(h8[n]).getEncoded(Unsigned32::BIGENDIAN); 
     d.append(encoded);
 
     return d;
@@ -220,12 +220,14 @@ ByteArray SHA256:: pad(const ByteArray& in) {
     // in order to make the message modulo 512, we add bytes until
     // the whole message, including the length encoding is an even
     // multiple of 64,
-    while ((work.getLength() + 8)  % 64 != 0) {
-        work.append(0); //pad with zeroes.
-    }
+    ByteArray pad(64 - ((work.getLength() + 8) % 64));
+    work.append(pad);
+    //while ((work.getLength() + 8)  % 64 != 0) {
+    //    work.append(0); //pad with zeroes.
+    //}
     // Append the 64 bit encoded bit length
-    Scalar64 l64(l);
-    work.append(l64.getEncoded(Scalar64::BIGENDIAN));
+    Unsigned64 l64(l);
+    work.append(l64.getEncoded(Unsigned64::BIGENDIAN));
     return work;
 
 }

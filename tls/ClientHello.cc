@@ -1,5 +1,5 @@
 #include "tls/ClientHello.h"
-#include "data/Scalar32.h"
+#include "data/Unsigned32.h"
 #include "random/SecureRandom.h"
 #include "exceptions/OutOfRangeException.h"
 #include "exceptions/tls/RecordException.h"
@@ -26,8 +26,8 @@ void ClientHello::decode(const CK::ByteArray& encoded) {
     majorVersion = encoded[index++];
     minorVersion = encoded[index++];
     // Random
-    CK::Scalar32 g(encoded.range(index, 4), CK::Scalar32::BIGENDIAN);
-    gmt = g.getIntValue();
+    CK::Unsigned32 g(encoded.range(index, 4), CK::Unsigned32::BIGENDIAN);
+    gmt = g.getUnsignedValue();
     index += 4;
     random = encoded.range(index, 28);
     index += 28;
@@ -38,8 +38,8 @@ void ClientHello::decode(const CK::ByteArray& encoded) {
         index += sidLen;
     }
     // Cipher suites
-    CK::Scalar16 csl(encoded.range(index, 2), CK::Scalar16::BIGENDIAN);
-    int16_t csLen = csl.getIntValue();
+    CK::Unsigned16 csl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    uint16_t csLen = csl.getUnsignedValue();
     index += 2;
     while (csLen > 0) {
         CipherSuite c;
@@ -64,16 +64,16 @@ void ClientHello::decode(const CK::ByteArray& encoded) {
     // check to validate lengths.
     try {
         if (index < encoded.getLength() -1) {
-            CK::Scalar16 exl(encoded.range(index, 2), CK::Scalar16::BIGENDIAN);
-            int16_t exLength = exl.getIntValue();
+            CK::Unsigned16 exl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+            uint16_t exLength = exl.getUnsignedValue();
             index += 2;
             while (exLength > 0) {
                 Extension e;
-                e.type = CK::Scalar16(encoded.range(index, 2));
+                e.type = CK::Unsigned16(encoded.range(index, 2));
                 exLength -= 2;
                 index += 2;
-                CK::Scalar16 edl(encoded.range(index, 2), CK::Scalar16::BIGENDIAN);
-                int16_t edataLen = edl.getIntValue();
+                CK::Unsigned16 edl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+                uint16_t edataLen = edl.getUnsignedValue();
                 exLength -=2;
                 index +=2;
                 e.data = encoded.range(index, edataLen);
@@ -102,8 +102,8 @@ CK::ByteArray ClientHello::encode() const {
     encoded.append(majorVersion);
     encoded.append(minorVersion);
 
-    CK::Scalar32 g(gmt);
-    encoded.append(g.getEncoded(CK::Scalar32::BIGENDIAN));
+    CK::Unsigned32 g(gmt);
+    encoded.append(g.getEncoded(CK::Unsigned32::BIGENDIAN));
     encoded.append(random);
 
     uint8_t slen = sessionID.getLength();
@@ -112,8 +112,8 @@ CK::ByteArray ClientHello::encode() const {
         encoded.append(sessionID);
     }
 
-    CK::Scalar16 csize(suites.size() * 2);
-    encoded.append(csize.getEncoded(CK::Scalar16::BIGENDIAN));
+    CK::Unsigned16 csize(suites.size() * 2);
+    encoded.append(csize.getEncoded(CK::Unsigned16::BIGENDIAN));
     for (CipherConstIter it = suites.begin();
                                     it != suites.end(); ++it) {
         encoded.append(it->sel[0]);
@@ -125,12 +125,12 @@ CK::ByteArray ClientHello::encode() const {
         CK::ByteArray ext(2, 0);
         for (ExtConstIter it = extensions.begin();
                                     it != extensions.end(); ++it) {
-            ext.append(it->type.getEncoded(CK::Scalar16::BIGENDIAN));
-            CK::Scalar16 edlen(it->data.getLength());
-            ext.append(edlen.getEncoded(CK::Scalar16::BIGENDIAN));
+            ext.append(it->type.getEncoded(CK::Unsigned16::BIGENDIAN));
+            CK::Unsigned16 edlen(it->data.getLength());
+            ext.append(edlen.getEncoded(CK::Unsigned16::BIGENDIAN));
             ext.append(it->data);
         }
-        unsigned elen = ext.getLength() - 2;
+        uint32_t elen = ext.getLength() - 2;
         ext[1] = elen & 0xff;
         elen = elen >> 8;
         ext[0] = elen & 0xff;

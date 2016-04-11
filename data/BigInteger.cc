@@ -225,10 +225,28 @@ BigInteger BigInteger::divide(const BigInteger& divisor) const {
 }
 
 /*
+ * Returns true if this = other.
+ */
+bool BigInteger::equals(const BigInteger& other) const {
+
+    return NTL::compare(*number, *other.number) == 0;
+
+}
+
+/*
+ * Returns the greatest common denominator of this and a.
+ */
+BigInteger BigInteger::gcd(const BigInteger& a) const {
+
+    return BigInteger(new NTL::ZZ(NTL::GCD(*number, *a.number)));
+
+}
+
+/*
  * Encodes the absolute value of the integer into an array
  * in the specified byte order.
  */
-ByteArray BigInteger::encode(int endian) const {
+ByteArray BigInteger::getEncoded(int endian) const {
 
     NTL::ZZ work(NTL::abs(*number));
     int index = bitLength() / 8 + (bitLength() % 8 != 0 ? 1 : 0);
@@ -249,24 +267,6 @@ ByteArray BigInteger::encode(int endian) const {
         index --;
     }
     return result;
-
-}
-
-/*
- * Returns true if this = other.
- */
-bool BigInteger::equals(const BigInteger& other) const {
-
-    return NTL::compare(*number, *other.number) == 0;
-
-}
-
-/*
- * Returns the greatest common denominator of this and a.
- */
-BigInteger BigInteger::gcd(const BigInteger& a) const {
-
-    return BigInteger(new NTL::ZZ(NTL::GCD(*number, *a.number)));
 
 }
 

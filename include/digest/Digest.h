@@ -2,6 +2,7 @@
 #define DIGEST_H_INCLUDED
 
 #include <string>
+#include <cstdint>
 
 namespace CK {
 
@@ -25,14 +26,14 @@ class Digest {
     public:
         virtual ByteArray digest()=0;
         virtual ByteArray digest(const ByteArray& bytes)=0;
-        virtual unsigned getBlockSize() const=0; // Used for HMAC
+        virtual uint32_t getBlockSize() const=0; // Used for HMAC
         virtual const ByteArray& getDER() const=0;
-        virtual unsigned getDigestLength() const=0;
+        virtual uint32_t getDigestLength() const=0;
         virtual void reset()=0;
-        virtual void update(unsigned char byte)=0;
+        virtual void update(uint8_t byte)=0;
         virtual void update(const ByteArray& bytes)=0;
-        virtual void update(const ByteArray& bytes, unsigned offset,
-                                        unsigned length)=0;
+        virtual void update(const ByteArray& bytes, uint32_t offset,
+                                        uint32_t length)=0;
 
     public:
         static Digest *getInstance(const std::string& algorithm);

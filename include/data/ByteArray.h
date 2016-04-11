@@ -57,6 +57,7 @@ class ByteArray {
         void push(uint8_t b);
         ByteArray range(unsigned offset, unsigned length) const;
         void setLength(unsigned newLength);
+        std::string toString() const;
 
     private:
         Array bytes;

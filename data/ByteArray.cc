@@ -187,6 +187,11 @@ void ByteArray::clear() {
 void ByteArray::copy(unsigned offset, const ByteArray& other,
                         unsigned otherOffset, unsigned length) {
 
+    if (offset + other.getLength() > bytes.size() 
+                    || offset + length > bytes.size()) {
+        throw OutOfRangeException("Copy parameters out of range");
+    }
+
     unsigned transfer = length;
     if (length == 0) {
         transfer = other.getLength() - otherOffset;
@@ -257,6 +262,30 @@ void ByteArray::setLength(unsigned newLength) {
     bytes.resize(newLength, 0);
 
 }
+
+std::string ByteArray::toString() const {
+
+    std::string result;
+    for (ArrayConstIter it = bytes.begin(); it != bytes.end(); ++it) {
+        char nybble = (*it & 0xf0) >> 4;
+        if (nybble < 0x0a) {
+            result += nybble + '0';
+        }
+        else {
+            result += (nybble - 0x0a) + 'a';
+        }
+        nybble = *it & 0x0f;
+        if (nybble < 0x0a) {
+            result += nybble + '0';
+        }
+        else {
+            result += (nybble - 0x0a) + 'a';
+        }
+    }
+    return result;;
+    
+}
+
 
 // Global operators
 bool operator== (const ByteArray& lhs, const ByteArray& rhs) {

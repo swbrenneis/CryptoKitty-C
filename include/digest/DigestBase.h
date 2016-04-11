@@ -28,9 +28,9 @@ class DigestBase : public Digest {
         ByteArray digest();
         ByteArray digest(const ByteArray& bytes);
         void reset();
-        void update(unsigned char byte);
+        void update(uint8_t byte);
         void update(const ByteArray& bytes);
-        void update(const ByteArray& bytes, unsigned offset, unsigned length);
+        void update(const ByteArray& bytes, uint32_t offset, uint32_t length);
 
     public:
         static Digest* getInstance(const std::string& algorithm);

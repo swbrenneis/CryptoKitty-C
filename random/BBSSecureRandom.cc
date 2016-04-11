@@ -1,8 +1,8 @@
 #include "random/BBSSecureRandom.h"
 #include "random/CMWCRandom.h"
 #include "data/NanoTime.h"
-#include "data/Scalar64.h"
-#include "data/Scalar32.h"
+#include "data/Unsigned64.h"
+#include "data/Unsigned32.h"
 #include <cstdlib>
 #ifdef VMRANDOM
 #include <fstream>
@@ -85,7 +85,7 @@ void BBSSecureRandom::initialize() {
     // Compute the initial seed.
     ByteArray seedbytes(8);
     getEntropy(seedbytes);
-    setState(Scalar64::decode(seedbytes));
+    setState(Unsigned64::decode(seedbytes));
 
 }
 
@@ -101,7 +101,7 @@ void BBSSecureRandom::nextBytes(ByteArray& bytes) {
     if (reseed + bytes.getLength() > RESEED) {
         ByteArray seedbytes(8);
         getEntropy(seedbytes);
-        setState(Scalar64::decode(seedbytes));
+        setState(Unsigned64::decode(seedbytes));
         reseed = 0;
     }
     reseed += bytes.getLength();
@@ -143,22 +143,22 @@ void BBSSecureRandom::nextBytes(ByteArray& bytes) {
 /*
  * Returns the next 32 bits of entropy.
  */
-int BBSSecureRandom::nextInt() {
+uint32_t BBSSecureRandom::nextInt() {
 
     ByteArray bytes(4);
     nextBytes(bytes);
-    return Scalar32::decode(bytes);
+    return Unsigned32::decode(bytes);
 
 }
 
 /*
  * Returns the next 64 bits of entropy.
  */
-long BBSSecureRandom::nextLong() {
+uint64_t BBSSecureRandom::nextLong() {
 
     ByteArray bytes(8);
     nextBytes(bytes);
-    return Scalar64::decode(bytes);
+    return Unsigned64::decode(bytes);
 
 }
 

@@ -1,6 +1,8 @@
 #ifndef RANDOM_H_INCLUDED
 #define RANDOM_H_INCLUDED
 
+#include <cstdint>
+
 namespace CK {
 
 class ByteArray;
@@ -25,14 +27,14 @@ class Random {
 
     public:
         virtual void nextBytes(ByteArray& bytes);
-        virtual int nextInt();
-        virtual long nextLong();
+        virtual uint32_t nextInt();
+        virtual uint64_t nextLong();
 
     public:
-        virtual void setSeed(unsigned long seedValue);
+        virtual void setSeed(uint64_t seedValue);
 
     protected:
-        virtual unsigned long next(int bits);
+        virtual uint64_t next(int bits);
 
 };
 

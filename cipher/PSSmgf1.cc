@@ -1,6 +1,6 @@
 #include "cipher/PSSmgf1.h"
 #include "digest/Digest.h"
-#include "data/Scalar32.h"
+#include "data/Unsigned32.h"
 #include "exceptions/BadParameterException.h"
 #include <cmath>
 
@@ -28,7 +28,7 @@ ByteArray PSSmgf1::generateMask(const ByteArray& mgfSeed, int maskLen) {
     double doubleMaskLen = maskLen;
     for (int counter = 0; counter < std::ceil(doubleMaskLen / hLen);
                                                             ++counter) {
-        ByteArray C(Scalar32(counter).getEncoded(Scalar32::BIGENDIAN));
+        ByteArray C(Unsigned32(counter).getEncoded(Unsigned32::BIGENDIAN));
         ByteArray h;
         h.append(mgfSeed);
         h.append(C);

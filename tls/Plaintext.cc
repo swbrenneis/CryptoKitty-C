@@ -1,6 +1,7 @@
 #include "tls/Plaintext.h"
 #include "tls/HandshakeRecord.h"
 #include "exceptions/tls/RecordException.h"
+#include "data/Unsigned16.h"
 
 namespace CKTLS {
 
@@ -28,8 +29,8 @@ Plaintext *Plaintext::startRecord(const CK::ByteArray& rec) {
 
     result->setRecordMajorVersion(rec[1]);
     result->setRecordMinorVersion(rec[2]);
-    CK::Scalar16 fl(rec.range(3, 2), CK::Scalar16::BIGENDIAN);
-    result->setFragmentLength(fl.getIntValue());
+    CK::Unsigned16 fl(rec.range(3, 2), CK::Unsigned16::BIGENDIAN);
+    result->setFragmentLength(fl.getUnsignedValue());
     result->setType(static_cast<ContentType>(rec[0]));
 
     return result;

@@ -2,8 +2,8 @@
 #include "tls/HelloRequest.h"
 #include "tls/ClientHello.h"
 #include "tls/ServerHello.h"
-#include "data/Scalar16.h"
-#include "data/Scalar32.h"
+#include "data/Unsigned16.h"
+#include "data/Unsigned32.h"
 #include "exceptions/tls/RecordException.h"
 
 namespace CKTLS {
@@ -89,8 +89,8 @@ CK::ByteArray HandshakeRecord::encode() {
     fragment.append(type);
     CK::ByteArray encBody(body->encode());
     length = encBody.getLength();
-    CK::Scalar32 bodyLen(length);
-    CK::ByteArray bl = bodyLen.encode(CK::Scalar32::BIGENDIAN);
+    CK::Unsigned32 bodyLen(length);
+    CK::ByteArray bl = bodyLen.encode(CK::Unsigned32::BIGENDIAN);
     fragment.append(bl.range(0, 3));
     fragment.append(encBody);
     fragLength = fragment.getLength();
@@ -99,8 +99,8 @@ CK::ByteArray HandshakeRecord::encode() {
     encoded.append(content);
     encoded.append(recordMajorVersion);
     encoded.append(recordMinorVersion);
-    CK::Scalar16 fl(fragLength);
-    encoded.append(fl.encode(CK::Scalar16::BIGENDIAN));
+    CK::Unsigned16 fl(fragLength);
+    encoded.append(fl.encode(CK::Unsigned16::BIGENDIAN));
     encoded.append(fragment);
 
     return encoded;

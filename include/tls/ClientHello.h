@@ -3,7 +3,7 @@
 
 #include "tls/HandshakeBody.h"
 #include "tls/CipherSuiteManager.h"
-#include "data/Scalar16.h"
+#include "data/Unsigned16.h"
 
 namespace CKTLS {
 
@@ -32,7 +32,7 @@ class ClientHello : public HandshakeBody {
         CipherSuiteList suites;
 
         struct Extension {
-            CK::Scalar16 type;
+            CK::Unsigned16 type;
             CK::ByteArray data;
         };
         typedef std::deque<Extension> ExtensionList;

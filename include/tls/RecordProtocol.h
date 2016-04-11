@@ -2,7 +2,6 @@
 #define RECORDPROTOCOL_H_INCLUDED
 
 #include "data/ByteArray.h"
-#include "data/Scalar16.h"
 #include <cstdint>
 
 namespace CKTLS {

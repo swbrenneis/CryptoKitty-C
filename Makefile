@@ -15,14 +15,17 @@ CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/GCM.o ciphermodes/MtE.o
 CIPHERMODES_HEADER= include/ciphermodes/CBC.h include/ciphermodes/GCM.h \
 					include/ciphermodes/MtE.h
 CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
-DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/NanoTime.o data/Scalar16.o \
-			 data/Scalar32.o data/Scalar64.o
-DATA_HEADER= include/data/BigInteger.h include/data/ByteArray.h \
-			 include/data/NanoTime.h include/data/Scalar16.h  \
-			include/data/Scalar32.h include/data/Scalar64.h
+DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/Int16.o data/Int32.o \
+			 data/Int64.o data/NanoTime.o data/Unsigned16.o data/Unsigned32.o \
+			 data/Unsigned64.o
+DATA_HEADER= include/data/BigInteger.h include/data/ByteArray.h data/Int16.o \
+			 include/data/Int32.h include/data/Int64.h include/data/NanoTime.h \
+			include/data/Unsigned16.h include/data/Unsigned32.h \
+			include/data/Unsigned64.h
 DATA_SOURCE= $(DATA_OBJECT:.o=.cc)
-DIGEST_OBJECT= digest/SHA256.o digest/DigestBase.o
-DIGEST_HEADER= include/digest/SHA256.h include/digest/DigestBase.h
+DIGEST_OBJECT= digest/SHA256.o digest/SHA512.o digest/DigestBase.o
+DIGEST_HEADER= include/digest/SHA256.h include/digest/SHA512.h \
+				include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
 KEYS_OBJECT= keys/PrivateKey.o keys/PublicKey.o \
 			 keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
