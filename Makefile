@@ -18,23 +18,24 @@ CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
 DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/Int16.o data/Int32.o \
 			 data/Int64.o data/NanoTime.o data/Unsigned16.o data/Unsigned32.o \
 			 data/Unsigned64.o
-DATA_HEADER= include/data/BigInteger.h include/data/ByteArray.h data/Int16.o \
+DATA_HEADER= include/data/BigInteger.h include/data/ByteArray.h include/data/Int16.h \
 			 include/data/Int32.h include/data/Int64.h include/data/NanoTime.h \
 			include/data/Unsigned16.h include/data/Unsigned32.h \
 			include/data/Unsigned64.h
 DATA_SOURCE= $(DATA_OBJECT:.o=.cc)
-DIGEST_OBJECT= digest/SHA256.o digest/SHA512.o digest/DigestBase.o
-DIGEST_HEADER= include/digest/SHA256.h include/digest/SHA512.h \
+DIGEST_OBJECT= digest/SHA256.o digest/SHA384.o digest/SHA512.o digest/DigestBase.o
+DIGEST_HEADER= include/digest/SHA256.h include/digest/SHA384.h include/digest/SHA512.h \
 				include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
-KEYS_OBJECT= keys/PrivateKey.o keys/PublicKey.o \
-			 keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
+KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
+			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
 			 keys/RSAPrivateCrtKey.o keys/RSAPrivateModKey.o \
 			 keys/RSAPublicKey.o
-KEYS_HEADER= include/keys/PrivateKey.h \
-			 include/keys/PublicKey.h include/keys/RSAKeyPairGenerator.h \
-			 include/keys/RSAPrivateKey.h include/keys/RSAPrivateCrtKey.h \
-			 include/keys/RSAPrivateModKey.h include/keys/RSAPublicKey.h
+KEYS_HEADER= include/keys/DHKeyExchange.h include/keys/ECDHKeyExchange.h \
+			 include/keys/PrivateKey.h include/keys/PublicKey.h \
+			 include/keys/RSAKeyPairGenerator.h include/keys/RSAPrivateKey.h \
+			 include/keys/RSAPrivateCrtKey.h include/keys/RSAPrivateModKey.h \
+			 include/keys/RSAPublicKey.h
 KEYS_SOURCE= $(KEYS_OBJECT:.o=.cc)
 MAC_OBJECT= mac/HMAC.o
 MAC_HEADER= include/mac/HMAC.h

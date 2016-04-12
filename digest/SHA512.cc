@@ -54,7 +54,7 @@ SHA512::~SHA512() {
  *                          (~X)
  *   No corresponding X bar character
  */
-uint64_t SHA512::Ch(uint64_t x, uint64_t y, uint64_t z) {
+uint64_t SHA512::Ch(uint64_t x, uint64_t y, uint64_t z) const {
 
     return (x & y) ^ ((~x) & z);
             
@@ -69,27 +69,13 @@ uint64_t SHA512::Ch(uint64_t x, uint64_t y, uint64_t z) {
  *
  * W(i) = σ1(W(i−2)) + W(i−7) + σ0(W(i−15)) + W(i−16), 17 ≤ i ≤ 64
  */
-uint64_t *SHA512::decompose(uint8_t *chunks) {
+SHA512::W SHA512::decompose(const ByteArray& chunks) const {
 
-    uint64_t *w = new uint64_t[80];
+    W w(80);
 
     for (int j = 0; j < 16; ++j) {
-        int i = j * 4;
-        w[j] = chunks[i];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+1];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+2];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+3];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+4];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+5];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+6];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+7];
+        Unsigned64 c(chunks.range(j * 8, 8), Unsigned64::BIGENDIAN);
+        w[j] = c.getUnsignedValue();
     }
 
     for (int j = 16; j < 80; ++j) {
@@ -100,7 +86,7 @@ uint64_t *SHA512::decompose(uint8_t *chunks) {
 
 }
 
-ByteArray SHA512::finalize(const ByteArray& in) {
+ByteArray SHA512::finalize(const ByteArray& in) const {
 
     // Pad the message to an even multiple of 1024 bits.
     ByteArray context(pad(in));
@@ -109,12 +95,10 @@ ByteArray SHA512::finalize(const ByteArray& in) {
     long n = context.getLength() / 128;
     // We need the chunk array to begin at index 1 so the indexing
     // works out below.
-    uint8_t chunks[n+1][128];
-    long ci = 0;
-    uint8_t *cArray = context.asArray();
+    Chunks chunks;
+    chunks.push_back(ByteArray(0));
     for (long i = 1; i <= n; i++) {
-        memcpy(chunks[i], cArray+ci, 128);
-        ci += 128;
+        chunks.push_back(context.range((i-1)*128, 128));
     }
 
     // Set the initial hash seeds
@@ -135,7 +119,6 @@ ByteArray SHA512::finalize(const ByteArray& in) {
     uint64_t h8[n + 1];
     h8[0] = H8;
 
-    uint64_t *w;
     // Process chunks.
     for (long i = 1; i <= n; ++i) {
         uint64_t a = h1[i-1];
@@ -147,7 +130,7 @@ ByteArray SHA512::finalize(const ByteArray& in) {
         uint64_t g = h7[i-1];
         uint64_t h = h8[i-1];
 
-        w = decompose(chunks[i]);
+        W w(decompose(chunks[i]));
 
         for (int j = 0; j < 80; ++j) {
 
@@ -176,27 +159,14 @@ ByteArray SHA512::finalize(const ByteArray& in) {
 
     }
 
-    delete[] w;
-
-    ByteArray d;
-
-    ByteArray encoded =
-        Unsigned64(h1[n]).getEncoded(Unsigned64::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned64(h2[n]).getEncoded(Unsigned64::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned64(h3[n]).getEncoded(Unsigned64::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned64(h4[n]).getEncoded(Unsigned64::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned64(h5[n]).getEncoded(Unsigned64::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned64(h6[n]).getEncoded(Unsigned64::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned64(h7[n]).getEncoded(Unsigned64::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned64(h8[n]).getEncoded(Unsigned64::BIGENDIAN); 
-    d.append(encoded);
+    ByteArray d(Unsigned64(h1[n]).getEncoded(Unsigned64::BIGENDIAN));
+    d.append(Unsigned64(h2[n]).getEncoded(Unsigned64::BIGENDIAN));
+    d.append(Unsigned64(h3[n]).getEncoded(Unsigned64::BIGENDIAN));
+    d.append(Unsigned64(h4[n]).getEncoded(Unsigned64::BIGENDIAN));
+    d.append(Unsigned64(h5[n]).getEncoded(Unsigned64::BIGENDIAN));
+    d.append(Unsigned64(h6[n]).getEncoded(Unsigned64::BIGENDIAN));
+    d.append(Unsigned64(h7[n]).getEncoded(Unsigned64::BIGENDIAN));
+    d.append(Unsigned64(h8[n]).getEncoded(Unsigned64::BIGENDIAN));
 
     return d;
 
@@ -214,7 +184,7 @@ const ByteArray& SHA512::getDER() const {
 /*
  * Maj(X, Y, Z) = (X ∧ Y ) ⊕ (X ∧ Z) ⊕ (Y ∧ Z)
  */
-uint64_t SHA512::Maj(uint64_t x, uint64_t y, uint64_t z) {
+uint64_t SHA512::Maj(uint64_t x, uint64_t y, uint64_t z) const {
 
     return (x & y) ^ (x & z) ^ (y & z);
 
@@ -223,7 +193,7 @@ uint64_t SHA512::Maj(uint64_t x, uint64_t y, uint64_t z) {
 /*
  * Pad the input array to an even multiple of 512 bits.
  */
-ByteArray SHA512:: pad(const ByteArray& in) {
+ByteArray SHA512:: pad(const ByteArray& in) const {
 
     // Message size in bits - l
     uint64_t l = in.getLength() * 8;
@@ -251,8 +221,8 @@ ByteArray SHA512:: pad(const ByteArray& in) {
     BigInteger l128(l);
     ByteArray b128(l128.getEncoded(BigInteger::BIGENDIAN));
     pad = ByteArray(16 - b128.getLength());
-    work.append(b128);
     work.append(pad);
+    work.append(b128);
     return work;
 
 }
@@ -260,7 +230,7 @@ ByteArray SHA512:: pad(const ByteArray& in) {
 /*
  * Logical rotate right function.
  */
-uint64_t SHA512::ror(uint64_t reg, int count) {
+uint64_t SHA512::ror(uint64_t reg, int count) const {
 
     uint64_t msb = (UINT64_MAX >> 1) ^ UINT64_MAX;
     uint64_t result = reg;
@@ -275,7 +245,7 @@ uint64_t SHA512::ror(uint64_t reg, int count) {
 /*
  * σ0(X) = RotR(X, 1) ⊕ RotR(X, 8) ⊕ ShR(X, 7)
  */
-uint64_t SHA512::sigma0(uint64_t x) {
+uint64_t SHA512::sigma0(uint64_t x) const {
 
     return ror(x, 1) ^ ror(x, 8) ^ (x >> 7);
 
@@ -284,7 +254,7 @@ uint64_t SHA512::sigma0(uint64_t x) {
 /*
  * σ1(X) = RotR(X, 19) ⊕ RotR(X, 61) ⊕ ShR(X, 6),
  */
-uint64_t SHA512::sigma1(uint64_t x) {
+uint64_t SHA512::sigma1(uint64_t x) const {
 
     return ror(x, 19) ^ ror(x, 61) ^ (x >> 6);
 
@@ -293,7 +263,7 @@ uint64_t SHA512::sigma1(uint64_t x) {
 /*
  * Σ0(X) = RotR(X, 28) ⊕ RotR(X, 34) ⊕ RotR(X, 39)
  */
-uint64_t SHA512::Sigma0(uint64_t x) {
+uint64_t SHA512::Sigma0(uint64_t x) const {
 
     return ror(x, 28) ^ ror(x, 34) ^ ror(x, 39);
 
@@ -302,7 +272,7 @@ uint64_t SHA512::Sigma0(uint64_t x) {
 /*
  * Σ1(X) = RotR(X, 14) ⊕ RotR(X, 18) ⊕ RotR(X, 41)
  */
-uint64_t SHA512::Sigma1(uint64_t x) {
+uint64_t SHA512::Sigma1(uint64_t x) const {
 
     return ror(x, 14) ^ ror(x, 18) ^ ror(x, 41);
 

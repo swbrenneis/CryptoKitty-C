@@ -2,6 +2,7 @@
 #define SHA256_H_INCLUDED
 
 #include "DigestBase.h"
+#include <deque>
 
 namespace CK {
 
@@ -23,21 +24,26 @@ class SHA256 : public DigestBase {
         uint32_t getDigestLength() const { return 32; }
 
     protected:
-        ByteArray finalize(const ByteArray& bytes);
+        ByteArray finalize(const ByteArray& bytes) const;
         const ByteArray& getDER() const;
 
     private:
-        unsigned Ch(unsigned x, unsigned y, unsigned z);
-        unsigned *decompose(unsigned char *chunks);
-        unsigned Maj(unsigned x, unsigned y, unsigned z);
-        ByteArray pad(const ByteArray& in);
-        unsigned ror(unsigned reg, int count);
-        unsigned sigma0(unsigned w);
-        unsigned sigma1(unsigned w);
-        unsigned Sigma0(unsigned w);
-        unsigned Sigma1(unsigned w);
+        typedef std::deque<uint32_t> W;
 
     private:
+        uint32_t Ch(uint32_t x, uint32_t y, uint32_t z) const;
+        W decompose(const ByteArray& chunks) const;
+        uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) const;
+        ByteArray pad(const ByteArray& in) const;
+        uint32_t ror(uint32_t reg, int count) const;
+        uint32_t sigma0(uint32_t w) const;
+        uint32_t sigma1(uint32_t w) const;
+        uint32_t Sigma0(uint32_t w) const;
+        uint32_t Sigma1(uint32_t w) const;
+
+    private:
+        typedef std::deque<ByteArray> Chunks;
+
         // Hash constants
         static const uint32_t H1, H2, H3, H4,
                                 H5, H6, H7, H8;

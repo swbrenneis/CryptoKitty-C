@@ -40,7 +40,7 @@ SHA256::~SHA256() {
  *                          (~X)
  *   No corresponding X bar character
  */
-unsigned SHA256::Ch(unsigned x, unsigned y, unsigned z) {
+unsigned SHA256::Ch(unsigned x, unsigned y, unsigned z) const {
 
     return (x & y) ^ ((~x) & z);
             
@@ -55,19 +55,13 @@ unsigned SHA256::Ch(unsigned x, unsigned y, unsigned z) {
  *
  * W(i) = σ1(W(i−2)) + W(i−7) + σ0(W(i−15)) + W(i−16), 17 ≤ i ≤ 64
  */
-unsigned *SHA256::decompose(unsigned char *chunks) {
+SHA256::W SHA256::decompose(const ByteArray& chunks) const {
 
-    unsigned *w = new unsigned[64];
+    W w(64);
 
     for (int j = 0; j < 16; ++j) {
-        int i = j * 4;
-        w[j] = chunks[i];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+1];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+2];
-        w[j] = w[j] << 8;
-        w[j] |= chunks[i+3];
+        Unsigned32 c(chunks.range(j * 4, 4), Unsigned32::BIGENDIAN);
+        w[j] = c.getUnsignedValue();
     }
 
     for (int j = 16; j < 64; ++j) {
@@ -78,7 +72,7 @@ unsigned *SHA256::decompose(unsigned char *chunks) {
 
 }
 
-ByteArray SHA256::finalize(const ByteArray& in) {
+ByteArray SHA256::finalize(const ByteArray& in) const {
 
     // Pad the message to an even multiple of 512 bits.
     ByteArray context(pad(in));
@@ -87,50 +81,47 @@ ByteArray SHA256::finalize(const ByteArray& in) {
     long n = context.getLength() / 64;
     // We need the chunk array to begin at index 1 so the indexing
     // works out below.
-    unsigned char chunks[n+1][64];
-    long ci = 0;
-    unsigned char *cArray = context.asArray();
+    Chunks chunks;
+    chunks.push_back(ByteArray(0));
     for (long i = 1; i <= n; i++) {
-        memcpy(chunks[i], cArray+ci, 64);
-        ci += 64;
+        chunks.push_back(context.range((i-1)*64, 64));
     }
 
     // Set the initial hash seeds
-    unsigned h1[n + 1];
+    uint32_t h1[n + 1];
     h1[0] = H1;
-    unsigned h2[n + 1];
+    uint32_t h2[n + 1];
     h2[0] = H2;
-    unsigned h3[n + 1];
+    uint32_t h3[n + 1];
     h3[0] = H3;
-    unsigned h4[n + 1];
+    uint32_t h4[n + 1];
     h4[0] = H4;
-    unsigned h5[n + 1];
+    uint32_t h5[n + 1];
     h5[0] = H5;
-    unsigned h6[n + 1];
+    uint32_t h6[n + 1];
     h6[0] = H6;
-    unsigned h7[n + 1];
+    uint32_t h7[n + 1];
     h7[0] = H7;
-    unsigned h8[n + 1];
+    uint32_t h8[n + 1];
     h8[0] = H8;
 
-    unsigned *w;
     // Process chunks.
     for (long i = 1; i <= n; ++i) {
-        unsigned a = h1[i-1];
-        unsigned b = h2[i-1];
-        unsigned c = h3[i-1];
-        unsigned d = h4[i-1];
-        unsigned e = h5[i-1];
-        unsigned f = h6[i-1];
-        unsigned g = h7[i-1];
-        unsigned h = h8[i-1];
+        uint32_t a = h1[i-1];
+        uint32_t b = h2[i-1];
+        uint32_t c = h3[i-1];
+        uint32_t d = h4[i-1];
+        uint32_t e = h5[i-1];
+        uint32_t f = h6[i-1];
+        uint32_t g = h7[i-1];
+        uint32_t h = h8[i-1];
 
-        w = decompose(chunks[i]);
+        W w(decompose(chunks[i]));
 
         for (int j = 0; j < 64; ++j) {
 
-            unsigned T1 = h + Sigma1(e) + Ch(e, f, g) + K[j] + w[j];
-            unsigned T2 = Sigma0(a) + Maj(a, b, c);
+            uint32_t T1 = h + Sigma1(e) + Ch(e, f, g) + K[j] + w[j];
+            uint32_t T2 = Sigma0(a) + Maj(a, b, c);
 
             h = g;
             g = f;
@@ -154,27 +145,14 @@ ByteArray SHA256::finalize(const ByteArray& in) {
 
     }
 
-    delete[] w;
-
-    ByteArray d;
-
-    ByteArray encoded =
-        Unsigned32(h1[n]).getEncoded(Unsigned32::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned32(h2[n]).getEncoded(Unsigned32::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned32(h3[n]).getEncoded(Unsigned32::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned32(h4[n]).getEncoded(Unsigned32::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned32(h5[n]).getEncoded(Unsigned32::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned32(h6[n]).getEncoded(Unsigned32::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned32(h7[n]).getEncoded(Unsigned32::BIGENDIAN); 
-    d.append(encoded);
-    encoded = Unsigned32(h8[n]).getEncoded(Unsigned32::BIGENDIAN); 
-    d.append(encoded);
+    ByteArray d(Unsigned32(h1[n]).getEncoded(Unsigned32::BIGENDIAN)); 
+    d.append(Unsigned32(h2[n]).getEncoded(Unsigned32::BIGENDIAN)); 
+    d.append(Unsigned32(h3[n]).getEncoded(Unsigned32::BIGENDIAN)); 
+    d.append(Unsigned32(h4[n]).getEncoded(Unsigned32::BIGENDIAN)); 
+    d.append(Unsigned32(h5[n]).getEncoded(Unsigned32::BIGENDIAN)); 
+    d.append(Unsigned32(h6[n]).getEncoded(Unsigned32::BIGENDIAN)); 
+    d.append(Unsigned32(h7[n]).getEncoded(Unsigned32::BIGENDIAN)); 
+    d.append(Unsigned32(h8[n]).getEncoded(Unsigned32::BIGENDIAN)); 
 
     return d;
 
@@ -192,7 +170,7 @@ const ByteArray& SHA256::getDER() const {
 /*
  * Maj(X, Y, Z) = (X ∧ Y ) ⊕ (X ∧ Z) ⊕ (Y ∧ Z)
  */
-unsigned SHA256::Maj(unsigned x, unsigned y, unsigned z) {
+uint32_t SHA256::Maj(uint32_t x, uint32_t y, uint32_t z) const {
 
     return (x & y) ^ (x & z) ^ (y & z);
 
@@ -201,7 +179,7 @@ unsigned SHA256::Maj(unsigned x, unsigned y, unsigned z) {
 /*
  * Pad the input array to an even multiple of 512 bits.
  */
-ByteArray SHA256:: pad(const ByteArray& in) {
+ByteArray SHA256:: pad(const ByteArray& in) const {
 
     // Message size in bits - l
     long l = in.getLength() * 8;
@@ -222,9 +200,6 @@ ByteArray SHA256:: pad(const ByteArray& in) {
     // multiple of 64,
     ByteArray pad(64 - ((work.getLength() + 8) % 64));
     work.append(pad);
-    //while ((work.getLength() + 8)  % 64 != 0) {
-    //    work.append(0); //pad with zeroes.
-    //}
     // Append the 64 bit encoded bit length
     Unsigned64 l64(l);
     work.append(l64.getEncoded(Unsigned64::BIGENDIAN));
@@ -235,7 +210,7 @@ ByteArray SHA256:: pad(const ByteArray& in) {
 /*
  * Logical rotate right function.
  */
-unsigned SHA256::ror(unsigned reg, int count) {
+uint32_t SHA256::ror(uint32_t reg, int count) const {
 
     unsigned msb = (UINT_MAX >> 1) ^ UINT_MAX;
     unsigned result = reg;
@@ -250,7 +225,7 @@ unsigned SHA256::ror(unsigned reg, int count) {
 /*
  * σ0(X) = RotR(X, 7) ⊕ RotR(X, 18) ⊕ ShR(X, 3)
  */
-unsigned SHA256::sigma0(unsigned x) {
+uint32_t SHA256::sigma0(uint32_t x) const {
 
     return ror(x, 7) ^ ror(x, 18) ^ (x >> 3);
 
@@ -259,7 +234,7 @@ unsigned SHA256::sigma0(unsigned x) {
 /*
  * σ1(X) = RotR(X, 17) ⊕ RotR(X, 19) ⊕ ShR(X, 10),
  */
-unsigned SHA256::sigma1(unsigned x) {
+uint32_t SHA256::sigma1(uint32_t x) const {
 
     return ror(x, 17) ^ ror(x, 19) ^ (x >> 10);
 
@@ -268,7 +243,7 @@ unsigned SHA256::sigma1(unsigned x) {
 /*
  * Σ0(X) = RotR(X, 2) ⊕ RotR(X, 13) ⊕ RotR(X, 22)
  */
-unsigned SHA256::Sigma0(unsigned x) {
+uint32_t SHA256::Sigma0(uint32_t x) const {
 
     return ror(x, 2) ^ ror(x, 13) ^ ror(x, 22);
 
@@ -277,7 +252,7 @@ unsigned SHA256::Sigma0(unsigned x) {
 /*
  * Σ1(X) = RotR(X, 6) ⊕ RotR(X, 11) ⊕ RotR(X, 25)
  */
-unsigned SHA256::Sigma1(unsigned x) {
+uint32_t SHA256::Sigma1(uint32_t x) const {
 
     return ror(x, 6) ^ ror(x, 11) ^ ror(x, 25);
 

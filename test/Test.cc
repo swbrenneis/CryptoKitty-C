@@ -16,19 +16,32 @@ int main(int argc, char** argv) {
 
     if (tests == "digest" || tests == "all") {
         DigestTest digest;
-        std::cout << "SHA-256 test" << std::endl << std::endl;
-        if (!digest.sha256Test()) {
-            std::cout << std::endl << "SHA-256 test failed." << std::endl;
-            return -1;
-        }
-        std::cout << std::endl << "SHA-256 test passed." << std::endl;
+        try {
+            std::cout << "SHA-256 test" << std::endl << std::endl;
+            if (!digest.sha256Test()) {
+                std::cout << std::endl << "SHA-256 test failed." << std::endl;
+                return -1;
+            }
+            std::cout << std::endl << "SHA-256 test passed." << std::endl << std::endl;
 
-        std::cout << "SHA-512 test" << std::endl << std::endl;
-        if (!digest.sha512Test()) {
-            std::cout << std::endl << "SHA-512 test failed." << std::endl;
+            std::cout << "SHA-512 test" << std::endl << std::endl;
+            if (!digest.sha512Test()) {
+                std::cout << std::endl << "SHA-512 test failed." << std::endl;
+                return -1;
+            }
+            std::cout << std::endl << "SHA-512 test passed." << std::endl;
+
+            std::cout << "SHA-384 test" << std::endl << std::endl;
+            if (!digest.sha384Test()) {
+                std::cout << std::endl << "SHA-384 test failed." << std::endl;
+                return -1;
+            }
+            std::cout << std::endl << "SHA-384 test passed." << std::endl;
+        }
+        catch (CK::Exception& e) {
+            std::cout << "Exception thrown: " << e.what() << std::endl;
             return -1;
         }
-        std::cout << std::endl << "SHA-512 test passed." << std::endl;
     }
 
     std::cout << std::endl;

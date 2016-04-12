@@ -39,7 +39,7 @@ class Digest {
         static Digest *getInstance(const std::string& algorithm);
 
     protected:
-        virtual ByteArray finalize(const ByteArray& bytes)=0;
+        virtual ByteArray finalize(const ByteArray& bytes) const=0;
 
 };
 
