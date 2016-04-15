@@ -51,6 +51,7 @@ class BigInteger {
     public:
         BigInteger& operator= (const BigInteger& other);
         BigInteger& operator= (long value);
+        BigInteger& operator- ();
 
     public:
         ~BigInteger();

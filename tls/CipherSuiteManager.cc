@@ -4,6 +4,8 @@
 namespace CKTLS {
 
 // Static initialization.
+const CipherSuite CipherSuiteManager::TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 = { 0x00, 0x9f };
+const CipherSuite CipherSuiteManager::TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 = { 0x00, 0x9e };
 const CipherSuite CipherSuiteManager::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = { 0xC0, 0x2B };
 const CipherSuite CipherSuiteManager::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 = { 0xC0, 0x2C };
 const CipherSuite CipherSuiteManager::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = { 0xC0, 0x2F };
@@ -31,6 +33,8 @@ CipherSuiteManager *CipherSuiteManager::getManager() {
 
 void CipherSuiteManager::initialize() {
 
+    suites.push_back(TLS_DHE_RSA_WITH_AES_256_GCM_SHA384);
+    suites.push_back(TLS_DHE_RSA_WITH_AES_128_GCM_SHA256);
     suites.push_back(TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384);
     suites.push_back(TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256);
     suites.push_back(TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);

@@ -23,12 +23,20 @@ Int16::Int16(int16_t v)
 
 Int16::Int16(const ByteArray& encoded) {
 
+    if (encoded.getLength() < 2) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
+
     endianTest();
     decode(encoded, endian);
 
 }
 
 Int16::Int16(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 2) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     endianTest();
     decode(encoded, eType);
@@ -63,6 +71,10 @@ int16_t Int16::decode(const ByteArray& encoded) {
  * Decode the encoded array in the specified endian format.
  */
 void Int16::decode(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 2) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     value = 0;
     switch (eType) {

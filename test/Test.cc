@@ -1,5 +1,6 @@
 #include "DigestTest.h"
 #include "MACTest.h"
+#include "KeyTest.h"
 #include "RandomTest.h"
 #include "SignatureTest.h"
 #include "CipherTest.h"
@@ -101,6 +102,17 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::cout << "RSA EMSA-PSS signature test passed." << std::endl << std::endl;
+
+    }
+
+    if (tests == "keys" || tests == "all") {
+
+        std::cout << "Diffie-Hellman key exchange test." << std::endl << std::endl;
+
+        KeyTest dh;
+        if (!dh.DHtest(2048)) {
+            return -1;
+        }
 
     }
 

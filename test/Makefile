@@ -10,8 +10,8 @@ LD_FLAGS= -g -Wall -fpermissive
 LD_LIBRARY_PATH= -L$(DEV_HOME)/lib
 LD_LIBRARIES= -lcryptokitty
 
-CPP_SOURCES= CipherTest.cc DigestTest.cc MACTest.cc RandomTest.cc SignatureTest.cc \
-			 Test.cc
+CPP_SOURCES= CipherTest.cc DigestTest.cc KeyTest.cc MACTest.cc RandomTest.cc \
+			 SignatureTest.cc Test.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 LIBRARY= $(DEV_HOME)/lib/libcryptokitty.so

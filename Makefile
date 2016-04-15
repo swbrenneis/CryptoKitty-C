@@ -48,13 +48,13 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
-TLS_OBJECT= tls/CipherSuiteManager.o tls/ClientHello.o tls/ConnectionState.o \
+TLS_OBJECT= tls/Alert.o tls/CipherSuiteManager.o tls/ClientHello.o tls/ConnectionState.o \
 			tls/HandshakeRecord.o tls/Plaintext.o tls/RecordProtocol.o \
 			tls/ServerHello.o
-TLS_HEADER= include/tls/CipherSuiteManager.h include/tls/ClientHello.h \
-			include/tls/ConnectionState.h include/tls/HandshakeRecord.h \
-			include/tls/Plaintext.h include/tls/RecordProtocol.h \
-		include/tls/ServerHello.h
+TLS_HEADER= include/tls/Alert.h include/tls/CipherSuiteManager.h \
+			include/tls/ClientHello.h include/tls/ConnectionState.h \
+			include/tls/HandshakeRecord.h include/tls/Plaintext.h \
+			include/tls/RecordProtocol.h include/tls/ServerHello.h
 TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 LDOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \

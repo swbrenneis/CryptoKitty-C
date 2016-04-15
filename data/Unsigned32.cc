@@ -25,12 +25,20 @@ Unsigned32::Unsigned32(uint32_t v)
 
 Unsigned32::Unsigned32(const ByteArray& encoded) {
 
+    if (encoded.getLength() < 4) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
+
     endianTest();
     decode(encoded, endian);
 
 }
 
 Unsigned32::Unsigned32(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 4) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     endianTest();
     decode(encoded, eType);
@@ -65,6 +73,10 @@ uint32_t Unsigned32::decode(const ByteArray& encoded) {
  * Decode the encoded array in the specified endian format.
  */
 void Unsigned32::decode(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 4) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     value = 0;
     switch (eType) {

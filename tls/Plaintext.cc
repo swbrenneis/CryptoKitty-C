@@ -5,11 +5,63 @@
 
 namespace CKTLS {
 
+// Static initialization.
+const uint8_t Plaintext::MAJOR = 3;
+const uint8_t Plaintext::MINOR = 3;
+
 Plaintext::Plaintext(ContentType c)
-: RecordProtocol(c) {
+: content(c) {
 }
 
 Plaintext::~Plaintext() {
+}
+
+uint16_t Plaintext::getFragmentLength() const {
+
+    return fragLength;
+
+}
+
+uint8_t Plaintext::getRecordMajorVersion() const {
+
+    return recordMajorVersion;
+
+}
+
+uint8_t Plaintext::getRecordMinorVersion() const {
+
+    return recordMinorVersion;
+
+}
+
+CKTLS::Plaintext::ContentType Plaintext::getType() const {
+
+    return content;
+
+}
+
+void Plaintext::setFragmentLength(uint16_t len) {
+
+    fragLength = len;
+
+}
+
+void Plaintext::setRecordMajorVersion(uint8_t major) {
+
+    recordMajorVersion = major;
+
+}
+
+void Plaintext::setRecordMinorVersion(uint8_t minor) {
+
+    recordMinorVersion = minor;
+
+}
+
+void Plaintext::setType(CKTLS::Plaintext::ContentType c) {
+
+    content = c;
+
 }
 
 Plaintext *Plaintext::startRecord(const CK::ByteArray& rec) {

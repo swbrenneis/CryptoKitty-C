@@ -24,12 +24,20 @@ Unsigned64::Unsigned64(uint64_t v)
 
 Unsigned64::Unsigned64(const ByteArray& encoded) {
 
+    if (encoded.getLength() < 8) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
+
     endianTest();
     decode(encoded, endian);
 
 }
 
 Unsigned64::Unsigned64(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 8) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     endianTest();
     decode(encoded, eType);
@@ -64,6 +72,10 @@ uint64_t Unsigned64::decode(const ByteArray& encoded) {
  * Decode the encoded array in the specified endian format.
  */
 void Unsigned64::decode(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 8) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     value = 0;
     switch (eType) {

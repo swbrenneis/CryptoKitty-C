@@ -21,6 +21,29 @@ ServerHello::ServerHello()
 ServerHello::~ServerHello() {
 }
 
+void ServerHello::debugOut(std::ostream& out) {
+
+    int j = majorVersion;
+    int n = minorVersion;
+    out << "Version: " << j << "." << n << std::endl;
+    out << "Random.gmt: " << gmt << std::endl;
+    out << "Random.random: " << random.toString() << std::endl;
+    out << "Session ID: " << sessionID.toString() << std::endl;
+    for (CipherConstIter it = suites.begin(); it != suites.end(); ++it) {
+        CK::ByteArray s(2);
+        s[0] = (*it).sel[0];
+        s[1] = (*it).sel[1];
+        out << "Cipher suite: " << s.toString() << std::endl;
+    }
+    out << "Compression methods: " << compressionMethods.toString() << std::endl;
+    for (ExtConstIter it = extensions.begin(); it != extensions.end(); ++it) {
+        CK::ByteArray et((*it).type.getEncoded(CK::Unsigned32::BIGENDIAN));
+        out << "Extension.type: " << et.toString() << std::endl;
+        out << "Extension.data: " << (*it).data.toString() << std::endl;
+    }
+
+}
+
 void ServerHello::decode(const CK::ByteArray& encoded) {
 
     unsigned index = 0;

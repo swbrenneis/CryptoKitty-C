@@ -24,12 +24,20 @@ Int64::Int64(int64_t v)
 
 Int64::Int64(const ByteArray& encoded) {
 
+    if (encoded.getLength() < 8) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
+
     endianTest();
     decode(encoded, endian);
 
 }
 
 Int64::Int64(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 8) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     endianTest();
     decode(encoded, eType);
@@ -64,6 +72,10 @@ int64_t Int64::decode(const ByteArray& encoded) {
  * Decode the encoded array in the specified endian format.
  */
 void Int64::decode(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 8) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     value = 0;
     switch (eType) {

@@ -2,6 +2,7 @@
 #include "tls/HelloRequest.h"
 #include "tls/ClientHello.h"
 #include "tls/ServerHello.h"
+#include "tls/ServerHelloDone.h"
 #include "data/Unsigned16.h"
 #include "data/Unsigned32.h"
 #include "exceptions/tls/RecordException.h"
@@ -32,6 +33,10 @@ HandshakeRecord::HandshakeRecord(HandshakeType h)
         case server_hello:
             // TODO: Validate that this is a server.
             body = new ServerHello;
+            break;
+        case server_hello_done:
+            // TODO: Validate that this is a server.
+            body = new ServerHelloDone;
             break;
         default:
             throw RecordException("Invalid handshake type");
@@ -75,6 +80,10 @@ void HandshakeRecord::decode(const CK::ByteArray& stream) {
         case server_hello:
             // TODO: Validate that this is a server.
             body = new ServerHello;
+            break;
+        case server_hello_done:
+            // TODO: Validate that this is a server.
+            body = new ServerHelloDone;
             break;
         default:
             throw RecordException("Invalid handshake type");

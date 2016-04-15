@@ -23,12 +23,20 @@ Unsigned16::Unsigned16(uint16_t v)
 
 Unsigned16::Unsigned16(const ByteArray& encoded) {
 
+    if (encoded.getLength() < 2) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
+
     endianTest();
     decode(encoded, endian);
 
 }
 
 Unsigned16::Unsigned16(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 2) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     endianTest();
     decode(encoded, eType);
@@ -63,6 +71,10 @@ uint16_t Unsigned16::decode(const ByteArray& encoded) {
  * Decode the encoded array in the specified endian format.
  */
 void Unsigned16::decode(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 2) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     value = 0;
     switch (eType) {

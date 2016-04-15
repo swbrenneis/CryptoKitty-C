@@ -19,6 +19,28 @@ ClientHello::ClientHello()
 ClientHello::~ClientHello() {
 }
 
+void ClientHello::debugOut(std::ostream& out) {
+
+    int j = majorVersion;
+    int n = minorVersion;
+    out << "Version: " << j << "." << n << std::endl;
+    out << "Random.gmt: " << gmt << std::endl;
+    out << "Random.random: " << random.toString() << std::endl;
+    out << "Session ID: " << sessionID.toString() << std::endl;
+    for (CipherConstIter it = suites.begin(); it != suites.end(); ++it) {
+        CK::ByteArray s(2);
+        s[0] = (*it).sel[0];
+        s[1] = (*it).sel[1];
+        out << "Cipher suite: " << s.toString() << std::endl;
+    }
+    out << "Compression methods: " << compressionMethods.toString() << std::endl;
+    for (ExtConstIter it = extensions.begin(); it != extensions.end(); ++it) {
+        out << "Extension.type: " << (*it).type.getUnsignedValue() << std::endl;
+        out << "Extension.data: " << (*it).data.toString() << std::endl;
+    }
+
+}
+
 void ClientHello::decode(const CK::ByteArray& encoded) {
 
     unsigned index = 0;
@@ -63,13 +85,13 @@ void ClientHello::decode(const CK::ByteArray& encoded) {
     // Extensions. Be very, very careful. Uses ByteArray bounds
     // check to validate lengths.
     try {
-        if (index < encoded.getLength() -1) {
+        if (index < encoded.getLength() - 1) {
             CK::Unsigned16 exl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
             uint16_t exLength = exl.getUnsignedValue();
             index += 2;
             while (exLength > 0) {
                 Extension e;
-                e.type = CK::Unsigned16(encoded.range(index, 2));
+                e.type = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
                 exLength -= 2;
                 index += 2;
                 CK::Unsigned16 edl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);

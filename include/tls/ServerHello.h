@@ -4,6 +4,7 @@
 #include "tls/HandshakeBody.h"
 #include "tls/CipherSuiteManager.h"
 #include "data/Unsigned16.h"
+#include <iostream>
 
 namespace CKTLS {
 
@@ -16,6 +17,7 @@ class ServerHello : public HandshakeBody {
         ~ServerHello();
 
     public:
+        void debugOut(std::ostream& out);
         void decode(const CK::ByteArray& stream);
         CK::ByteArray encode() const;
         void initState();

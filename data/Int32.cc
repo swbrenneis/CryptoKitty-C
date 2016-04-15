@@ -25,12 +25,20 @@ Int32::Int32(int32_t v)
 
 Int32::Int32(const ByteArray& encoded) {
 
+    if (encoded.getLength() < 4) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
+
     endianTest();
     decode(encoded, endian);
 
 }
 
 Int32::Int32(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 4) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     endianTest();
     decode(encoded, eType);
@@ -65,6 +73,10 @@ int32_t Int32::decode(const ByteArray& encoded) {
  * Decode the encoded array in the specified endian format.
  */
 void Int32::decode(const ByteArray& encoded, int eType) {
+
+    if (encoded.getLength() < 4) {
+        throw OutOfRangeException("Invalid encoding length");
+    }
 
     value = 0;
     switch (eType) {
