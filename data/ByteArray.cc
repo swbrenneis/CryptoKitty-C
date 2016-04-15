@@ -257,9 +257,9 @@ ByteArray ByteArray::range(unsigned offset, unsigned length) const {
 
 }
 
-void ByteArray::setLength(unsigned newLength) {
+void ByteArray::setLength(unsigned newLength, uint8_t fill) {
 
-    bytes.resize(newLength, 0);
+    bytes.resize(newLength, fill);
 
 }
 

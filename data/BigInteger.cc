@@ -504,6 +504,8 @@ bool operator>= (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return !lhs.lessThan(rhs); }
 CK::BigInteger operator- (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.subtract(rhs); }
+CK::BigInteger operator- (const CK::BigInteger& lhs)
+{ return CK::BigInteger::ZERO.subtract(lhs); }
 CK::BigInteger operator+ (const CK::BigInteger& lhs, const CK::BigInteger& rhs)
 { return lhs.add(rhs); }
 CK::BigInteger operator* (const CK::BigInteger& lhs, const CK::BigInteger& rhs)

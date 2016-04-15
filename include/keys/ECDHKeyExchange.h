@@ -34,27 +34,30 @@ class ECDHKeyExchange {
         };
 
     public:
-        Point getPublicKey();
+        ByteArray getPublicKey();
         void setCurve(const CurveParams& params);
         Point getSecret(const Point& fk);
 
     private:
-        ByteArray elementToString(const BigInteger& e, bool galois);
+        ByteArray elementToString(const BigInteger& e) const;
         bool isOnCurve(const Point& point) const;
-        Point pointAdd(const Point& a, const Point& b) const;
+        Point pointAdd(const Point& P, const Point& Q) const;
+        ByteArray pointToString(const Point& point, bool compress);
         Point scalarMultiply(const BigInteger& m,
                                 const Point& point) const;
 
     private:
         bool curveSet;      // Curve parameters set.
+        bool galois;        // Finite field flag
         BigInteger n;       // Subgroup order.
-        BigInteger A;       // Curve coefficient a;
-        BigInteger B;       // Curve coefficient b;
-        BigInteger P;       // Curve modulus.
+        BigInteger a;       // Curve coefficient a;
+        BigInteger b;       // Curve coefficient b;
+        BigInteger p;       // Curve modulus.
         Point G;            // Base Point.
         Point H;            // Public key.
         BigInteger d;       // Secret key
         Point s;            // Shared secret.
+        uint32_t m;         // Galois field size.
 
         static Point ZERO;  // 0 infinity point.
 

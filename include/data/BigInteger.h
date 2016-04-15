@@ -51,7 +51,6 @@ class BigInteger {
     public:
         BigInteger& operator= (const BigInteger& other);
         BigInteger& operator= (long value);
-        BigInteger& operator- ();
 
     public:
         ~BigInteger();
@@ -127,6 +126,7 @@ bool operator> (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
 bool operator>= (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
 CK::BigInteger operator+ (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
 CK::BigInteger operator- (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
+CK::BigInteger operator- (const CK::BigInteger& lhs);
 CK::BigInteger operator* (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
 CK::BigInteger operator/ (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
 CK::BigInteger operator% (const CK::BigInteger& lhs, const CK::BigInteger& rhs);
