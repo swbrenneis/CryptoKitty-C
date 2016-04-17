@@ -3,6 +3,7 @@
 
 #include "tls/HandshakeBody.h"
 #include "tls/CipherSuiteManager.h"
+#include "tls/ExtensionManager.h"
 #include "data/Unsigned16.h"
 #include <iostream>
 
@@ -33,13 +34,6 @@ class ServerHello : public HandshakeBody {
         CK::ByteArray compressionMethods;
 
         CipherSuiteList suites;
-
-        struct Extension {
-            CK::Unsigned16 type;
-            CK::ByteArray data;
-        };
-        typedef std::deque<Extension> ExtensionList;
-        typedef ExtensionList::const_iterator ExtConstIter;
 
         ExtensionList extensions;
 

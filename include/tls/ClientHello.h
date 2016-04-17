@@ -3,6 +3,7 @@
 
 #include "tls/HandshakeBody.h"
 #include "tls/CipherSuiteManager.h"
+#include "tls/ExtensionManager.h"
 #include "data/Unsigned16.h"
 #include <iostream>
 
@@ -18,10 +19,11 @@ class ClientHello : public HandshakeBody {
         void debugOut(std::ostream& out);
         void decode(const CK::ByteArray& stream);
         CK::ByteArray encode() const;
+        CK::ByteArray getExtensionData(uint16_t etype) const;
         uint8_t getMajorVersion() const;
         uint8_t getMinorVersion() const;
         void initState();
-        bool matchCipherSuite(const CipherSuite& cipher) const;
+        const CipherSuite& getPreferred() const;
 
     private:
         uint32_t gmt;
@@ -31,16 +33,8 @@ class ClientHello : public HandshakeBody {
         uint8_t minorVersion;
         CK::ByteArray compressionMethods;
 
-        CipherSuiteList suites;
-
-        struct Extension {
-            CK::Unsigned16 type;
-            CK::ByteArray data;
-        };
-        typedef std::deque<Extension> ExtensionList;
-        typedef ExtensionList::const_iterator ExtConstIter;
-
-        ExtensionList extensions;
+        CipherSuiteManager suites;
+        ExtensionManager extensions;
 
 };
 

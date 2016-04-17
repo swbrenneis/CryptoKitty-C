@@ -45,6 +45,8 @@ class ECDHKeyExchange {
         ByteArray pointToString(const Point& point, bool compress);
         Point scalarMultiply(const BigInteger& m,
                                 const Point& point) const;
+        BigInteger stringToElement(const ByteArray& encoded) const;
+        Point stringToPoint(const ByteArray& encoded) const;
 
     private:
         bool curveSet;      // Curve parameters set.
@@ -59,7 +61,7 @@ class ECDHKeyExchange {
         Point s;            // Shared secret.
         uint32_t m;         // Galois field size.
 
-        static Point ZERO;  // 0 infinity point.
+        static const Point PAI;  // Point at infinity.
 
 };
 

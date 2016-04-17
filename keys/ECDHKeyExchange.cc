@@ -7,7 +7,7 @@
 namespace CK {
 
 // Static initialization.
-ECDHKeyExchange::Point ECDHKeyExchange::ZERO =
+const ECDHKeyExchange::Point ECDHKeyExchange::PAI =
         { BigInteger::ZERO, BigInteger::ZERO };
 
 ECDHKeyExchange::ECDHKeyExchange()
@@ -146,7 +146,7 @@ ECDHKeyExchange::pointAdd(const Point& P, const Point& Q) const {
 
     if (x1 == x2 && y1 != y2) {
         // Point + (-Point) = 0
-        return ZERO;
+        return PAI;
     }
 
     BigInteger mp;
@@ -190,8 +190,8 @@ ByteArray ECDHKeyExchange::pointToString(const Point& point, bool compress) {
     }
 
     ByteArray result;
+    ByteArray x(elementToString(point.x));
     if (compress) {
-        ByteArray x(elementToString(point.x));
         uint8_t yP;
         if (galois) {
             if (point.x == BigInteger::ZERO) {
@@ -209,7 +209,6 @@ ByteArray ECDHKeyExchange::pointToString(const Point& point, bool compress) {
         result.append(x);
     }
     else {
-        ByteArray x(elementToString(point.x));
         ByteArray y(elementToString(point.y));
         result.setLength(1, 0x04);
         result.append(x);
@@ -259,8 +258,82 @@ void ECDHKeyExchange::setCurve(const CurveParams& params) {
     G.x = params.xG;
     G.y = params.yG;
     m = params.m;
+    if (m > 0) {
+        galois = true;
+    }
 
     curveSet = true;
+
+}
+
+/*
+ * Convert an octet string to a field element.
+ *
+ * Certicom Research, SEC 01, Section 2.3.6.
+ */
+BigInteger ECDHKeyExchange::stringToElement(const ByteArray& encoded) const {
+
+    if (!curveSet) {
+        throw IllegalStateException("Curve parameters not set");
+    }
+
+    BigInteger result;
+    double q = galois ? m : p.bitLength();
+    if (encoded.getLength() != ceil(q / 8)) {
+        throw BadParameterException("Invalid element length");
+    }
+
+    if (galois) {
+        // Figure this out.
+    }
+    else {
+       result = BigInteger(encoded, BigInteger::BIGENDIAN);
+       if (result < BigInteger::ZERO || result >= p) {
+           throw BadParameterException("Invalid element");
+       }
+    }
+
+    return result;
+
+}
+
+/*
+ * Convert octet string to curve coordinates.
+ *
+ * Certicom Research, SEC 01, v2, Section 2.3.4.
+ */
+ECDHKeyExchange::Point ECDHKeyExchange::stringToPoint(const ByteArray& encoded) const {
+
+    if (!curveSet) {
+        throw IllegalStateException("Curve parameters not set");
+    }
+
+    if (encoded[0] == 0) {
+        return PAI;
+    }
+
+    Point result;
+    double q = galois ? m : p.bitLength();
+
+    if  (encoded.getLength() == ceil(q / 8) + 1) {   // Compressed
+        if (galois) {
+        }
+        else {
+        }
+    }
+    else if (encoded.getLength() == (2 * ceil(q / 8)) + 1) {   // Uncompressed
+        if (encoded[0] != 0x04) {
+            throw BadParameterException("Invalid point format");
+        }
+        uint32_t eLen = ceil(q / 8);
+        result.x = stringToElement(encoded.range(1, eLen));
+        result.y = stringToElement(encoded.range(eLen+1, eLen));
+        if (!isOnCurve(result)) {
+            throw BadParameterException("Invalid point");
+        }
+    }
+
+    return result;
 
 }
 

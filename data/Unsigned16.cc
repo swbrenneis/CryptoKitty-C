@@ -158,11 +158,20 @@ ByteArray Unsigned16::getEncoded(int eType) const {
 }
 
 /*
- * Returns a signed integer value.
+ * Returns an unsigned integer value.
  */
 uint16_t Unsigned16::getUnsignedValue() const {
 
     return value;
+
+}
+
+/*
+ * Set the unsigned value.
+ */
+void Unsigned16::setValue(uint16_t v) {
+
+    value = v;
 
 }
 

@@ -1,13 +1,16 @@
 #ifndef CIPHERSUITEMANAGER_H_INCLUDED
 #define CIPHERSUITEMANAGER_H_INCLUDED
 
+#include "data/ByteArray.h"
 #include <cstdint>
 #include <deque>
+#include <iostream>
 
 namespace CKTLS {
 
 struct CipherSuite {
     uint8_t sel[2];
+    bool ec; // Elliptic curve.
 };
 
 typedef std::deque<CipherSuite> CipherSuiteList;
@@ -19,10 +22,8 @@ typedef CipherSuiteList::iterator CipherIter;
  */
 class CipherSuiteManager {
 
-    private:
-        CipherSuiteManager();
-
     public:
+        CipherSuiteManager();
         ~CipherSuiteManager();
 
     private:
@@ -30,8 +31,10 @@ class CipherSuiteManager {
         CipherSuiteManager& operator= (const CipherSuiteManager& other);
 
     public:
-        static CipherSuiteManager *getManager();
-        const CipherSuite& nextCipherSuite(unsigned next) const ;
+        void debugOut(std::ostream& out) const;
+        void decode(const CK::ByteArray& encoded);
+        CK::ByteArray encode() const;
+        const CipherSuite& matchCipherSuite() const ;
 
     private:
         void initialize();
@@ -49,6 +52,7 @@ class CipherSuiteManager {
 
     private:
         CipherSuiteList suites;
+        static CipherSuiteList preferred;
 
 };
 

@@ -27,6 +27,8 @@ class Unsigned16 {
         ByteArray getEncoded(int endian) const;
         // Returns an unsigned integer.
         uint16_t getUnsignedValue() const;
+        // Sets the unsigned value.
+        void setValue(uint16_t v);
 
     public:
         static ByteArray encode(uint16_t value);

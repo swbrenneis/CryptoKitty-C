@@ -186,22 +186,44 @@ void ServerHello::initState(const ClientHello& hello) {
     rnd->nextBytes(random);
     delete rnd;
 
-    bool matched = false;
-    int next = 0;
-    CipherSuiteManager *manager = CipherSuiteManager::getManager();
-    CipherSuite c(manager->nextCipherSuite(next++));
-    while (c != CipherSuiteManager::TLS_NULL_WITH_NULL_NULL && !matched) {
-        if (hello.matchCipherSuite(c)) {
-            suites.push_back(c);
-            matched = true;
-        }
-        c = manager->nextCipherSuite(next++);
-    }
-    if (!matched) {
-        throw StateException("No matching cipher suite");
-    }
+    CipherSuite c(hello.getPreferred());
+    suites.push_back(c);
 
     compressionMethods.append(0);
+
+    // Set up extensions
+    if (c.ec) { // Elliptic curves
+        Extension ext;
+        ext.type.setValue(0x000b);
+        ext.data.append(0x01);
+        ext.data.append(0x00); // Uncompressed curve coordinates only
+        extensions.push_back(ext);
+
+        CK::ByteArray edata(hello.getExtensionData(0x000a));
+        if (edata.getLength() == 0) {
+            throw StateException("No client named curve extension");
+        }
+
+        bool matched = false;
+        ext.type.setValue(0x000a);
+        for (unsigned i = 0; i < edata.getLength() && !matched; i += 2) {
+            CK::Unsigned16 curve(edata.range(i, 2), CK::Unsigned16::BIGENDIAN);
+            if (static_cast<NamedCurve>(curve.getUnsignedValue()) == secp384r1) {
+                ext.data = curve.getEncoded(CK::Unsigned16::BIGENDIAN);
+                matched = true;
+            }
+            else if (static_cast<NamedCurve>(curve.getUnsignedValue()) == secp256r1) {
+                ext.data = curve.getEncoded(CK::Unsigned16::BIGENDIAN);
+                matched = true;
+            }
+        }
+        if (matched) {
+            extensions.push_back(ext);
+        }
+        else {
+            throw StateException("No matching elliptic curve");
+        }
+    }
 
 }
 
