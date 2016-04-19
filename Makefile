@@ -49,13 +49,14 @@ SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
 TLS_OBJECT= tls/Alert.o tls/CipherSuiteManager.o tls/ClientHello.o tls/ConnectionState.o \
-			tls/ExtensionManager.o tls/HandshakeRecord.o tls/Plaintext.o tls/ServerHello.o \
-			tls/ServerKeyExchange.o
+			tls/ExtensionManager.o tls/HandshakeRecord.o tls/Plaintext.o \
+			tls/SecurityParameters.o tls/ServerHello.o tls/ServerKeyExchange.o
 TLS_HEADER= include/tls/Alert.h include/tls/CipherSuiteManager.h \
 			include/tls/ClientHello.h include/tls/ConnectionState.h \
 			include/tls/ExtensionManager.h include/tls/HandshakeRecord.h \
 			include/tls/Plaintext.h include/tls/RecordProtocol.h \
-			include/tls/ServerHello.h include/tls/ServerKeyExchange.h
+			include/tls/SecurityParameters.h include/tls/ServerHello.h \
+			include/tls/ServerKeyExchange.h
 TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 LDOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
