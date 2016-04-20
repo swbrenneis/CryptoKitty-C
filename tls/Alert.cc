@@ -13,18 +13,18 @@ Alert::Alert(AlertDescription d, bool f)
 Alert::~Alert() {
 }
 
-void Alert::decode(const CK::ByteArray& encoded) {
+void Alert::decode() {
 
-    switch (encoded[0]) {
+    switch (fragment[0]) {
         case fatal:
         case warning:
-            level = static_cast<AlertLevel>(encoded[1]);
+            level = static_cast<AlertLevel>(fragment[1]);
             break;
         default:
             throw RecordException("Invalid alert level");
     }
 
-    switch (encoded[1]) {
+    switch (fragment[1]) {
         case close_notify:
         case unexpected_message:
         case bad_record_mac:
@@ -50,7 +50,7 @@ void Alert::decode(const CK::ByteArray& encoded) {
         case user_canceled:
         case no_renegotiation:
         case unsupported_extension:
-            desc = static_cast<AlertDescription>(encoded[1]);
+            desc = static_cast<AlertDescription>(fragment[1]);
             break;
         default:
             throw RecordException("Invalid alert description");

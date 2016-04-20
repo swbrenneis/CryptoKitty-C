@@ -13,6 +13,7 @@ static const uint8_t MINOR = 3;
 
 ClientHello::ClientHello()
 : random(28, 0),
+  sessionID(0),
   majorVersion(MAJOR),
   minorVersion(MINOR) {
 }
@@ -30,7 +31,6 @@ void ClientHello::debugOut(std::ostream& out) {
     out << "Session ID: " << sessionID.toString() << std::endl;
     suites.debugOut(out);
     out << "Compression methods: " << compressionMethods.toString() << std::endl;
-
     extensions.debugOut(out);
 
 }
@@ -56,7 +56,7 @@ void ClientHello::decode(const CK::ByteArray& encoded) {
     // Cipher suites
     CK::Unsigned16 csl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     uint16_t csLen = csl.getUnsignedValue();
-    suites.decode(encoded.range(index, csLen));
+    suites.decode(encoded.range(index+2, csLen));
     index += csLen + 2;
     // Compression methods
     uint8_t compMethods = encoded[index++];
@@ -88,8 +88,7 @@ void ClientHello::decode(const CK::ByteArray& encoded) {
 
 CK::ByteArray ClientHello::encode() const {
 
-    // First three bytes are for 24 bit length.
-    CK::ByteArray encoded(3, 0);
+    CK::ByteArray encoded;
 
     encoded.append(majorVersion);
     encoded.append(minorVersion);
@@ -99,12 +98,15 @@ CK::ByteArray ClientHello::encode() const {
     encoded.append(random);
 
     uint8_t slen = sessionID.getLength();
-    encoded.append(sessionID);
+    encoded.append(slen);
     if (slen > 0) {
         encoded.append(sessionID);
     }
 
-    encoded.append(suites.encode());
+    CK::ByteArray s(suites.encode());
+    CK::Unsigned16 suiteLen(s.getLength());
+    encoded.append(suiteLen.getEncoded(CK::Unsigned16::BIGENDIAN));
+    encoded.append(s);
 
     encoded.append(compressionMethods.getLength());
     for (unsigned i = 0; i < compressionMethods.getLength(); ++i) {
@@ -112,13 +114,6 @@ CK::ByteArray ClientHello::encode() const {
     }
 
     encoded.append(extensions.encode());
-
-    uint32_t encodedLength = encoded.getLength() - 3;
-    encoded[2] = encodedLength & 0xff;
-    encodedLength = encodedLength >> 8;
-    encoded[1] = encodedLength & 0xff;
-    encodedLength = encodedLength >> 8;
-    encoded[0] = encodedLength & 0xff;
 
     return encoded;
 
@@ -147,6 +142,12 @@ uint8_t ClientHello::getMinorVersion() const {
 
 }
 
+const CipherSuite& ClientHello::getPreferred() const {
+
+    return suites.matchCipherSuite();
+
+}
+
 void ClientHello::initState() {
 
     gmt = time(0);
@@ -154,15 +155,9 @@ void ClientHello::initState() {
             CK::SecureRandom::getSecureRandom("BBS");
     rnd->nextBytes(random);
     delete rnd;
+    suites.loadPreferred();
     compressionMethods.append(0);
-    // TODO: SessionID.
-    // TODO: Extensions
-
-}
-
-const CipherSuite& ClientHello::getPreferred() const {
-
-    return suites.matchCipherSuite();
+    extensions.loadDefaults();
 
 }
 

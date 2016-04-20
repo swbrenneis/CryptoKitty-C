@@ -24,18 +24,15 @@ class Plaintext {
         virtual ~Plaintext();
 
     public:
-        virtual void decode(const CK::ByteArray& frag)=0;
+        ContentType decodePreamble(const CK::ByteArray& encoded);
+        virtual void decode()=0;
         virtual CK::ByteArray encode()=0;
         uint16_t getFragmentLength() const;
-        uint8_t getRecordMajorVersion() const;
-        uint8_t getRecordMinorVersion() const;
-        ContentType getType() const;
-        void setFragmentLength(uint16_t len);
-        void setRecordMajorVersion(uint8_t major);
-        void setRecordMinorVersion(uint8_t minor);
-        void setType(ContentType c);
+        ContentType getContentType() const;
+        void setFragment(const CK::ByteArray& frag);
 
-        static Plaintext *startRecord(const CK::ByteArray& rec); 
+    protected:
+        CK::ByteArray encodePreamble() const;
 
     protected:
         ContentType content;

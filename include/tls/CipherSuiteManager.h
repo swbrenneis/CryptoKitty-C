@@ -34,7 +34,9 @@ class CipherSuiteManager {
         void debugOut(std::ostream& out) const;
         void decode(const CK::ByteArray& encoded);
         CK::ByteArray encode() const;
-        const CipherSuite& matchCipherSuite() const ;
+        void loadPreferred();
+        const CipherSuite& matchCipherSuite() const;
+        void setPreferred(const CipherSuite& c);
 
     private:
         void initialize();

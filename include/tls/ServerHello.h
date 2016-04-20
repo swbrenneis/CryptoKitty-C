@@ -33,9 +33,9 @@ class ServerHello : public HandshakeBody {
         uint8_t minorVersion;
         CK::ByteArray compressionMethods;
 
-        CipherSuiteList suites;
+        CipherSuiteManager suites;
 
-        ExtensionList extensions;
+        ExtensionManager extensions;
 
 };
 

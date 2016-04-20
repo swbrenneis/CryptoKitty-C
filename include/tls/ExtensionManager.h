@@ -39,6 +39,10 @@ struct SignatureAndHashAlgorithm {
     SignatureAlgorithm signature;
 };
 
+// Certificate types
+
+enum CertificateType { x_509=0, openpgp=1 };
+
 class ExtensionManager {
 
     public:
@@ -54,7 +58,12 @@ class ExtensionManager {
         void decode(const CK::ByteArray& encoded);
         CK::ByteArray encode() const;
         bool getExtension(Extension& ext, uint16_t etype) const;
+        void loadDefaults();
         void setExtension(const Extension& ext);
+
+    public:
+        static const uint16_t CERT_TYPE;
+        static const uint16_t NAMED_CURVES;
 
     private:
         typedef std::map<uint32_t, Extension> ExtensionMap;

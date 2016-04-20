@@ -11,14 +11,12 @@ namespace CKTLS {
 
 HandshakeRecord::HandshakeRecord()
 : Plaintext(handshake),
-  body(0),
-  length(0) {
+  body(0) {
 }
 
 HandshakeRecord::HandshakeRecord(HandshakeType h)
 : Plaintext(handshake),
   body(0),
-  length(0),
   type(h) {
 
     switch (type) {
@@ -53,20 +51,23 @@ HandshakeRecord::~HandshakeRecord() {
 /*
  * Decode a byte stream.
  */
-void HandshakeRecord::decode(const CK::ByteArray& stream) {
+void HandshakeRecord::decode() {
 
-    type = static_cast<HandshakeType>(stream[0]);
-    // Decode the body length.
-    length = 0;
-    for (int n = 1; n < 4; ++n) {
-        length = length << 8;
-        length |= stream[n];
+    if (content != handshake) {
+        throw RecordException("Not a handshake record");
     }
-    if (length + 4 != stream.getLength()) {
+
+    type = static_cast<HandshakeType>(fragment[0]);
+    // Decode the body length.
+    CK::ByteArray bLen(1, 0);
+    bLen.append(fragment.range(1, 3));
+    CK::Unsigned32 bodyLen(bLen, CK::Unsigned32::BIGENDIAN);
+    uint32_t length = bodyLen.getUnsignedValue();
+    if (length + 4 != fragment.getLength()) {
         throw RecordException("Invalid body length");
     }
 
-    CK::ByteArray bodyBytes(stream.range(4, length));
+    CK::ByteArray bodyBytes(fragment.range(4, length));
 
     switch (type) {
         case hello_request:
@@ -97,22 +98,15 @@ CK::ByteArray HandshakeRecord::encode() {
     fragment.clear();
     fragment.append(type);
     CK::ByteArray encBody(body->encode());
-    length = encBody.getLength();
-    CK::Unsigned32 bodyLen(length);
-    CK::ByteArray bl = bodyLen.encode(CK::Unsigned32::BIGENDIAN);
-    fragment.append(bl.range(0, 3));
+    CK::Unsigned32 bodyLen(encBody.getLength());
+    CK::ByteArray bl = bodyLen.getEncoded(CK::Unsigned32::BIGENDIAN);
+    fragment.append(bl.range(1, 3));
     fragment.append(encBody);
     fragLength = fragment.getLength();
 
-    CK::ByteArray encoded;
-    encoded.append(content);
-    encoded.append(recordMajorVersion);
-    encoded.append(recordMinorVersion);
-    CK::Unsigned16 fl(fragLength);
-    encoded.append(fl.encode(CK::Unsigned16::BIGENDIAN));
-    encoded.append(fragment);
-
-    return encoded;
+    CK::ByteArray plaintext(encodePreamble());
+    plaintext.append(fragment);
+    return plaintext;
 
 }
 

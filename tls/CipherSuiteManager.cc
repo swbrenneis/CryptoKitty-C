@@ -38,12 +38,12 @@ CipherSuiteManager::~CipherSuiteManager() {
 void CipherSuiteManager::initialize() {
 
     if (preferred.size() == 0) {
+        preferred.push_back(TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
+        preferred.push_back(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
         preferred.push_back(TLS_DHE_RSA_WITH_AES_256_GCM_SHA384);
         preferred.push_back(TLS_DHE_RSA_WITH_AES_128_GCM_SHA256);
         preferred.push_back(TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384);
         preferred.push_back(TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256);
-        preferred.push_back(TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
-        preferred.push_back(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
         preferred.push_back(TLS_RSA_WITH_AES_256_CBC_SHA256);
         preferred.push_back(TLS_RSA_WITH_AES_128_CBC_SHA256);
         preferred.push_back(TLS_NULL_WITH_NULL_NULL);
@@ -68,12 +68,7 @@ void CipherSuiteManager::decode(const CK::ByteArray& encoded) {
     while (index < encoded.getLength()) {
         CipherSuite c;
         c.sel[0] = encoded[index++];
-        if (index < encoded.getLength()) { // No overruns or underruns. Thanks anyway.
-            c.sel[1] = encoded[index++];
-        }
-        else {
-            throw RecordException("Cipher suite length invalid");
-        }
+        c.sel[1] = encoded[index++];
         suites.push_back(c);
     }
 
@@ -82,8 +77,6 @@ void CipherSuiteManager::decode(const CK::ByteArray& encoded) {
 CK::ByteArray CipherSuiteManager::encode() const {
 
     CK::ByteArray encoded;
-    CK::Unsigned16 csize(suites.size() * 2);
-    encoded.append(csize.getEncoded(CK::Unsigned16::BIGENDIAN));
     for (CipherConstIter it = suites.begin();
                                     it != suites.end(); ++it) {
         encoded.append(it->sel[0]);
@@ -91,6 +84,19 @@ CK::ByteArray CipherSuiteManager::encode() const {
     }
 
     return encoded;
+
+}
+
+void CipherSuiteManager::loadPreferred() {
+
+    suites.push_back(TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
+    suites.push_back(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
+    suites.push_back(TLS_DHE_RSA_WITH_AES_256_GCM_SHA384);
+    suites.push_back(TLS_DHE_RSA_WITH_AES_128_GCM_SHA256);
+    suites.push_back(TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384);
+    suites.push_back(TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256);
+    suites.push_back(TLS_RSA_WITH_AES_256_CBC_SHA256);
+    suites.push_back(TLS_RSA_WITH_AES_128_CBC_SHA256);
 
 }
 
@@ -105,6 +111,12 @@ const CipherSuite& CipherSuiteManager::matchCipherSuite() const {
     }
 
     throw RecordException("No matching cipher suite");
+
+}
+
+void CipherSuiteManager::setPreferred(const CipherSuite& suite) {
+
+    suites.push_back(suite);
 
 }
 

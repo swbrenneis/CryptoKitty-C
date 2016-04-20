@@ -29,7 +29,7 @@ class Alert : public Plaintext {
         Alert& operator=(const Alert& other);
 
     public:
-        void decode(const CK::ByteArray& encoded);
+        void decode();
         CK::ByteArray encode();
         AlertDescription getDescription() const;
         bool isFatal() const;

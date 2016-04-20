@@ -2,6 +2,10 @@
 
 namespace CKTLS {
 
+// Static initialization;
+const uint16_t ExtensionManager::CERT_TYPE = 0x0009;
+const uint16_t ExtensionManager::NAMED_CURVES = 0x000a;
+
 ExtensionManager::ExtensionManager() {
 }
 
@@ -39,7 +43,7 @@ CK::ByteArray ExtensionManager::encode() const {
     CK::ByteArray encoded;
     if (extensions.size() > 0) {
         // 2 byte length.
-        CK::ByteArray ext(2, 0);
+        CK::ByteArray ext;
         for (ExtConstIter it = extensions.begin();
                                     it != extensions.end(); ++it) {
             ext.append(it->second.type.getEncoded(CK::Unsigned16::BIGENDIAN));
@@ -47,10 +51,8 @@ CK::ByteArray ExtensionManager::encode() const {
             ext.append(edlen.getEncoded(CK::Unsigned16::BIGENDIAN));
             ext.append(it->second.data);
         }
-        uint32_t elen = ext.getLength() - 2;
-        ext[1] = elen & 0xff;
-        elen = elen >> 8;
-        ext[0] = elen & 0xff;
+        CK::Unsigned16 elen(ext.getLength());
+        encoded.append(elen.getEncoded(CK::Unsigned16::BIGENDIAN));
         encoded.append(ext);
     }
 
@@ -67,6 +69,23 @@ bool ExtensionManager::getExtension(Extension& ext, uint16_t etype) const {
 
     ext = it->second;
     return true;
+
+}
+
+void ExtensionManager::loadDefaults() {
+
+    Extension ext;
+
+    ext.type.setValue(NAMED_CURVES);
+    CK::Unsigned16 curve(secp384r1);
+    ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
+    curve.setValue(secp256r1);
+    ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
+    extensions[NAMED_CURVES] = ext;
+    ext.data.clear();
+    ext.type.setValue(CERT_TYPE);
+    ext.data.append(openpgp);
+    extensions[CERT_TYPE] = ext;
 
 }
 

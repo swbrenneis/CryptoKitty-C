@@ -25,7 +25,7 @@ class HandshakeRecord : public Plaintext {
         ~HandshakeRecord();
 
     public:
-        void decode(const CK::ByteArray& stream);
+        void decode();
         CK::ByteArray encode();
         HandshakeBody *getBody();
         HandshakeType getType() const;
@@ -33,7 +33,6 @@ class HandshakeRecord : public Plaintext {
 
     private:
         HandshakeBody *body;
-        uint32_t length;
         HandshakeType type;
 
 };
