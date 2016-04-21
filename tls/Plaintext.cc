@@ -41,6 +41,8 @@ Plaintext::decodePreamble(const CK::ByteArray& encoded) {
     CK::Unsigned16 fLen(encoded.range(3, 2), CK::Unsigned16::BIGENDIAN);
     fragLength = fLen.getUnsignedValue();
 
+    return content;
+
 }
 
 CK::ByteArray Plaintext::encodePreamble() const {

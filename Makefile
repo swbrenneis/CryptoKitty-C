@@ -114,6 +114,7 @@ install: $(LIBRRY)
 	cp -af include/random $(DEV_HOME)/include/CryptoKitty
 	cp -af include/signature $(DEV_HOME)/include/CryptoKitty
 	cp -af include/tls $(DEV_HOME)/include/CryptoKitty
+	cp -af include/openpgp $(DEV_HOME)/include/CryptoKitty
 
 clean:
 	rm -f $(LIBRARY)
@@ -126,4 +127,5 @@ clean:
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
 	cd tls && $(MAKE) clean
+	cd openpgp && $(MAKE) clean
 

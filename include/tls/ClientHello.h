@@ -19,7 +19,7 @@ class ClientHello : public HandshakeBody {
         void debugOut(std::ostream& out);
         void decode(const CK::ByteArray& stream);
         CK::ByteArray encode() const;
-        CK::ByteArray getExtensionData(uint16_t etype) const;
+        bool getExtension(uint16_t etype, Extension& ex) const;
         uint8_t getMajorVersion() const;
         uint8_t getMinorVersion() const;
         void initState();

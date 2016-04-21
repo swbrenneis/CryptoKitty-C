@@ -4,12 +4,20 @@ namespace CKTLS {
 
 // Static initialization;
 const uint16_t ExtensionManager::CERT_TYPE = 0x0009;
-const uint16_t ExtensionManager::NAMED_CURVES = 0x000a;
+const uint16_t ExtensionManager::SUPPORTED_CURVES = 0x000a;
+const uint16_t ExtensionManager::POINT_FORMATS = 0x000b;
+const Extension ExtensionManager::dummy = { CK::Unsigned16(0xffff), CK::ByteArray(0) };
 
 ExtensionManager::ExtensionManager() {
 }
 
 ExtensionManager::~ExtensionManager() {
+}
+
+void ExtensionManager::addExtension(const Extension& ext) {
+
+    extensions[ext.type.getUnsignedValue()] = ext;
+
 }
 
 void ExtensionManager::debugOut(std::ostream& out) const {
@@ -60,15 +68,14 @@ CK::ByteArray ExtensionManager::encode() const {
 
 }
 
-bool ExtensionManager::getExtension(Extension& ext, uint16_t etype) const {
+const Extension& ExtensionManager::getExtension(uint16_t etype) const {
 
     ExtConstIter it = extensions.find(etype);
     if (it == extensions.end()) {
-        return false;
+        return dummy;
     }
 
-    ext = it->second;
-    return true;
+    return it->second;
 
 }
 
@@ -76,22 +83,24 @@ void ExtensionManager::loadDefaults() {
 
     Extension ext;
 
-    ext.type.setValue(NAMED_CURVES);
+    ext.type.setValue(SUPPORTED_CURVES);
+    CK::Unsigned16 extCount(4);     // Bytes of extension data
+    ext.data.append(extCount.getEncoded(CK::Unsigned16::BIGENDIAN));
     CK::Unsigned16 curve(secp384r1);
     ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
     curve.setValue(secp256r1);
     ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
-    extensions[NAMED_CURVES] = ext;
+    extensions[SUPPORTED_CURVES] = ext;
     ext.data.clear();
     ext.type.setValue(CERT_TYPE);
+    ext.data.append(0x01);
     ext.data.append(openpgp);
     extensions[CERT_TYPE] = ext;
-
-}
-
-void ExtensionManager::setExtension(const Extension& ext) {
-
-    extensions[ext.type.getUnsignedValue()] = ext;
+    ext.data.clear();
+    ext.type.setValue(POINT_FORMATS);
+    ext.data.append(0x01);
+    ext.data.append(0x00); // Uncompressed point format.
+    extensions[POINT_FORMATS] = ext;
 
 }
 

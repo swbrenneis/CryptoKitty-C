@@ -119,14 +119,10 @@ CK::ByteArray ClientHello::encode() const {
 
 }
 
-CK::ByteArray ClientHello::getExtensionData(uint16_t etype) const {
+bool ClientHello::getExtension(uint16_t eType, Extension& ext) const {
 
-    Extension ext;
-    if (extensions.getExtension(ext, etype)) {
-        return ext.data;
-    }
-
-    return CK::ByteArray(0);
+    ext = extensions.getExtension(eType);
+    return ext.type.getUnsignedValue() == eType;
 
 }
 

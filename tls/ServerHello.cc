@@ -139,39 +139,52 @@ void ServerHello::initState(const ClientHello& hello) {
 
     compressionMethods.append(0);
 
+    Extension ext;
     // Set up extensions
-    /*if (c.ec) { // Elliptic curves
-        Extension ext;
-        ext.type.setValue(0x000b);
-        ext.data.append(0x01);
-        ext.data.append(0x00); // Uncompressed curve coordinates only
-        extensions.push_back(ext);
-
-        CK::ByteArray edata(hello.getExtensionData(ExtensionManager::NAMED_CURVES));
-        if (edata.getLength() == 0) {
-            throw StateException("No client named curve extension");
-        }
-
-        bool matched = false;
-        ext.type.setValue(ExtensionManager::NAMED_CURVES);
-        for (unsigned i = 0; i < edata.getLength() && !matched; i += 2) {
-            CK::Unsigned16 curve(edata.range(i, 2), CK::Unsigned16::BIGENDIAN);
-            if (static_cast<NamedCurve>(curve.getUnsignedValue()) == secp384r1) {
-                ext.data = curve.getEncoded(CK::Unsigned16::BIGENDIAN);
-                matched = true;
+    if (c.ec) {
+        if (hello.getExtension(ExtensionManager::SUPPORTED_CURVES, ext)) {
+            CK::ByteArray edata(ext.data);
+            ext.data.clear();
+            ext.data.append(0x00);
+            ext.data.append(0x02);  // Curve data byte count
+            bool matched = false;
+            CK::Unsigned16 cCount(ext.data.range(0, 2), CK::Unsigned16::BIGENDIAN);
+            for (unsigned i = 0; i < cCount.getUnsignedValue() && !matched; i += 2) {
+                CK::Unsigned16 curve(edata.range((i+2)*2, 2), CK::Unsigned16::BIGENDIAN);
+                if (static_cast<NamedCurve>(curve.getUnsignedValue()) == secp384r1) {
+                    ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
+                    matched = true;
+                }
+                else if (static_cast<NamedCurve>(curve.getUnsignedValue()) == secp256r1) {
+                    ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
+                    matched = true;
+                }
             }
-            else if (static_cast<NamedCurve>(curve.getUnsignedValue()) == secp256r1) {
-                ext.data = curve.getEncoded(CK::Unsigned16::BIGENDIAN);
-                matched = true;
+            if (matched) {
+                extensions.addExtension(ext);
             }
-        }
-        if (matched) {
-            extensions.push_back(ext);
+            else {
+                throw RecordException("No matching elliptic curve");
+            }
+
+            ext.data.clear();
+            ext.type.setValue(ExtensionManager::POINT_FORMATS);
+            ext.data.append(0x01);
+            ext.data.append(0x00); // Uncompressed curve coordinates only
+            extensions.addExtension(ext);
         }
         else {
-            throw StateException("No matching elliptic curve");
+            throw RecordException("EC cipher chosen without EC extensions");
         }
-    }*/
+    }
+
+    if (!hello.getExtension(ExtensionManager::CERT_TYPE, ext)) {
+        throw RecordException("No valid certificate type");
+    }
+    else if (ext.data[0] != 0x01 || ext.data[1] != openpgp) {
+        throw RecordException("Invalid certificate type");
+    }
+    extensions.addExtension(ext);
 
 }
 

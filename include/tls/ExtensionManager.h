@@ -54,21 +54,23 @@ class ExtensionManager {
         ExtensionManager& operator= (const ExtensionManager& other);
 
     public:
+        void addExtension(const Extension& ext);
         void debugOut(std::ostream& out) const;
         void decode(const CK::ByteArray& encoded);
         CK::ByteArray encode() const;
-        bool getExtension(Extension& ext, uint16_t etype) const;
+        const Extension& getExtension(uint16_t etype) const;
         void loadDefaults();
-        void setExtension(const Extension& ext);
 
     public:
         static const uint16_t CERT_TYPE;
-        static const uint16_t NAMED_CURVES;
+        static const uint16_t SUPPORTED_CURVES;
+        static const uint16_t POINT_FORMATS;
 
     private:
         typedef std::map<uint32_t, Extension> ExtensionMap;
         typedef ExtensionMap::const_iterator ExtConstIter;
         ExtensionMap extensions;
+        static const Extension dummy;
 
 };
 
