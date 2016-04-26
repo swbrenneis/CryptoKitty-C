@@ -172,5 +172,14 @@ uint64_t Unsigned64::getUnsignedValue() const {
 
 }
 
+/*
+ * Set the unsigned value.
+ */
+void Unsigned64::setValue(uint64_t v) {
+
+    value = v;
+
+}
+
 }
 

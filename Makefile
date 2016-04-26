@@ -11,9 +11,10 @@ CIPHER_HEADER= include/cipher/AES.h include/cipher/PKCS1rsassa.h \
 			   include/cipher/PSSmgf1.h include/cipher/PSSrsassa.h \
 			   include/cipher/RSA.h
 CIPHER_SOURCE= $(CIPHER_OBJECT:.o=.cc)
-CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/GCM.o ciphermodes/MtE.o
-CIPHERMODES_HEADER= include/ciphermodes/CBC.h include/ciphermodes/GCM.h \
-					include/ciphermodes/MtE.h
+CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/CTR.o ciphermodes/GCM.o \
+					ciphermodes/MtE.o
+CIPHERMODES_HEADER= include/ciphermodes/CBC.h include/ciphermodes/CTR.h \
+					include/ciphermodes/GCM.h include/ciphermodes/MtE.h
 CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
 DATA_OBJECT= data/BigInteger.o data/ByteArray.o data/Int16.o data/Int32.o \
 			 data/Int64.o data/NanoTime.o data/Unsigned16.o data/Unsigned32.o \
@@ -40,28 +41,41 @@ KEYS_SOURCE= $(KEYS_OBJECT:.o=.cc)
 MAC_OBJECT= mac/HMAC.o
 MAC_HEADER= include/mac/HMAC.h
 MAC_SOURCE= $(MAC_OBJECT:.o=.cc)
-RANDOM_OBJECT= random/BBSSecureRandom.o random/CMWCRandom.o random/Random.o \
-			   random/SecureRandom.o
+OPENPGP_OBJECT= openpgp/encode/ArmoredData.o openpgp/encode/Radix64.o \
+				openpgp/packet/Packet.o openpgp/packet/PKESessionKey.o \
+				openpgp/packet/PublicKey.o openpgp/packet/PublicSubkey.o \
+				openpgp/packet/SecretKey.o openpgp/packet/Signature.o \
+				openpgp/packet/UserAttribute.o openpgp/packet/UserID.o
+OPENPGP_HEADER= include/openpgp/encode/ArmoredData.h include/openpgp/encode/Radix64.h \
+				include/openpgp/packet/Packet.h include/openpgp/packet/PKESessionKey.h \
+				include/openpgp/packet/PublicKey.h include/openpgp/packet/PublicSubkey.h \
+				include/openpgp/packet/SecretKey.h include/openpgp/packet/Signature.h \
+				include/openpgp/packet/UserAttribute.h include/openpgp/packet/UserID.h
+OPENPGP_SOURCE= $(OPENPGP_OBJECT:.o=.cc)
+RANDOM_OBJECT= random/BBSSecureRandom.o random/CMWCRandom.o random/FortunaSecureRandom.o \
+			   random/FortunaGenerator.o random/Random.o random/SecureRandom.o
 RANDOM_HEADER= include/random/BBSSecureRandom.h include/random/CMWCRandom.h \
+			   include/random/FortunaSecureRandom.h include/random/FortunaGenerator.h \
 			   include/random/Random.h include/random/SecureRandom.h
 RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
 TLS_OBJECT= tls/Alert.o tls/CipherSuiteManager.o tls/ClientHello.o tls/ConnectionState.o \
-			tls/ExtensionManager.o tls/HandshakeRecord.o tls/Plaintext.o \
-			tls/SecurityParameters.o tls/ServerHello.o tls/ServerKeyExchange.o
+			tls/ExtensionManager.o tls/HandshakeRecord.o tls/PGPCertificate.o \
+			tls/Plaintext.o tls/SecurityParameters.o tls/ServerCertificate.o \
+			tls/ServerHello.o tls/ServerKeyExchange.o
 TLS_HEADER= include/tls/Alert.h include/tls/CipherSuiteManager.h \
 			include/tls/ClientHello.h include/tls/ConnectionState.h \
 			include/tls/ExtensionManager.h include/tls/HandshakeRecord.h \
-			include/tls/Plaintext.h include/tls/RecordProtocol.h \
-			include/tls/SecurityParameters.h include/tls/ServerHello.h \
-			include/tls/ServerKeyExchange.h
+			include/tls/PGPCertificate.h include/tls/Plaintext.h include/tls/RecordProtocol.h \
+			include/tls/SecurityParameters.h include/tls/ServerCertificate.h \
+			include/tls/ServerHello.h include/tls/ServerKeyExchange.h
 TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 LDOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
-		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
-		  $(SIGNATURE_OBJECT) $(TLS_OBJECT)
+		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(OPENPGP_OBJECT) \
+		  $(RANDOM_OBJECT) $(SIGNATURE_OBJECT) $(TLS_OBJECT)
 
 LIBRARY= libcryptokitty.so
 
@@ -97,6 +111,9 @@ $(SIGNATURE_OBJECT): $(SIGNATURE_SOURCE) $(SIGNATURE_HEADER)
 
 $(TLS_OBJECT): $(TLS_SOURCE) $(TLS_HEADER)
 	$(MAKE) -C tls
+
+$(OPENPGP_OBJECT): $(OPENPGP_SOURCE) $(OPENPGP_HEADER)
+	$(MAKE) -C openpgp
 
 $(LIBRARY): $(LDOBJECT)
 	    $(LD) -o $@ $(LDOBJECT) $(LDFLAGS)

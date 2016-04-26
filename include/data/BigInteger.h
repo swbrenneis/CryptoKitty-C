@@ -51,6 +51,8 @@ class BigInteger {
     public:
         BigInteger& operator= (const BigInteger& other);
         BigInteger& operator= (long value);
+        BigInteger& operator++ ();
+        BigInteger operator++ (int i);
 
     public:
         ~BigInteger();
@@ -95,6 +97,8 @@ class BigInteger {
         BigInteger pow(long exp) const;
         // Returns a BigInteger equal to this shifted right count times.
         BigInteger rightShift(long count) const;
+        // Set a bit
+        void setBit(int bitnum);
         // Returns a BigInteger equal to this minus subtractor.
         BigInteger subtract(const BigInteger& subtractor) const;
         // Returns true if the specified bit is set.

@@ -1,8 +1,12 @@
-#ifndef PUBLICKEY_H_INCLUDED
-#define PUBLICKEY_H_INCLUDED
+#ifndef CKPGPPUBLICKEY_H_INCLUDED
+#define CKPGPPUBLICKEY_H_INCLUDED
 
-#include "packet/Packet.h"
+#include "openpgp/packet/Packet.h"
 #include "data/BigInteger.h"
+
+namespace CK {
+    class RSAPublicKey;
+}
 
 namespace CKPGP {
 
@@ -10,21 +14,48 @@ class PublicKey : public Packet {
 
     public:
         PublicKey();
+        PublicKey(const CK::BigInteger& m, const CK::BigInteger& e,
+                                                        uint8_t flag);    // RSA key
+        PublicKey(const CK::BigInteger& p, const CK::BigInteger& o,
+                    const CK::BigInteger g, const CK::BigInteger& v);    // DSA key
+        PublicKey(const CK::BigInteger& p, const CK::BigInteger& g,
+                    const CK::BigInteger& v);                           // Elgamal key
+        PublicKey(const CK::ByteArray& encoded);
         ~PublicKey();
 
-    private:
+    protected:
+        PublicKey(uint8_t tag);
+
+    public:
         PublicKey(const PublicKey& other);
         PublicKey& operator= (const PublicKey& other);
 
     public:
-        CK::ByteArray encode() const;
+        uint8_t getAlgorithm() const;
+        void setPublicKey(CK::RSAPublicKey *pk);
+
+    public:
+        static const uint8_t RSASIGN;
+        static const uint8_t RSAENCRYPT;
+        static const uint8_t RSAANY;
+        static const uint8_t DSA;
+        static const uint8_t ELGAMAL;
+
+    public:
+        void encode();
+
+    private:
+        void decode(const CK::ByteArray& encoded);
+        void decodeDSAIntegers(const CK::ByteArray& encoded);
+        void decodeElgamalIntegers(const CK::ByteArray& encoded);
+        void decodeRSAIntegers(const CK::ByteArray& encoded);
 
     private:
         uint8_t version;
         uint32_t createTime;
         uint8_t algorithm;
-        CK::BigInteger RSAModulus;
-        CK::BigInteger RSAExponent;
+        CK::BigInteger rsaModulus;
+        CK::BigInteger rsaExponent;
         CK::BigInteger DSAPrime;
         CK::BigInteger DSAOrder;
         CK::BigInteger DSAGenerator;
@@ -37,4 +68,4 @@ class PublicKey : public Packet {
 
 }
 
-#endif  // PUBLICKEY_H_INCLUDED
+#endif  // CKPGPPUBLICKEY_H_INCLUDED

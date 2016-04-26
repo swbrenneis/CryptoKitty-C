@@ -27,6 +27,8 @@ class Unsigned64 {
         ByteArray getEncoded(int endian) const;
         // Returns an unsigned long integer.
         uint64_t getUnsignedValue() const;
+        // Sets the unsigned value.
+        void setValue(uint64_t v);
 
     public:
         static ByteArray encode(uint64_t value);

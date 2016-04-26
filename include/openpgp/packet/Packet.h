@@ -14,26 +14,36 @@ class Packet {
     public:
         virtual ~Packet();
 
-    private:
+    protected:
         Packet(const Packet& other);
         Packet& operator= (const Packet& other);
 
     public:
-        virtual CK::ByteArray encode() const=0;
+        virtual CK::ByteArray getEncoded();
+        virtual uint32_t getPacketLength() const;
         virtual uint8_t getTag() const;
 
+        static Packet *decodePacket(const CK::ByteArray& encoded);
+
     protected:
-        uint8_t encodeTag() const;
+        virtual void encode()=0;
+        virtual CK::ByteArray encodeLength() const;
+        virtual uint8_t encodeTag() const;
+
+    public:
+        static const uint8_t PKESESSIONKEY;
+        static const uint8_t PUBLICKEY;
+        static const uint8_t PUBLICSUBKEY;
+        static const uint8_t SIGNATURE;
+        static const uint8_t USERID;
+        static const uint8_t USERATTRIBUTE;
+        static const uint8_t SECRETKEY;
 
     protected:
         uint8_t tag;
         bool newFormat;
-
-        static const uint8_t PKESESSIONKEY;
-        static const uint8_t PUBLICKEY;
-        static const uint8_t SIGNATURE;
-        static const uint8_t USERID;
-        static const uint8_t USERATTRIBUTE;
+        uint32_t packetLength;
+        CK::ByteArray encoded;
 
 };
 

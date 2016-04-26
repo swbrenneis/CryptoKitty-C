@@ -1,7 +1,7 @@
 #ifndef PKESESSIONKEY_H_INCLUDED
 #define PKESESSIONKEY_H_INCLUDED
 
-#include "packet/Packet.h"
+#include "openpgp/packet/Packet.h"
 #include "data/ByteArray.h"
 #include "data/BigInteger.h"
 
@@ -11,11 +11,15 @@ class PKESessionKey : public Packet {
 
     public:
         PKESessionKey();
+        PKESessionKey(const CK::ByteArray& encoded);
         ~PKESessionKey();
 
     private:
         PKESessionKey(const PKESessionKey& other);
         PKESessionKey& operator= (const PKESessionKey& other);
+
+    public:
+        void encode();
 
     private:
         uint8_t version;

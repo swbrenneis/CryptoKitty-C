@@ -1,5 +1,5 @@
-#ifndef PUBLICKEY_H_INCLUDED
-#define PUBLICKEY_H_INCLUDED
+#ifndef CKPUBLICKEY_H_INCLUDED
+#define CKPUBLICKEY_H_INCLUDED
 
 #include <string>
 
@@ -31,4 +31,4 @@ class PublicKey {
 
 }
 
-#endif  // PUBLICKEY_H_INCLUDED
+#endif  // CKPUBLICKEY_H_INCLUDED

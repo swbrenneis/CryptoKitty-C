@@ -3,6 +3,7 @@
 #include "exceptions/BadParameterException.h"
 #include <algorithm>
 #include <climits>
+#include <cmath>
 #include "NTL/ZZ.h"
 
 namespace CK {
@@ -118,7 +119,8 @@ BigInteger::BigInteger(const ByteArray& bytes, int endian) {
  */
 BigInteger::BigInteger(int bits, bool sgPrime, Random& rnd) {
 
-    ByteArray pBytes(bits/8 + ((bits % 8 != 0) ? 1 : 0));
+    double dbits = bits;
+    ByteArray pBytes(ceil(dbits / 8));
     rnd.nextBytes(pBytes);
 
     // Load the big integer.
@@ -184,6 +186,27 @@ BigInteger& BigInteger::operator= (long value) {
     delete number;
     number = new NTL::ZZ(value);
     return *this;
+
+}
+
+/*
+ * Prefix increment.
+ */
+BigInteger& BigInteger::operator++ () {
+
+    ++(*number);
+    return *this;
+
+}
+
+/*
+ * Postfix increment.
+ */
+BigInteger BigInteger::operator++ (int) {
+
+    BigInteger x = *this;
+    ++(*this);
+    return x;
 
 }
 
@@ -457,6 +480,15 @@ BigInteger BigInteger::pow(long exp) const {
 BigInteger BigInteger::rightShift(long count) const {
 
     return BigInteger(new NTL::ZZ(*number >> count));
+
+}
+
+/*
+ * Sets the bit indicated by bitnum.
+ */
+void BigInteger::setBit(int bitnum) {
+
+    NTL::SetBit(*number, bitnum);
 
 }
 

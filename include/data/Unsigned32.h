@@ -27,6 +27,8 @@ class Unsigned32 {
         ByteArray getEncoded(int endian) const;
         // Returns an unsigned integer.
         uint32_t getUnsignedValue() const;
+        // Sets the unsigned value.
+        void setValue(uint32_t v);
 
     public:
         static ByteArray encode(uint32_t value);

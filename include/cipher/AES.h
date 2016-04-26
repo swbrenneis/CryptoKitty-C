@@ -87,7 +87,6 @@ class AES : public Cipher {
         static const StateArray cx;
         static const StateArray invax;
 
-
 };
 
 }

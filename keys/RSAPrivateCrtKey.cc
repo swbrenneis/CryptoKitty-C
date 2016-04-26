@@ -24,6 +24,30 @@ RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
 RSAPrivateCrtKey::~RSAPrivateCrtKey() {
 }
 
+const BigInteger& RSAPrivateCrtKey::getInverse() const {
+
+    return qInv;
+
+}
+
+const BigInteger& RSAPrivateCrtKey::getPrimeP() const {
+
+    return p;
+
+}
+
+const BigInteger& RSAPrivateCrtKey::getPrimeQ() const {
+
+    return q;
+
+}
+
+const BigInteger& RSAPrivateCrtKey::getPrivateExponent() const {
+
+    return d;
+
+}
+
 /*
  * RSA signature primitive, CRT method.
  */

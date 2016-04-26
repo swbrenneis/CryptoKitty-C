@@ -1,6 +1,9 @@
-#include "encode/Radix64.h"
+#include "openpgp/encode/Radix64.h"
 #include "exceptions/openpgp/EncodingException.h"
 #include "data/ByteArray.h"
+#include "data/Unsigned32.h"
+#include <iostream>
+#include <algorithm>
 
 namespace CKPGP {
 
@@ -18,35 +21,33 @@ Radix64::~Radix64() {
  * for the CRC delimiter. Really ugly plumbing code, but it can't
  * be helped.
  */
-void Radix64::decode(const CK::ByteArray& in, std::ostream& out) const {
+void Radix64::decode(const CK::ByteArray& in, CK::ByteArray& out) const {
 
-    uint8_t sextets[4];
     unsigned index = 0;
-    bool end = false;
-    while (!end && index < in.getLength()) {
+    CK::ByteArray sextets(4);
+    while (index < in.getLength()) {
         CK::ByteArray letters(in.range(index, 4));
-        for (int i = 0; i < 4; ++i) {
-            sextets[i] = findIndex(letters[i]);
-        }
-        uint8_t octet = sextets[0] << 2 | ((sextets[1] >> 4) & 0x03);
-        out << octet;
-        octet = sextets[1] << 4;
-        if (sextets[2] >= 0) {
-            octet |= sextets[2] >> 2 & 0x0f;
-            out << octet;
-            octet = sextets[2] << 6 & 0xc0;
-            if (sextets[3] >= 0) {
-                octet |= sextets[3] & 0x3f;
-                out << octet;
+        index += 4;
+        for (unsigned i = 0; i < 4; ++i) {
+            if (letters[i] == '=') {
+                sextets[i] = -1;
             }
             else {
-                end = true;
+                sextets[i] = ALPHABET.find(letters[i]);
             }
         }
-        else {
-            end = true;
+        uint32_t bits = 0;
+        if (sextets[3] >= 0) {
+            bits = sextets[3];
         }
-        index += 4;
+        if (sextets[2] >= 0) {
+            bits = (bits << 6) | sextets[2];
+        }
+        bits = (bits << 6) | sextets[1];
+        bits = (bits << 6) | sextets[0];
+        CK::Unsigned32 word(bits);
+        CK::ByteArray octets(word.getEncoded(CK::Unsigned32::LITTLEENDIAN));
+        out.append(octets.range(0, 3));
     }
 
 }
@@ -61,16 +62,10 @@ uint32_t Radix64::decodeCRC(const std::string& encoded) const {
         throw EncodingException("Illegal CRC string");
     }
 
-    uint8_t sextets[4];
-    for (int i = 0; i < 4; ++i) {
-        sextets[i] = findIndex(encoded[i+1]);
+    uint32_t crcValue = 0;
+    for (int i = 1; i < 5; ++i) {
+        crcValue = (crcValue << 6) | ALPHABET.find(encoded[i]);
     }
-    uint8_t octet = (sextets[0] << 2) | ((sextets[1] >> 4) & 0x03);
-    uint32_t crcValue = (octet << 16) & 0xff0000;
-    octet = (sextets[1] << 4) | ((sextets[2] >> 2) & 0x0f);
-    crcValue |= (octet << 8) & 0xff00;
-    octet = ((sextets[2] << 6) & 0xc0) | (sextets[3] & 0x3f);
-    crcValue |= octet & 0xff;
 
     return crcValue;
 
@@ -83,112 +78,37 @@ uint32_t Radix64::decodeCRC(const std::string& encoded) const {
 void Radix64::encode(const CK::ByteArray& in, std::ostream& out) const {
 
     unsigned index = 0;
-    unsigned column = 0;
-    while (index < in.getLength() - 3) {
-        CK::ByteArray triplet(in.range(index, 3));
-        index += 3;
-        // 6 MSB from first octet.
-        uint8_t sextet1 = triplet[0] >> 2;
-        out <<  ALPHABET[sextet1];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        // 2 LSB from first octet and 4 MSB from second octet.
-        uint8_t sextet2 = ((triplet[0] << 4) & 0x30) | (triplet[1] >> 4);
-        out << ALPHABET[sextet2];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        // 4 LSB from second octet and 2 MSB from third octet.
-        uint8_t sextet3 = ((triplet[1] << 2) & 0x3C) | (triplet[2] >> 6);
-        out << ALPHABET[sextet3];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        // 6 LSB from third octet.
-        uint8_t sextet4 = triplet[2] & 0x3f;
-        out << ALPHABET[sextet4];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
+    int column = 0;
+    CK::ByteArray sextets(4);
+    unsigned bits24 = 8;
+    while (index < in.getLength()) {
+        unsigned count = std::min(bits24, in.getLength() - index);
+        CK::ByteArray octets(in.range(index, count));
+        index += count;
+        CK::Unsigned32 word(in.range(index, count), CK::Unsigned32::LITTLEENDIAN);
+        uint32_t bits = word.getUnsignedValue();
+        column = sendColumn(ALPHABET[bits & 0x6f], out, column);
+        bits = bits >> 6;
+        column = sendColumn(ALPHABET[bits & 0x6f], out, column);
+        switch (count) {
+            case 1:
+                sendColumn('=', out, column);
+                out << "=";
+                break;
+            case 2:
+                bits = bits >> 6;
+                sendColumn(ALPHABET[bits & 0x6f], out, column);
+                out << "=";
+                break;
+            case 3:
+                bits = bits >> 6;
+                column = sendColumn(ALPHABET[bits & 0x6f], out, column);
+                bits = bits >> 6;
+                column = sendColumn(ALPHABET[bits & 0x6f], out, column);
+                break;
         }
     }
-
-    // Do padding.
-    if (in.getLength() - index == 2) {
-        CK::ByteArray triplet(in.range(index, 2));
-        // 6 MSB from first octet.
-        uint8_t sextet1 = (triplet[0] >> 2) & 0x3f;
-        out << ALPHABET[sextet1];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        // 2 LSB from first octet and 4 MSB from second octet.
-        uint8_t sextet2 = ((triplet[0] << 4) & 0x30) | ((triplet[1] >> 4) & 0x0f);
-        out << ALPHABET[sextet2];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        uint8_t sextet3 = (triplet[1] << 2) & 0x3C;
-        out << ALPHABET[sextet3];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        // Pad character
-        out << "=";
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-    }
-    else if (in.getLength() - index == 1) {
-        // 6 MSB from first octet.
-        int sextet1 = (in[index] >> 2) & 0x3f;
-        out << ALPHABET[sextet1];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        // 2 LSB from first octet and zero padding.
-        int sextet2 = (in[index] << 4) & 0x30;
-        out << ALPHABET[sextet2];
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        out << "=";
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-        out << "=";
-        column++;
-        if (column == 76) {
-            out << std::endl;
-            column = 0;
-        }
-    }
-
-    if (column > 0) {
-        out << std::endl;
-    }
+    out << std::endl;
 
 }
 
@@ -197,48 +117,26 @@ void Radix64::encode(const CK::ByteArray& in, std::ostream& out) const {
  */
 std::string Radix64::encodeCRC(uint32_t crcValue) const {
         
-    uint8_t triplet[3];
-    triplet[0] = crcValue >> 16 & 0xff;
-    triplet[1] = crcValue >> 8 & 0xff;
-    triplet[2] = crcValue & 0xff;
-
     std::string encoded("=");
-    // 6 MSB from first octet.
-    uint8_t sextet1 = triplet[0] >> 2;
-    encoded += ALPHABET[sextet1];
-    // 2 LSB from first octet and 4 MSB from second octet.
-    uint8_t sextet2 = ((triplet[0] << 4) & 0x30) | ((triplet[1] >> 4) & 0x0f);
-    encoded += ALPHABET[sextet2];
-    // 4 LSB from second octet and 2 MSB from third octet.
-    uint8_t sextet3 = ((triplet[1] << 2) & 0x3C) | ((triplet[2] >> 6) & 0x03);
-    encoded += ALPHABET[sextet3];
-    // 6 LSB from third octet.
-    uint8_t sextet4 = triplet[2] & 0x3f;
-    encoded += ALPHABET[sextet4];
+    uint32_t word = crcValue;
+    for (int i = 0; i < 4; ++i) {
+        encoded += ALPHABET[word & 0x6f];
+        word = word >> 6;
+    }
 
     return encoded;
 
 }
 
-/*
- * Find the index of the radix-64 character. Returns -1 on the special
- * case of '=' (end of stream delimiter. Throws an encoding exception
- * if the index isn't found.
- */
-uint8_t Radix64::findIndex(char letter) const {
+int Radix64::sendColumn(char c, std::ostream& out, int column) const {
 
-    if (letter == '=') {
-        return -1;
+    out << c;
+    if (column < 75) {
+        return column + 1;
     }
-
-    uint8_t index = 0;
-    while (index < ALPHABET.length()) {
-        if (ALPHABET[index] == letter) {
-            return index;
-        }
-        index++;
+    else {
+        return 0;
     }
-    throw EncodingException("Armored character out of range");
 
 }
 

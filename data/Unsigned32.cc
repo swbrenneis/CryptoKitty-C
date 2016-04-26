@@ -172,5 +172,14 @@ uint32_t Unsigned32::getUnsignedValue() const {
 
 }
 
+/*
+ * Set the unsigned value.
+ */
+void Unsigned32::setValue(uint32_t v) {
+
+    value = v;
+
+}
+
 }
 

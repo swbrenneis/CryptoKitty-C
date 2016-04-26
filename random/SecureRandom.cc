@@ -1,5 +1,6 @@
 #include "random/SecureRandom.h"
 #include "random/BBSSecureRandom.h"
+#include "random/FortunaSecureRandom.h"
 #include "exceptions/SecureRandomException.h"
 #include <sstream>
 
@@ -16,6 +17,10 @@ SecureRandom::getSecureRandom(const std::string& name) {
 
     if (name == "BBS") {
         return new BBSSecureRandom;
+    }
+
+    if (name == "Fortuna") {
+        return new FortunaSecureRandom;
     }
 
     std::ostringstream msg;

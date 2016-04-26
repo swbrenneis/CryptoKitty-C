@@ -38,7 +38,7 @@ void BBSSecureRandom::getEntropy(ByteArray bytes) const {
 
     char seedbytes[8];
 
-// Don't get entropy from getrandom is this is a VM.
+// Don't get entropy from getrandom if this is a VM.
 #ifdef VMRANDOM
     if (!seeded) {
         CMWCRandom rnd;

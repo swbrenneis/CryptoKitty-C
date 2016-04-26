@@ -9,209 +9,209 @@
 #include <iostream>
 #include <cmath>
 
-        namespace CK {
+namespace CK {
 
-        static const uint64_t P_MAX = 549755813632; // 2^39 - 256.
-        static const uint64_t A_MAX = 0xffffffffffffffff;
-        uint8_t GCM::t = 128;
+static const uint64_t P_MAX = 549755813632; // 2^39 - 256.
+static const uint64_t A_MAX = 0xffffffffffffffff;
+uint8_t GCM::t = 128;
 
-        GCM::GCM(Cipher *c, const ByteArray& iv)
-        : cipher(c),
-          IV(iv) {
+GCM::GCM(Cipher *c, const ByteArray& iv)
+: cipher(c),
+IV(iv) {
 
-            if (cipher->blockSize() != 16) {
-                throw BadParameterException("Invalid cipher block size");
-            }
+    if (cipher->blockSize() != 16) {
+        throw BadParameterException("Invalid cipher block size");
+     }
 
+}
+
+GCM::~GCM() {
+
+    delete cipher;
+
+}
+
+/*
+ * Class decryption function.
+ */
+ByteArray GCM::decrypt(const ByteArray& C, const ByteArray& K) {
+
+    // l = (n - 1)128 + u
+    int n = C.getLength() / 16;
+    int u = C.getLength() % 16;
+    if (u == 0) {
+        u = 16;
+        n--;
+    }
+
+    ByteArray H(cipher->encrypt(ByteArray(16, 0), K));
+
+    ByteArray Y0;
+    if (IV.getLength() == 12) {
+        ByteArray ctr(4, 0);
+        ctr[3] = 0x01;
+        Y0.append(IV);
+        Y0.append(ctr);
+    }
+    else {
+        Y0 = GHASH(H, ByteArray(0), IV);
+    }
+
+    ByteArray Tp(GHASH(H, A, C));
+    Tp = Tp ^ cipher->encrypt(Y0, K);
+    if (T != Tp) {
+        throw AuthenticationException("GCM AEAD failed authentication");
+    }
+
+    ByteArray Yi;           // Y(i)
+    ByteArray Yi1(Y0);      // Y(i-1)
+    ByteArray Ci;           // C(i)
+    ByteArray Pi;           // C(i);
+    ByteArray P;
+
+    if (C.getLength() > 0) {
+        for (int i = 1; i <= n; ++i) {
+            Yi = incr(Yi1);
+            Ci = C.range((i-1)*16, 16);
+            Pi = Ci ^ cipher->encrypt(Yi, K);
+            P.append(Pi);
+            Yi1 = Yi;
         }
+        Yi = incr(Yi1);
+        ByteArray Cn(C.range(C.getLength()-u, u));
+        P.append(Cn ^ (cipher->encrypt(Yi, K)).range(0, u));
+    }
 
-        GCM::~GCM() {
+    return P;
 
-            delete cipher;
+}
 
+/*
+ * Class encryption function.
+ */
+ByteArray GCM::encrypt(const ByteArray& P, const ByteArray& K) {
+
+    // l = (n - 1)128 + u
+    int n = P.getLength() / 16;
+    int u = P.getLength() % 16;
+    if (u == 0) {
+        u = 16;
+        n--;
+    }
+
+    ByteArray H(cipher->encrypt(ByteArray(16, 0), K));
+
+    ByteArray Y0;
+    if (IV.getLength() == 12) {
+        ByteArray ctr(4, 0);
+        ctr[3] = 0x01;
+        Y0.append(IV);
+        Y0.append(ctr);
+    }
+    else {
+        Y0 = GHASH(H, ByteArray(0), IV);
+    }
+
+    ByteArray Yi;           // Y(i)
+    ByteArray Yi1(Y0);      // Y(i-1)
+    ByteArray Pi;           // P(i)
+    ByteArray Ci;           // C(i);
+    ByteArray C;
+
+    if (P.getLength() > 0) {
+        for (int i = 1; i <= n; ++i) {
+            Yi = incr(Yi1);
+            Pi = P.range((i-1)*16, 16);
+            Ci = Pi ^ cipher->encrypt(Yi, K);
+            C.append(Ci);
+            Yi1 = Yi;
         }
+        Yi = incr(Yi1);
+        ByteArray Pn(P.range(P.getLength()-u, u));
+        C.append(Pn ^ (cipher->encrypt(Yi, K)).range(0, u));
+    }
 
-        /*
-         * Class decryption function.
-         */
-        ByteArray GCM::decrypt(const ByteArray& C, const ByteArray& K) {
+    T = GHASH(H, A, C);
+    T = T ^ cipher->encrypt(Y0, K);
 
-            // l = (n - 1)128 + u
-            int n = C.getLength() / 16;
-            int u = C.getLength() % 16;
-            if (u == 0) {
-                u = 16;
-                n--;
-            }
+    return C;
 
-            ByteArray H(cipher->encrypt(ByteArray(16, 0), K));
+}
 
-            ByteArray Y0;
-            if (IV.getLength() == 12) {
-                ByteArray ctr(4, 0);
-                ctr[3] = 0x01;
-                Y0.append(IV);
-                Y0.append(ctr);
-            }
-            else {
-                Y0 = GHASH(H, ByteArray(0), IV);
-            }
+const ByteArray& GCM::getAuthTag() const {
 
-            ByteArray Tp(GHASH(H, A, C));
-            Tp = Tp ^ cipher->encrypt(Y0, K);
-            if (T != Tp) {
-                throw AuthenticationException("GCM AEAD failed authentication");
-            }
+    return T;
 
-            ByteArray Yi;           // Y(i)
-            ByteArray Yi1(Y0);      // Y(i-1)
-            ByteArray Ci;           // C(i)
-            ByteArray Pi;           // C(i);
-            ByteArray P;
+}
 
-            if (C.getLength() > 0) {
-                for (int i = 1; i <= n; ++i) {
-                    Yi = incr(Yi1);
-                    Ci = C.range((i-1)*16, 16);
-                    Pi = Ci ^ cipher->encrypt(Yi, K);
-                    P.append(Pi);
-                    Yi1 = Yi;
-                }
-                Yi = incr(Yi1);
-                ByteArray Cn(C.range(C.getLength()-u, u));
-                P.append(Cn ^ (cipher->encrypt(Yi, K)).range(0, u));
-            }
+/*
+ * GHASH function. See NIST SP 800-38D, section 6.4.
+ * X must be an even multiple of 16 bytes. H is the subhash
+ * key. Yi is always 128 bits.
+*/
+ByteArray GCM::GHASH(const ByteArray& H, const ByteArray& A,
+                                            const ByteArray& C) const {
 
-            return P;
+    if (H.getLength() != 16) {
+        throw BadParameterException("Invalid hash sub-key");
+    }
 
-        }
+    int m = A.getLength() / 16;
+    int v = A.getLength() % 16;
+    if (v == 0) {
+        v = 16;
+        m--;
+    }
+    int n = C.getLength() / 16;
+    int u = C.getLength() % 16;
+    if (u == 0) {
+        u = 16;
+        n--;
+    }
 
-        /*
-         * Class encryption function.
-         */
-        ByteArray GCM::encrypt(const ByteArray& P, const ByteArray& K) {
+    ByteArray Xi1(16, 0);           // X(i-1)
+    ByteArray Xi;                   // X(i)
+    ByteArray Ai;                   // A(i)
+    ByteArray Ci;                   // C(i)
 
-            // l = (n - 1)128 + u
-            int n = P.getLength() / 16;
-            int u = P.getLength() % 16;
-            if (u == 0) {
-                u = 16;
-                n--;
-            }
+    int i = 1; // For tracking Xi index. Debug only.
+    for (int j = 0; j < m; ++j) {
+        Ai = A.range(j * 16, 16);
+        Xi = multiply(Xi1 ^ Ai, H);
+        i++;
+        Xi1 = Xi;
+    }
 
-            ByteArray H(cipher->encrypt(ByteArray(16, 0), K));
+    if (A.getLength() > 0) {
+        ByteArray Am(A.range(A.getLength() - v, v));    // A(n)
+        ByteArray pad(16-v, 0);
+        Am.append(pad);
+        Xi = multiply(Xi1 ^ Am, H);
+        i++;
+        Xi1 = Xi;
+    }
 
-            ByteArray Y0;
-            if (IV.getLength() == 12) {
-                ByteArray ctr(4, 0);
-                ctr[3] = 0x01;
-                Y0.append(IV);
-                Y0.append(ctr);
-            }
-            else {
-                Y0 = GHASH(H, ByteArray(0), IV);
-            }
+    for (int j = 0; j < n; ++j) {
+        Ci = C.range(j * 16, 16);
+        Xi = multiply(Xi1 ^ Ci, H);
+        i++;
+        Xi1 = Xi;
+    }
 
-            ByteArray Yi;           // Y(i)
-            ByteArray Yi1(Y0);      // Y(i-1)
-            ByteArray Pi;           // P(i)
-            ByteArray Ci;           // C(i);
-            ByteArray C;
+    if (C.getLength() > 0) {
+        ByteArray Cn(C.range(C.getLength() - u, u));    // A(n)
+        ByteArray pad(16-u, 0);
+        Cn.append(pad);
+        Xi = multiply(Xi1 ^ Cn, H);
+        i++;
+        Xi1 = Xi;
+    }
 
-            if (P.getLength() > 0) {
-                for (int i = 1; i <= n; ++i) {
-                    Yi = incr(Yi1);
-                    Pi = P.range((i-1)*16, 16);
-                    Ci = Pi ^ cipher->encrypt(Yi, K);
-                    C.append(Ci);
-                    Yi1 = Yi;
-                }
-                Yi = incr(Yi1);
-                ByteArray Pn(P.range(P.getLength()-u, u));
-                C.append(Pn ^ (cipher->encrypt(Yi, K)).range(0, u));
-            }
-
-            T = GHASH(H, A, C);
-            T = T ^ cipher->encrypt(Y0, K);
-
-            return C;
-
-        }
-
-        const ByteArray& GCM::getAuthTag() const {
-
-            return T;
-
-        }
-
-        /*
-         * GHASH function. See NIST SP 800-38D, section 6.4.
-         * X must be an even multiple of 16 bytes. H is the subhash
-         * key. Yi is always 128 bits.
-         */
-        ByteArray GCM::GHASH(const ByteArray& H, const ByteArray& A,
-                                                const ByteArray& C) const {
-
-            if (H.getLength() != 16) {
-                throw BadParameterException("Invalid hash sub-key");
-            }
-
-            int m = A.getLength() / 16;
-            int v = A.getLength() % 16;
-            if (v == 0) {
-                v = 16;
-                m--;
-            }
-            int n = C.getLength() / 16;
-            int u = C.getLength() % 16;
-            if (u == 0) {
-                u = 16;
-                n--;
-            }
-
-            ByteArray Xi1(16, 0);           // X(i-1)
-            ByteArray Xi;                   // X(i)
-            ByteArray Ai;                   // A(i)
-            ByteArray Ci;                   // C(i)
-
-            int i = 1; // For tracking Xi index. Debug only.
-            for (int j = 0; j < m; ++j) {
-                Ai = A.range(j * 16, 16);
-                Xi = multiply(Xi1 ^ Ai, H);
-                i++;
-                Xi1 = Xi;
-            }
-
-            if (A.getLength() > 0) {
-                ByteArray Am(A.range(A.getLength() - v, v));    // A(n)
-                ByteArray pad(16-v, 0);
-                Am.append(pad);
-                Xi = multiply(Xi1 ^ Am, H);
-                i++;
-                Xi1 = Xi;
-            }
-
-            for (int j = 0; j < n; ++j) {
-                Ci = C.range(j * 16, 16);
-                Xi = multiply(Xi1 ^ Ci, H);
-                i++;
-                Xi1 = Xi;
-            }
-
-            if (C.getLength() > 0) {
-                ByteArray Cn(C.range(C.getLength() - u, u));    // A(n)
-                ByteArray pad(16-u, 0);
-                Cn.append(pad);
-                Xi = multiply(Xi1 ^ Cn, H);
-                i++;
-                Xi1 = Xi;
-            }
-
-            ByteArray ac;
-            Unsigned64 al(A.getLength() * 8);
-            ac.append(al.getEncoded(Unsigned64::BIGENDIAN));
-            Unsigned64 cl(C.getLength() * 8);
-            ac.append(cl.getEncoded(Unsigned64::BIGENDIAN));
+    ByteArray ac;
+    Unsigned64 al(A.getLength() * 8);
+    ac.append(al.getEncoded(Unsigned64::BIGENDIAN));
+    Unsigned64 cl(C.getLength() * 8);
+    ac.append(cl.getEncoded(Unsigned64::BIGENDIAN));
     Xi = multiply(Xi1 ^ ac, H);
 
     return Xi;

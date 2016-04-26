@@ -1,7 +1,7 @@
 #ifndef USERID_H_INCLUDED
 #define USERID_H_INCLUDED
 
-#include "packet/Packet.h"
+#include "openpgp/packet/Packet.h"
 #include "data/ByteArray.h"
 
 namespace CKPGP {
@@ -10,11 +10,15 @@ class UserID : public Packet {
 
     public:
         UserID();
+        UserID(const CK::ByteArray& encoded);
         ~UserID();
 
-    private:
+    public:
         UserID(const UserID& other);
         UserID& operator= (const UserID& other);
+
+    public:
+        void encode();
 
     private:
         CK::ByteArray userid;
