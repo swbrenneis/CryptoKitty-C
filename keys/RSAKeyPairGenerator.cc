@@ -49,10 +49,9 @@ KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair() {
     BigInteger q(keySize / 2, false, *random);
     // Get the modulus and make sure it is the right bit size.
     BigInteger n = p * q;
-    uint32_t bl = n.bitLength();
     while (n.bitLength() != keySize) {
-        std::cout << "bitLength = " << bl << std::endl;
         q = BigInteger(keySize / 2, false, *random);
+        p = BigInteger(keySize / 2, false, *random);
         n = p * q;
     }
 

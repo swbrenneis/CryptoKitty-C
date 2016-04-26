@@ -104,8 +104,8 @@ void ArmoredData::encode(std::ostream& out) {
             footer += "END PGP PUBLIC KEY BLOCK";
             break;
         case SECRETKEY:
-            header += "BEGIN PGP PRIVATE KEY BLOCK";
-            footer += "END PGP PRIVATE KEY BLOCK";
+            header += "BEGIN PGP SECRET KEY BLOCK";
+            footer += "END PGP SECRET KEY BLOCK";
             break;
         /*case LITERALDATA:
             header += "BEGIN PGP MESSAGE, PART X/Y";

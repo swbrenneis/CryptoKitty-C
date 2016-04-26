@@ -224,12 +224,15 @@ void SecretKey::decodeRSAIntegers(const CK::ByteArray& encoded) {
 
 void SecretKey::encode() {
 
-    encoded.append(publicKey->getEncoded());
-    encoded.append(s2kUsage);
+    encoded.append(encodeTag());
+    CK::ByteArray sk;
+
+    sk.append(publicKey->getEncoded());
+    sk.append(s2kUsage);
     if (s2kUsage == 0xff || s2kUsage == 0xfe) {
-        encoded.append(algorithm);
-        encoded.append(s2kSpecifier);
-        encoded.append(iv);
+        sk.append(algorithm);
+        sk.append(s2kSpecifier);
+        sk.append(iv);
     }
 
     CK::ByteArray keyMaterial;
@@ -264,9 +267,12 @@ void SecretKey::encode() {
     }
     checksum.setValue(cksum);
 
-    encoded.append(keyMaterial);
-    encoded.append(checksum.getEncoded(CK::Unsigned16::BIGENDIAN));
+    sk.append(keyMaterial);
+    sk.append(checksum.getEncoded(CK::Unsigned16::BIGENDIAN));
 
+    packetLength = sk.getLength();
+    encoded.append(encodeLength());
+    encoded.append(sk);
 }
 
 CK::ByteArray  SecretKey::encodeRSAIntegers() {

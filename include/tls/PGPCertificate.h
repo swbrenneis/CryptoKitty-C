@@ -27,6 +27,11 @@ class PGPCertificate {
         PGPCertificate& operator= (const PGPCertificate& other);
 
     public:
+        typedef std::deque<CKPGP::Signature*> SignatureList;
+        typedef SignatureList::const_iterator SigConstIter;
+
+    public:
+        void addUserID(CKPGP::UserID* uid, const SignatureList& sigs);
         CK::ByteArray encode() const;
         void encode(std::ostream& out);
         void setPublicKey(CKPGP::PublicKey *pk);
@@ -39,9 +44,6 @@ class PGPCertificate {
 
     private:
         CKPGP::PublicKey *publicKey;
-
-        typedef std::deque<CKPGP::Signature*> SignatureList;
-        typedef SignatureList::const_iterator SigConstIter;
 
         struct SignedID {
             CKPGP::UserID *id;

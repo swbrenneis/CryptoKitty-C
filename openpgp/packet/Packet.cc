@@ -22,7 +22,8 @@ const uint8_t Packet::USERATTRIBUTE = 17;
 Packet::Packet(uint8_t t)
 : tag(t),
   newFormat(true),
-  packetLength(0) {
+  packetLength(0),
+  encoded(0) {
 }
 
 Packet::Packet(const Packet& other)

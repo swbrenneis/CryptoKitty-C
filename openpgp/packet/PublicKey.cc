@@ -264,7 +264,17 @@ uint8_t PublicKey::getAlgorithm() const {
 
 }
 
-void PublicKey::setPublicKey(CK::RSAPublicKey *pk) {
+void PublicKey::setPublicKey(CK::RSAPublicKey *pk, uint8_t a) {
+
+    switch (a) {
+        case RSASIGN:
+        case RSAENCRYPT:
+        case RSAANY:
+            algorithm = a;
+            break;
+        default:
+            throw BadParameterException("Invalid public key algorithm");
+    }
 
     rsaModulus = pk->getModulus();
     rsaExponent = pk->getExponent();

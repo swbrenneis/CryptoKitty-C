@@ -37,7 +37,7 @@ ByteArray FortunaGenerator::generateBlocks(uint16_t k) {
 
     for (unsigned i = 0; i < k; ++i) {
         ByteArray c(counter.getEncoded(BigInteger::LITTLEENDIAN));
-        ByteArray pad(c.getLength() - 16, 0);
+        ByteArray pad(16 - c.getLength(), 0);
         c.append(pad);
         r.append(cipher->encrypt(c, key));
         counter++;
@@ -72,7 +72,7 @@ void FortunaGenerator::reseed(const ByteArray& seed) {
         counter = 1L;
     }
     std::ofstream seedstr("fgseed", std::ios::trunc|std::ios::binary);
-    uint8_t *bytes = seed.asArray();
+    uint8_t *bytes = key.asArray();
     char *cbuf = reinterpret_cast<char*>(bytes);
     seedstr.write(cbuf, seed.getLength());
     seedstr.close();

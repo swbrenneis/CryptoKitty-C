@@ -32,7 +32,7 @@ class PublicKey : public Packet {
 
     public:
         uint8_t getAlgorithm() const;
-        void setPublicKey(CK::RSAPublicKey *pk);
+        void setPublicKey(CK::RSAPublicKey *pk, uint8_t algorithm);
 
     public:
         static const uint8_t RSASIGN;

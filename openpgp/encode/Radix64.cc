@@ -80,16 +80,19 @@ void Radix64::encode(const CK::ByteArray& in, std::ostream& out) const {
     unsigned index = 0;
     int column = 0;
     CK::ByteArray sextets(4);
-    unsigned bits24 = 8;
+    unsigned bits24 = 3;
     while (index < in.getLength()) {
         unsigned count = std::min(bits24, in.getLength() - index);
         CK::ByteArray octets(in.range(index, count));
+        while (octets.getLength() < 4) {
+            octets.append(0);
+        }
         index += count;
-        CK::Unsigned32 word(in.range(index, count), CK::Unsigned32::LITTLEENDIAN);
+        CK::Unsigned32 word(octets, CK::Unsigned32::LITTLEENDIAN);
         uint32_t bits = word.getUnsignedValue();
-        column = sendColumn(ALPHABET[bits & 0x6f], out, column);
+        column = sendColumn(ALPHABET[bits & 0x3f], out, column);
         bits = bits >> 6;
-        column = sendColumn(ALPHABET[bits & 0x6f], out, column);
+        column = sendColumn(ALPHABET[bits & 0x3f], out, column);
         switch (count) {
             case 1:
                 sendColumn('=', out, column);
@@ -97,14 +100,14 @@ void Radix64::encode(const CK::ByteArray& in, std::ostream& out) const {
                 break;
             case 2:
                 bits = bits >> 6;
-                sendColumn(ALPHABET[bits & 0x6f], out, column);
+                sendColumn(ALPHABET[bits & 0x3f], out, column);
                 out << "=";
                 break;
             case 3:
                 bits = bits >> 6;
-                column = sendColumn(ALPHABET[bits & 0x6f], out, column);
+                column = sendColumn(ALPHABET[bits & 0x3f], out, column);
                 bits = bits >> 6;
-                column = sendColumn(ALPHABET[bits & 0x6f], out, column);
+                column = sendColumn(ALPHABET[bits & 0x3f], out, column);
                 break;
         }
     }
@@ -120,7 +123,7 @@ std::string Radix64::encodeCRC(uint32_t crcValue) const {
     std::string encoded("=");
     uint32_t word = crcValue;
     for (int i = 0; i < 4; ++i) {
-        encoded += ALPHABET[word & 0x6f];
+        encoded += ALPHABET[word & 0x3f];
         word = word >> 6;
     }
 
@@ -135,6 +138,7 @@ int Radix64::sendColumn(char c, std::ostream& out, int column) const {
         return column + 1;
     }
     else {
+        out << std::endl;
         return 0;
     }
 

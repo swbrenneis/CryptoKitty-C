@@ -47,6 +47,15 @@ PGPCertificate& PGPCertificate::operator= (const PGPCertificate& other) {
 
 }
 
+void PGPCertificate::addUserID(CKPGP::UserID* uid, const SignatureList& sigs) {
+
+    SignedID sid;
+    userIds.push_back(sid);
+    userIds.back().id = uid;
+    userIds.back().sigs = sigs;
+
+}
+
 void PGPCertificate::decode(const CK::ByteArray& encoded) {
 
     unsigned index = 0;
