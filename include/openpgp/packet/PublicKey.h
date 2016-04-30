@@ -15,7 +15,7 @@ class PublicKey : public Packet {
     public:
         PublicKey();
         PublicKey(const CK::BigInteger& m, const CK::BigInteger& e,
-                                                        uint8_t flag);    // RSA key
+                                                        uint8_t alg);    // RSA key
         PublicKey(const CK::BigInteger& p, const CK::BigInteger& o,
                     const CK::BigInteger g, const CK::BigInteger& v);    // DSA key
         PublicKey(const CK::BigInteger& p, const CK::BigInteger& g,
@@ -32,6 +32,7 @@ class PublicKey : public Packet {
 
     public:
         uint8_t getAlgorithm() const;
+        const CK::BigInteger& getRSAExponent() const;
         void setPublicKey(CK::RSAPublicKey *pk, uint8_t algorithm);
 
     public:
@@ -49,6 +50,9 @@ class PublicKey : public Packet {
         void decodeDSAIntegers(const CK::ByteArray& encoded);
         void decodeElgamalIntegers(const CK::ByteArray& encoded);
         void decodeRSAIntegers(const CK::ByteArray& encoded);
+        CK::ByteArray encodeDSAIntegers() const;
+        CK::ByteArray encodeElgamalIntegers() const;
+        CK::ByteArray encodeRSAIntegers() const;
 
     private:
         uint8_t version;
@@ -56,10 +60,10 @@ class PublicKey : public Packet {
         uint8_t algorithm;
         CK::BigInteger rsaModulus;
         CK::BigInteger rsaExponent;
-        CK::BigInteger DSAPrime;
-        CK::BigInteger DSAOrder;
-        CK::BigInteger DSAGenerator;
-        CK::BigInteger DSAValue;
+        CK::BigInteger dsaPrime;
+        CK::BigInteger dsaOrder;
+        CK::BigInteger dsaGenerator;
+        CK::BigInteger dsaValue;
         CK::BigInteger elgamalPrime;
         CK::BigInteger elgamalGenerator;
         CK::BigInteger elgamalValue;

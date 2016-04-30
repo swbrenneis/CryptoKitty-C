@@ -70,8 +70,13 @@ void ArmoredData::decode(std::istream& in) {
     in.getline(buffer, 100);
     CK::ByteArray bOut;
     while (buffer[0] != '=') {
-        bOut.append(ubuf, strlen(buffer));
-        in.getline(buffer, 100);
+        if (buffer[0] != 0) {
+            bOut.append(ubuf, strlen(buffer));
+            in.getline(buffer, 100);
+        }
+        else {
+            throw EncodingException("Missing CRC");
+        }
     }
 
     // Decodes the stream to the CRC delimiter.

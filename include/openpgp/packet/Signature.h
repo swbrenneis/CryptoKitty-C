@@ -6,12 +6,22 @@
 #include "data/ByteArray.h"
 #include <deque>
 
+namespace CK {
+    class RSAPublicKey;
+    class RSAPrivateKey;
+}
+
 namespace CKPGP {
+
+class PublicKey;
+class Signature;
+class UserID;
+class UserAttribute;
 
 class Signature : public Packet {
 
     public:
-        Signature();
+        Signature(uint8_t type, uint8_t pk, uint8_t hash);
         Signature(const CK::ByteArray& encoded);
         ~Signature();
 
@@ -23,6 +33,7 @@ class Signature : public Packet {
         void encode();
 
     public:
+        // Signature types.
         static const uint8_t BINARY;
         static const uint8_t TEXT;
         static const uint8_t STANDALONE;
@@ -39,14 +50,30 @@ class Signature : public Packet {
         static const uint8_t TIMESTAMP;
         static const uint8_t CONFIRMATION;
 
+        // Key algorithms.
         static const uint8_t RSASIGN;
         static const uint8_t RSAANY;
         static const uint8_t DSA;
 
+        //Hash algorithms.
+        static const uint8_t MD5;
+        static const uint8_t SHA1;
+        static const uint8_t RIPEMD160;
+        static const uint8_t SHA256;
+        static const uint8_t SHA384;
+        static const uint8_t SHA512;
+        static const uint8_t SHA224;
+
     public:
-        void setType(uint8_t t);
+        void setKeyMaterial(PublicKey& pk);
+        void setSignatureMaterial(Signature& pk);
+        void setUserIDMaterial(UserID& uid);
+        void setUserAttrMaterial(UserAttribute& uid);
+        void sign(const CK::RSAPrivateKey& pk);
+        bool verify(const CK::RSAPublicKey& pk);
 
     private:
+        void createMessage();
         void decode(const CK::ByteArray& encoded);
         void decodeHashedSubpackets(const CK::ByteArray& encoded);
         void decodeUnhashedSubpackets(const CK::ByteArray& encoded);
@@ -70,6 +97,12 @@ class Signature : public Packet {
         CK::BigInteger RSASig;
         CK::BigInteger DSAr;
         CK::BigInteger DSAs;
+
+        CK::ByteArray keyMaterial;
+        CK::ByteArray uidMaterial;
+        CK::ByteArray attrMaterial;
+        CK::ByteArray sigMaterial;
+        CK::ByteArray message;
 
 };
 

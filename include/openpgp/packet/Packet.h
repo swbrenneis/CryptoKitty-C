@@ -42,7 +42,7 @@ class Packet {
     protected:
         uint8_t tag;
         bool newFormat;
-        uint32_t packetLength;
+        uint32_t packetLength;  // Length of the packet without header
         CK::ByteArray encoded;
 
 };

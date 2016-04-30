@@ -32,6 +32,7 @@ class SecretKey : public Packet {
         SecretKey& operator= (const SecretKey& other);
 
     public:
+        CK::RSAPrivateCrtKey *getRSAPrivateKey() const;
         void setPrivateKey(CK::RSAPrivateCrtKey *pk);
 
     public:
@@ -54,7 +55,6 @@ class SecretKey : public Packet {
         CK::BigInteger rsaqInv;
         CK::BigInteger dsax;
         CK::BigInteger elgamalx;
-        CK::Unsigned16 checksum;    // Calculated at encoding.
 
 };
 

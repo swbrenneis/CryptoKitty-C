@@ -2,8 +2,9 @@
 
 namespace CKPGP {
 
-UserID::UserID()
-: Packet(USERID) {
+UserID::UserID(const std::string& uid)
+: Packet(USERID),
+  userid(uid) {
 }
 
 UserID::UserID(const CK::ByteArray& encoded)

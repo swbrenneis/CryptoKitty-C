@@ -1,6 +1,7 @@
 #include "openpgp/packet/Packet.h"
 #include "openpgp/packet/PKESessionKey.h"
 #include "openpgp/packet/PublicKey.h"
+#include "openpgp/packet/SecretKey.h"
 #include "openpgp/packet/Signature.h"
 #include "openpgp/packet/UserID.h"
 #include "openpgp/packet/UserAttribute.h"
@@ -49,44 +50,50 @@ Packet& Packet::operator= (const Packet& other) {
 Packet *Packet::decodePacket(const CK::ByteArray& encoded) {
 
     int index;
-    int length;
+    int packetLength;
     if (encoded[1] < 192) {
-        length = encoded[1];
+        packetLength = encoded[1];
         index = 2;
     }
     else if (encoded[1] == 0xff) {
         CK::Unsigned32 len(encoded.range(2, 4), CK::Unsigned32::BIGENDIAN);
-        length = len.getUnsignedValue();
+        packetLength = len.getUnsignedValue();
         index = 6;
     }
     else {
-        CK::Unsigned16 len(encoded.range(1, 2), CK::Unsigned16::BIGENDIAN);
-        length = len.getUnsignedValue();
+        CK::ByteArray enc16(2);
+        enc16[0] = encoded[1] - 192;
+        enc16[1] = encoded[2] + 192;
+        CK::Unsigned16 len(enc16, CK::Unsigned16::BIGENDIAN);
+        packetLength = len.getUnsignedValue();
         index = 3;
     }
 
     Packet *packet;
-    switch (encoded[0]) {
+    switch (encoded[0] & 0x3f) {
         case PKESESSIONKEY:
-            packet =  new PKESessionKey(encoded.range(index, length));
+            packet =  new PKESessionKey(encoded.range(index, packetLength));
+            break;
+        case SECRETKEY:
+            packet = new SecretKey(encoded.range(index, packetLength));
             break;
         case PUBLICKEY:
-            packet = new PublicKey(encoded.range(index, length));
+            packet = new PublicKey(encoded.range(index, packetLength));
             break;
         case SIGNATURE:
-            packet = new Signature(encoded.range(index, length));
+            packet = new Signature(encoded.range(index, packetLength));
             break;
         case USERID:
-            packet = new UserID(encoded.range(index, length));
+            packet = new UserID(encoded.range(index, packetLength));
             break;
         case USERATTRIBUTE:
-            packet = new UserAttribute(encoded.range(index, length));
+            packet = new UserAttribute(encoded.range(index, packetLength));
             break;
         default:
             throw EncodingException("Invalid packet tag");
     }
 
-    packet->packetLength = length;
+    packet->packetLength = packetLength;
     return packet;
 
 }
@@ -99,7 +106,9 @@ CK::ByteArray Packet::encodeLength() const {
     }
     else if (packetLength < 8384) {
         CK::Unsigned16 len(packetLength);
-        encoded.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+        CK::ByteArray enc16(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+        encoded.append(enc16[0] + 192);
+        encoded.append(enc16[1] - 192);
     }
     else {
         encoded.append(0xff);

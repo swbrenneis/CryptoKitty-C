@@ -30,24 +30,32 @@ void Radix64::decode(const CK::ByteArray& in, CK::ByteArray& out) const {
         index += 4;
         for (unsigned i = 0; i < 4; ++i) {
             if (letters[i] == '=') {
-                sextets[i] = -1;
+                sextets[i] = 0xff;
             }
             else {
                 sextets[i] = ALPHABET.find(letters[i]);
             }
         }
         uint32_t bits = 0;
-        if (sextets[3] >= 0) {
+        unsigned range = 3;
+        if (sextets[3] != 0xff) {
             bits = sextets[3];
         }
-        if (sextets[2] >= 0) {
+        else {
+            range = 2;
+        }
+        if (sextets[2] != 0xff) {
             bits = (bits << 6) | sextets[2];
+        }
+        else {
+            range = 1;
         }
         bits = (bits << 6) | sextets[1];
         bits = (bits << 6) | sextets[0];
+
         CK::Unsigned32 word(bits);
         CK::ByteArray octets(word.getEncoded(CK::Unsigned32::LITTLEENDIAN));
-        out.append(octets.range(0, 3));
+        out.append(octets.range(0, range));
     }
 
 }
@@ -63,11 +71,11 @@ uint32_t Radix64::decodeCRC(const std::string& encoded) const {
     }
 
     uint32_t crcValue = 0;
-    for (int i = 1; i < 5; ++i) {
+    for (int i = 5; i > 0; --i) {
         crcValue = (crcValue << 6) | ALPHABET.find(encoded[i]);
     }
 
-    return crcValue;
+    return crcValue & 0xffffff;
 
 }
 

@@ -19,7 +19,7 @@ class RSAPublicKey : public PublicKey {
 
     public:
         int getBitLength() const;
-        const BigInteger& getExponent() const;
+        const BigInteger& getPublicExponent() const;
         const BigInteger& getModulus() const;
 
     private:

@@ -20,7 +20,7 @@ int RSAPublicKey::getBitLength() const {
 
 }
 
-const BigInteger& RSAPublicKey::getExponent() const {
+const BigInteger& RSAPublicKey::getPublicExponent() const {
 
     return exp;
 

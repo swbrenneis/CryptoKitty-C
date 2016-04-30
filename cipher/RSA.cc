@@ -83,7 +83,7 @@ BigInteger RSA::rsavp1(const RSAPublicKey& K, const BigInteger& s) {
 
     //std:: cout << "rsavp1 s = " << s << std::endl;
     // 2. Let m = s^e mod n.
-    BigInteger result(s.modPow(K.getExponent(), K.getModulus()));
+    BigInteger result(s.modPow(K.getPublicExponent(), K.getModulus()));
     //std::cout << "rsavp1 result = " << result << std::endl;
     return result;
 

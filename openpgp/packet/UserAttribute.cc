@@ -41,12 +41,17 @@ void UserAttribute::decode(const CK::ByteArray& encoded) {
             index++;
         }
         else if (encoded[index] == 0xff) {
-            CK::Unsigned32 len(encoded.range(index+1, 4), CK::Unsigned32::BIGENDIAN);
+            CK::Unsigned32 len(encoded.range(index + 1, 4), CK::Unsigned32::BIGENDIAN);
             length = len.getUnsignedValue();
             index += 5;
         }
         else {
-            CK::Unsigned16 len(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+            CK::ByteArray enc16(2);
+            enc16[0] = encoded[index];
+            enc16[1] = encoded[index + 1];
+            enc16[0] -= 192;
+            enc16[1] += 192;
+            CK::Unsigned16 len(enc16, CK::Unsigned16::BIGENDIAN);
             length = len.getUnsignedValue();
             index += 2;
         }
