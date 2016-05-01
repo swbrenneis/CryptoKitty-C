@@ -21,7 +21,9 @@ class PublicSubkey : public PublicKey {
 
     public:
         PublicSubkey(const PublicSubkey& other);
+        PublicSubkey(PublicSubkey *other);              // Consumes the pointer.
         PublicSubkey& operator= (const PublicSubkey& other);
+        PublicSubkey& operator= (PublicSubkey *other);  // Consumes the pointer.
 
 };
 

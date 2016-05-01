@@ -10,22 +10,28 @@ namespace CKPGP {
 class UserID : public Packet {
 
     public:
+        UserID();
         UserID(const std::string& uid);
         UserID(const CK::ByteArray& encoded);
         ~UserID();
 
     public:
         UserID(const UserID& other);
+        UserID(UserID *other);              // Consumes the pointer.
         UserID& operator= (const UserID& other);
+        UserID& operator= (UserID *other);  // Consumes the pointer.
 
     public:
         void encode();
+        const std::string& getUserid() const;
 
     private:
-        CK::ByteArray userid;
+        std::string userid;
 
 };
 
 }
+
+bool operator== (const CKPGP::UserID& lhs, const CKPGP::UserID& rhs);
 
 #endif  // USERID_H_INCLUDED

@@ -10,6 +10,7 @@
 #include "digest/SHA384.h"
 #include "digest/SHA512.h"
 #include "exceptions/openpgp/UnsupportedAlgorithmException.h"
+#include <cmath>
 
 namespace CKPGP {
 
@@ -41,6 +42,10 @@ const uint8_t Signature::SHA256 = 8;
 const uint8_t Signature::SHA384 = 9;
 const uint8_t Signature::SHA512 = 10;
 const uint8_t Signature::SHA224 = 11;
+
+Signature::Signature()
+: Packet(SIGNATURE) {
+}
 
 Signature::Signature(uint8_t t, uint8_t pk, uint8_t hash)
 : Packet(SIGNATURE),
@@ -76,6 +81,25 @@ Signature::Signature(const Signature& other)
 
 }
 
+Signature::Signature(Signature *other)
+: Packet(*other),
+  version(other->version),
+  type(other->type),
+  pkAlgorithm (other->pkAlgorithm),
+  hashAlgorithm(other->hashAlgorithm),
+  hashedSubpackets(other->hashedSubpackets),
+  unhashedSubpackets(other->unhashedSubpackets),
+  RSASig(other->RSASig),
+  DSAr(other->DSAr),
+  DSAs(other->DSAs) {
+
+    hashFragment[0] = other->hashFragment[0];
+    hashFragment[1] = other->hashFragment[1];
+
+    delete other;
+
+}
+
 Signature::~Signature() {
 }
 
@@ -93,6 +117,26 @@ Signature& Signature::operator= (const Signature& other) {
     DSAs = other.DSAs;
     hashFragment[0] = other.hashFragment[0];
     hashFragment[1] = other.hashFragment[1];
+    return *this;
+
+}
+
+Signature& Signature::operator= (Signature *other) {
+
+    Packet::operator= (*other);
+    version = other->version;
+    type = other->type;
+    pkAlgorithm  = other->pkAlgorithm;
+    hashAlgorithm = other->hashAlgorithm;
+    hashedSubpackets = other->hashedSubpackets;
+    unhashedSubpackets = other->unhashedSubpackets;
+    RSASig = other->RSASig;
+    DSAr = other->DSAr;
+    DSAs = other->DSAs;
+    hashFragment[0] = other->hashFragment[0];
+    hashFragment[1] = other->hashFragment[1];
+    delete other;
+
     return *this;
 
 }
@@ -144,27 +188,31 @@ void Signature::decode(const CK::ByteArray& encoded) {
     decodeUnhashedSubpackets(encoded.range(index, count));
     index += count;
 
+    hashFragment[0] = encoded[index++];
+    hashFragment[1] = encoded[index++];
+
     CK::Unsigned16 len;
+    double dlen;
     switch (pkAlgorithm) {
         case RSASIGN:
         case RSAANY:
-            len = CK::Unsigned16(encoded.range(index, 2),
-                                                CK::Unsigned16::BIGENDIAN);
+            len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
             index += 2;
-            RSASig = CK::BigInteger(encoded.range(index, len.getUnsignedValue()),
+            dlen = len.getUnsignedValue();
+            RSASig = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
             break;
         case DSA:
-            len = CK::Unsigned16(encoded.range(index, 2),
-                                                CK::Unsigned16::BIGENDIAN);
+            len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
             index += 2;
-            DSAr = CK::BigInteger(encoded.range(index, len.getUnsignedValue()),
+            dlen = len.getUnsignedValue();
+            DSAr = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
             index += len.getUnsignedValue();
-            len = CK::Unsigned16(encoded.range(index, 2),
-                                                CK::Unsigned16::BIGENDIAN);
+            len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
             index += 2;
-            DSAs = CK::BigInteger(encoded.range(index, len.getUnsignedValue()),
+            dlen = len.getUnsignedValue();
+            DSAs = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
             break;
     }

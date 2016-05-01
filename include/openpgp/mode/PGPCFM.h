@@ -2,10 +2,10 @@
 #define PGPCFB_H_INCLUDE
 
 #include "ciphermodes/CipherMode.h"
+#include "data/ByteArray.h"
 
 namespace CK {
     class Cipher;
-    class ByteArray;
 }
 
 namespace CKPGP {
@@ -22,13 +22,20 @@ class PGPCFM : public CK::CipherMode {
 
     public:
         CK::ByteArray decrypt(const CK::ByteArray& ciphertext,
-                                        const CK::ByteArray& key);
+                                            const CK::ByteArray& key);
         CK::ByteArray encrypt(const CK::ByteArray& plaintext,
-                                        const CK::ByteArray& key);
+                                            const CK::ByteArray& key);
+
+    private:
+        bool decryptPrefix(const CK::ByteArray& ciphertext,
+                                            const CK::ByteArray& key);
+        CK::ByteArray encryptPrefix(const CK::ByteArray& key);
 
     private:
         CK::Cipher *cipher;
         unsigned blockSize;
+        CK::ByteArray FR;
+        CK::ByteArray FRE;
 
 };
 

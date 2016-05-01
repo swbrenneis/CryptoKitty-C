@@ -42,13 +42,15 @@ MAC_OBJECT= mac/HMAC.o
 MAC_HEADER= include/mac/HMAC.h
 MAC_SOURCE= $(MAC_OBJECT:.o=.cc)
 OPENPGP_OBJECT= openpgp/encode/ArmoredData.o openpgp/encode/Radix64.o \
-				openpgp/mode/PGPCFM.o openpgp/packet/Packet.o \
+				openpgp/key/String2Key.o openpgp/mode/PGPCFM.o \
+				openpgp/packet/Encrypted.o openpgp/packet/Packet.o \
 				openpgp/packet/PKESessionKey.o openpgp/packet/PublicKey.o \
 				openpgp/packet/PublicSubkey.o openpgp/packet/SecretKey.o \
 				openpgp/packet/Signature.o openpgp/packet/UserAttribute.o \
 				openpgp/packet/UserID.o
 OPENPGP_HEADER= include/openpgp/encode/ArmoredData.h include/openpgp/encode/Radix64.h \
-				include/openpgp/mode/PGPCFM.h include/openpgp/packet/Packet.h \
+				include/openpgp/key/String2Key.h include/openpgp/mode/PGPCFM.h \
+				include/openpgp/packet/Encrypted.h include/openpgp/packet/Packet.h \
 				include/openpgp/packet/PKESessionKey.h include/openpgp/packet/PublicKey.h \
 				include/openpgp/packet/PublicSubkey.h include/openpgp/packet/SecretKey.h \
 				include/openpgp/packet/Signature.h include/openpgp/packet/UserAttribute.h \

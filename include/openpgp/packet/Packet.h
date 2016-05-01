@@ -20,6 +20,7 @@ class Packet {
 
     public:
         virtual CK::ByteArray getEncoded();
+        virtual uint32_t getHeaderLength() const;
         virtual uint32_t getPacketLength() const;
         virtual uint8_t getTag() const;
 
@@ -38,11 +39,13 @@ class Packet {
         static const uint8_t USERID;
         static const uint8_t USERATTRIBUTE;
         static const uint8_t SECRETKEY;
+        static const uint8_t ENCRYPTED;
 
     protected:
         uint8_t tag;
         bool newFormat;
         uint32_t packetLength;  // Length of the packet without header
+        uint32_t headerLength;
         CK::ByteArray encoded;
 
 };

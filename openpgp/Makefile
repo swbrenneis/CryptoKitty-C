@@ -5,10 +5,11 @@ CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
 CPPINCLUDES= -I../include -I$(DEV_HOME)/include
 CPPFLAGS= -Wall -g -MMD -std=c++11 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
-CPP_SOURCES=  encode/ArmoredData.cc encode/Radix64.cc mode/PGPCFM.cc \
-			  packet/Packet.cc packet/PKESessionKey.cc packet/PublicKey.cc \
-			  packet/PublicSubkey.cc packet/SecretKey.cc packet/Signature.cc \
-			  packet/UserAttribute.cc packet/UserID.cc
+CPP_SOURCES=  encode/ArmoredData.cc encode/Radix64.cc key/String2Key.cc \
+			  mode/PGPCFM.cc packet/Encrypted.cc packet/Packet.cc \
+			  packet/PKESessionKey.cc packet/PublicKey.cc packet/PublicSubkey.cc \
+			  packet/SecretKey.cc packet/Signature.cc packet/UserAttribute.cc \
+			packet/UserID.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 

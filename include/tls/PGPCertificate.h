@@ -27,12 +27,8 @@ class PGPCertificate {
         PGPCertificate& operator= (const PGPCertificate& other);
 
     public:
-        typedef std::deque<CKPGP::Signature*> SignatureList;
-        typedef SignatureList::const_iterator SigConstIter;
-
-    public:
-        void addUserID(CKPGP::UserID* uid, const SignatureList& sigs);
-        CK::ByteArray encode() const;
+        void addUserID(const CKPGP::UserID& uid, const CKPGP::Signature& sig);
+        CK::ByteArray encode();
         void encode(std::ostream& out);
         void setPublicKey(CKPGP::PublicKey *pk);
 
@@ -40,50 +36,38 @@ class PGPCertificate {
         void decode(const CK::ByteArray& encoded);
         void decode(std::istream& in);
         uint32_t decodePGPLength(std::istream& in, CK::ByteArray& lBytes) const;
-        void getPacket(std::istream& in, CK::ByteArray& pbuf) const;
 
     private:
         CKPGP::PublicKey *publicKey;
 
+        typedef std::deque<CKPGP::Signature> SignatureList;
+        typedef SignatureList::iterator SigIter;
+        typedef SignatureList::const_iterator SigConstIter;
+
         struct SignedID {
-            CKPGP::UserID *id;
+            CKPGP::UserID id;
             SignatureList sigs;
-            ~SignedID() {
-                delete id;
-                while (sigs.size() > 0) {
-                    delete sigs.front();
-                    sigs.pop_front();
-                }
-            }
         };
         typedef std::deque<SignedID> UserIdList;
+        typedef UserIdList::iterator IdIter;
         typedef UserIdList::const_iterator IdConstIter;
         UserIdList userIds;
 
         struct SignedAttr {
-            CKPGP::UserAttribute *attr;
+            CKPGP::UserAttribute attr;
             SignatureList sigs;
-            ~SignedAttr() {
-                delete attr;
-                while (sigs.size() > 0) {
-                    delete sigs.front();
-                    sigs.pop_front();
-                }
-            }
         };
         typedef std::deque<SignedAttr> UserAttrList;
+        typedef UserAttrList::iterator AttrIter;
         typedef UserAttrList::const_iterator AttrConstIter;
         UserAttrList userAttributes;
 
         struct SignedSubkey {
-            CKPGP::PublicSubkey *sub;
-            CKPGP::Signature *sig;
-            ~SignedSubkey() {
-                delete sub;
-                delete sig;
-            }
+            CKPGP::PublicSubkey sub;
+            CKPGP::Signature sig;
         };
         typedef std::deque<SignedSubkey> SubkeyList;
+        typedef SubkeyList::iterator SubIter;
         typedef SubkeyList::const_iterator SubConstIter;
         SubkeyList subKeys;
 

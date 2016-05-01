@@ -21,12 +21,15 @@ class UserAttribute;
 class Signature : public Packet {
 
     public:
+        Signature();
         Signature(uint8_t type, uint8_t pk, uint8_t hash);
         Signature(const CK::ByteArray& encoded);
         ~Signature();
 
     public:
+        Signature(Signature *other);                // Consumes the pointer.
         Signature(const Signature& other);
+        Signature& operator= (Signature *other);    // Consumes the pointer.
         Signature& operator= (const Signature& other);
 
     public:

@@ -20,6 +20,14 @@ UserAttribute::UserAttribute(const UserAttribute& other)
   subPackets(other.subPackets) {
 }
 
+UserAttribute::UserAttribute(UserAttribute *other)
+: Packet(*other),
+  subPackets(other->subPackets) {
+
+      delete other;
+
+}
+
 UserAttribute::~UserAttribute() {
 }
 
@@ -27,6 +35,16 @@ UserAttribute& UserAttribute::operator= (const UserAttribute& other) {
         
     Packet::operator= (other);
     subPackets = other.subPackets;
+    return *this;
+
+}
+
+UserAttribute& UserAttribute::operator= (UserAttribute *other) {
+        
+    Packet::operator= (*other);
+    subPackets = other->subPackets;
+    delete other;
+
     return *this;
 
 }

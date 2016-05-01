@@ -28,12 +28,28 @@ PublicSubkey::PublicSubkey(const PublicSubkey& other)
 : PublicKey(other) {
 }
 
+PublicSubkey::PublicSubkey(PublicSubkey *other)
+: PublicKey(*other) {
+
+    delete other;
+
+}
+
 PublicSubkey::~PublicSubkey() {
 }
 
 PublicSubkey& PublicSubkey:: operator= (const PublicSubkey& other) {
 
     PublicKey::operator= (other);
+    return *this;
+
+}
+
+PublicSubkey& PublicSubkey:: operator= (PublicSubkey *other) {
+
+    PublicKey::operator= (*other);
+    delete other;
+
     return *this;
 
 }

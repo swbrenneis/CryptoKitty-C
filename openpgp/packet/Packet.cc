@@ -2,6 +2,7 @@
 #include "openpgp/packet/PKESessionKey.h"
 #include "openpgp/packet/PublicKey.h"
 #include "openpgp/packet/SecretKey.h"
+#include "openpgp/packet/Encrypted.h"
 #include "openpgp/packet/Signature.h"
 #include "openpgp/packet/UserID.h"
 #include "openpgp/packet/UserAttribute.h"
@@ -16,6 +17,7 @@ const uint8_t Packet::PKESESSIONKEY = 1;
 const uint8_t Packet::SIGNATURE = 2;
 const uint8_t Packet::SECRETKEY = 5;
 const uint8_t Packet::PUBLICKEY = 6;
+const uint8_t Packet::ENCRYPTED = 9;
 const uint8_t Packet::USERID = 13;
 const uint8_t Packet::PUBLICSUBKEY = 14;
 const uint8_t Packet::USERATTRIBUTE = 17;
@@ -50,7 +52,7 @@ Packet& Packet::operator= (const Packet& other) {
 Packet *Packet::decodePacket(const CK::ByteArray& encoded) {
 
     int index;
-    int packetLength;
+    uint32_t packetLength;
     if (encoded[1] < 192) {
         packetLength = encoded[1];
         index = 2;
@@ -68,6 +70,7 @@ Packet *Packet::decodePacket(const CK::ByteArray& encoded) {
         packetLength = len.getUnsignedValue();
         index = 3;
     }
+    uint32_t headerLength = index;
 
     Packet *packet;
     switch (encoded[0] & 0x3f) {
@@ -89,11 +92,15 @@ Packet *Packet::decodePacket(const CK::ByteArray& encoded) {
         case USERATTRIBUTE:
             packet = new UserAttribute(encoded.range(index, packetLength));
             break;
+        case ENCRYPTED:
+            packet = new Encrypted(encoded.range(index, packetLength));
+            break;
         default:
             throw EncodingException("Invalid packet tag");
     }
 
     packet->packetLength = packetLength;
+    packet->headerLength = headerLength;
     return packet;
 
 }
@@ -138,6 +145,12 @@ CK::ByteArray Packet::getEncoded() {
 uint32_t Packet::getPacketLength() const {
 
     return packetLength;
+
+}
+
+uint32_t Packet::getHeaderLength() const {
+
+    return headerLength;
 
 }
 

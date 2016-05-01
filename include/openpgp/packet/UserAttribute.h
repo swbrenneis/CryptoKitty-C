@@ -16,7 +16,9 @@ class UserAttribute : public Packet {
 
     public:
         UserAttribute(const UserAttribute& other);
+        UserAttribute(UserAttribute *other);                // Consumes the pointer.
         UserAttribute& operator= (const UserAttribute& other);
+        UserAttribute& operator= (UserAttribute *other);    // Consumes the pointer.
 
     public:
         void encode();
