@@ -12,9 +12,9 @@ ConnectionState *ConnectionState::currentWrite = 0;
 ConnectionState *ConnectionState::pendingRead = 0;
 ConnectionState *ConnectionState::pendingWrite = 0;
 
-ConnectionState::ConnectionState(ConnectionEnd e)
-: entity(e),
-  initialized(false),
+ConnectionState::ConnectionState()
+: initialized(false),
+  prf(tls_prf_sha256),
   sequenceNumber(0) {
 }
 
@@ -71,6 +71,62 @@ void ConnectionState::generateKeys(const CK::ByteArray& premasterSecret) {
 
 }
 
+const CK::ByteArray& ConnectionState::getClientRandom() const {
+
+    return clientRandom;
+
+}
+
+ConnectionState *ConnectionState::getCurrentRead() {
+
+    if (currentRead == 0) {
+        currentRead = new ConnectionState;
+    }
+
+    return currentRead;
+
+}
+
+ConnectionState *ConnectionState::getCurrentWrite() {
+
+    if (currentWrite == 0) {
+        currentWrite = new ConnectionState;
+    }
+
+    return currentWrite;
+
+}
+
+/*
+ * Return the connection entity.
+ */
+ConnectionEnd ConnectionState::getEntity() const {
+
+    return entity;
+
+}
+
+
+ConnectionState *ConnectionState::getPendingRead() {
+
+    if (pendingRead == 0) {
+        pendingRead = new ConnectionState;
+    }
+
+    return pendingRead;
+
+}
+
+ConnectionState *ConnectionState::getPendingWrite() {
+
+    if (pendingWrite == 0) {
+        pendingWrite = new ConnectionState;
+    }
+
+    return pendingWrite;
+
+}
+
 /*
  * Manages the sequence number. Returns the current value
  * and then increments it.
@@ -78,6 +134,12 @@ void ConnectionState::generateKeys(const CK::ByteArray& premasterSecret) {
 int64_t ConnectionState::getSequenceNumber() {
 
     return sequenceNumber++;
+
+}
+
+const CK::ByteArray& ConnectionState::getServerRandom() const {
+
+    return serverRandom;
 
 }
 
@@ -91,9 +153,11 @@ void ConnectionState::promoteRead() {
         throw StateException("Pending read state not initialized.");
     }
 
+    pendingRead->sequenceNumber = currentRead->sequenceNumber;
     delete currentRead;
     currentRead = pendingRead;
-    pendingRead = new ConnectionState(entity);
+    pendingRead = new ConnectionState;
+    pendingRead->entity = currentRead->entity;
 
 }
 
@@ -107,9 +171,29 @@ void ConnectionState::promoteWrite() {
         throw StateException("Pending write state not initialized.");
     }
 
+    pendingWrite->sequenceNumber = currentWrite->sequenceNumber;
     delete currentWrite;
     currentWrite = pendingWrite;
-    pendingWrite = new ConnectionState(entity);
+    pendingWrite = new ConnectionState;
+    pendingWrite->entity = currentWrite->entity;
+
+}
+
+void ConnectionState::setClientRandom(const CK::ByteArray& rnd) {
+
+    clientRandom = rnd;
+
+}
+
+void ConnectionState::setEntity(ConnectionEnd end) {
+
+    entity = end;
+
+}
+
+void ConnectionState::setServerRandom(const CK::ByteArray& rnd) {
+
+    serverRandom = rnd;
 
 }
 

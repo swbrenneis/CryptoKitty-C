@@ -84,40 +84,24 @@ BigInteger::BigInteger(long initial)
 /*
  * Construct a BigInteger from a byte array
  */
-BigInteger::BigInteger(const ByteArray& bytes, int endian) {
+BigInteger::BigInteger(const ByteArray& bytes, int endian)
+: number(0) {
 
-    number = new NTL::ZZ(0L);
-    int bl = bytes.getLength(); // have to do this so the indexes
-                                // don't wrap.
-    
-    switch (endian) {
-        case BIGENDIAN:
-            for (int n = 0; n < bl; ++n) {
-                *number = *number << 8;
-                *number |= bytes[n];
-            }
-            break;
-        case LITTLEENDIAN:
-            for (int n = bl - 1; n >= 0; --n) {
-                *number = *number << 8;
-                *number |= bytes[n];
-            }
-            break;
-        default:
-            throw BadParameterException("Illegal endian value");
-    }
+    decode(bytes, endian);
 
 }
 
 /*
- * Construct a BigInteger that is a probabilistic random
- * prime, with the specified length. The prime is tested
- * with 64 Miller-Rabin rounds after some small prime
- * tests. The prime will also be a Sophie Germain prime
- * if the boolean is true (p and 2p+2 both prime). Selecting
- * Germain primes is very time-consuming.
+ * Construct a BigInteger that is a probabilistic random prime, with the specified
+ * length. The prime is tested with 64 Miller-Rabin rounds after some small prime
+ * tests. The prime will also be a Sophie Germain prime if the boolean is true
+ * (p and 2p+2 both prime). Selecting Germain primes is very time-consuming.
  */
 BigInteger::BigInteger(int bits, bool sgPrime, Random& rnd) {
+
+    if (bits == 0) {
+        throw BadParameterException("Invalid bit length");
+    }
 
     double dbits = bits;
     ByteArray pBytes(ceil(dbits / 8));
@@ -235,6 +219,35 @@ BigInteger BigInteger::And(const BigInteger& logical) const {
 int BigInteger::bitLength() const {
 
     return NTL::NumBits(*number);
+
+}
+
+/*
+ * Decode a byte array with the indicated byte order.
+ */
+void BigInteger::decode(const ByteArray& bytes, int endian) {
+
+    delete number;
+    number = new NTL::ZZ(0L);
+    int bl = bytes.getLength(); // have to do this so the indexes
+                                // don't wrap.
+    
+    switch (endian) {
+        case BIGENDIAN:
+            for (int n = 0; n < bl; ++n) {
+                *number = *number << 8;
+                *number |= bytes[n];
+            }
+            break;
+        case LITTLEENDIAN:
+            for (int n = bl - 1; n >= 0; --n) {
+                *number = *number << 8;
+                *number |= bytes[n];
+            }
+            break;
+        default:
+            throw BadParameterException("Illegal endian value");
+    }
 
 }
 

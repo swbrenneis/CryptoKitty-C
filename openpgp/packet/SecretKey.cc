@@ -189,14 +189,14 @@ void SecretKey::decode(const CK::ByteArray& encoded) {
         case 16:    // PublicKey::ELGAMAL
             {
             CK::Unsigned16 len(keyMaterial.range(0, 2));
-            elgamalx = CK::BigInteger(keyMaterial.range(2, keyMaterial.getLength() - 2),
+            elgamalx.decode(keyMaterial.range(2, keyMaterial.getLength() - 2),
                                                                 CK::BigInteger::BIGENDIAN);
             }
             break;
         case 17:    // PublicKey::DSA
             {
             CK::Unsigned16 len(keyMaterial.range(0, 2));
-            dsax = CK::BigInteger(keyMaterial.range(2, keyMaterial.getLength() - 2),
+            dsax.decode(keyMaterial.range(2, keyMaterial.getLength() - 2),
                                                                 CK::BigInteger::BIGENDIAN);
             }
             break;
@@ -209,25 +209,25 @@ void SecretKey::decodeRSAIntegers(const CK::ByteArray& encoded) {
     CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
     uint32_t index = 2;
     double dlen = len.getUnsignedValue();
-    rsaExponent = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
+    rsaExponent.decode(encoded.range(index, ceil(dlen / 8)),
                                                     CK::BigInteger::BIGENDIAN);
     index += ceil(dlen / 8);
-    len = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
     dlen = len.getUnsignedValue();
-    rsap = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
+    rsap.decode(encoded.range(index, ceil(dlen / 8)),
                                                     CK::BigInteger::BIGENDIAN);
     index += ceil(dlen / 8);
-    len = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
     dlen = len.getUnsignedValue();
-    rsaq = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
+    rsaq.decode(encoded.range(index, ceil(dlen / 8)),
                                                     CK::BigInteger::BIGENDIAN);
     index += ceil(dlen / 8);
-    len = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
     dlen = len.getUnsignedValue();
-    rsaqInv = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
+    rsaqInv.decode(encoded.range(index, ceil(dlen / 8)),
                                                     CK::BigInteger::BIGENDIAN);
 
 }
@@ -326,19 +326,20 @@ CK::ByteArray  SecretKey::encodeRSAIntegers() {
 
 }
 
-CK::RSAPrivateCrtKey *SecretKey::getRSAPrivateKey() const {
+CK::RSAPrivateKey *SecretKey::getRSAPrivateKey() const {
 
     return new CK::RSAPrivateCrtKey(rsap, rsaq, rsaExponent,
                                                 publicKey->getRSAExponent());
 
 }
 
-void SecretKey::setPrivateKey(CK::RSAPrivateCrtKey *pk) {
+void SecretKey::setPrivateKey(CK::RSAPrivateKey *pk) {
 
-    rsaExponent = pk->getPrivateExponent();
-    rsap = pk->getPrimeP();
-    rsaq = pk->getPrimeQ();
-    rsaqInv = pk->getInverse();
+    CK::RSAPrivateCrtKey *crt = dynamic_cast<CK::RSAPrivateCrtKey*>(pk);
+    rsaExponent = crt->getPrivateExponent();
+    rsap = crt->getPrimeP();
+    rsaq = crt->getPrimeQ();
+    rsaqInv = crt->getInverse();
 
 }
 

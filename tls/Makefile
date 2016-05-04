@@ -7,8 +7,7 @@ CPPFLAGS= -Wall -g -MMD -std=c++11 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
 CPP_SOURCES= Alert.cc CipherSuiteManager.cc ClientHello.cc ConnectionState.cc \
 			 ExtensionManager.cc HandshakeRecord.cc PGPCertificate.cc \
-			 Plaintext.cc SecurityParameters.cc ServerCertificate.cc ServerHello.cc \
-			 ServerKeyExchange.cc
+			 Plaintext.cc ServerCertificate.cc ServerHello.cc ServerKeyExchange.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 

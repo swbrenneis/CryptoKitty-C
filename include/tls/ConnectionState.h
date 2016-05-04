@@ -1,6 +1,7 @@
 #ifndef CONNECTIONSTATE_H_INCLUDED
 #define CONNECTIONSTATE_H_INCLUDED
 
+#include "tls/Constants.h"
 #include "data/ByteArray.h"
 #include <cstdint>
 
@@ -9,49 +10,56 @@ namespace CKTLS {
 class ConnectionState {
 
     public:
-        enum ConnectionEnd { server, client };
-        enum PRFAlgorithm { tls_prf_sha256 };
-        enum BulkCipherAlgorithm { bca_null, rc4, tdes, aes };
-        enum CipherType { stream, block, aead };
-        enum MACAlgorithm { ma_null, hmac_md5, hmac_sha1, hmac_sha256,
-                           hmac_sha384, hmac_sha512};
-        enum CompressionMethod{ cm_null=0 };
-
-    public:
-        ConnectionState(ConnectionEnd e);
+        ConnectionState();
         ConnectionState(const ConnectionState& other);
         ConnectionState& operator= (const ConnectionState& other);
         ~ConnectionState();
 
     public:
-        /*ConnectionEnd getConnectionEnd() const;
-        PRFAlgorithm getPRFAlgorithm() const;
+        /*PRFAlgorithm getPRFAlgorithm() const;
         BulkCipherAlgorithm getBulkCipherAlgorithm() const;
         CipherType getCipherType() const;
         MACAlgorithm getMACAlgorithm() const;
         CompressionMethod getCompressionMethod() const;*/
 
+        void generateKeys(const CK::ByteArray& premasterSecret);
+        // Get the client random bytes for signatures.
+        const CK::ByteArray& getClientRandom() const;
+        // Gets the connection end entity.
+        ConnectionEnd getEntity() const;
         // Return the initialization state.
         bool getInitialized() const;
-        // Create the master secret and generate the write keys.
-        void generateKeys(const CK::ByteArray& premasterSecret);
-        // Get current and pending state instances.
-        static const ConnectionState& getCurrentRead();
-        static const ConnectionState& getCurrentWrite();
-        static const ConnectionState& getPendingRead();
-        static const ConnectionState& getPendingWrite();
+        // Returns the pseudorandom algorithm.
+        PRFAlgorithm getPRF() const;
         // Returns the current sequence number and then increments it.
         int64_t getSequenceNumber();
+        // Get the server random bytes for signatures.
+        const CK::ByteArray& getServerRandom() const;
+        // Create the master secret and generate the write keys.
+        // Get current and pending state instances.
+        static ConnectionState *getCurrentRead();
+        static ConnectionState *getCurrentWrite();
+        static ConnectionState *getPendingRead();
+        static ConnectionState *getPendingWrite();
         // Promotes the pending read state to current and
         // initializes a new pending state.
         void promoteRead();
         // Promotes the pending write state to current and
         // initializes a new pending state.
         void promoteWrite();
+        // Sets the client random value for signatures.
+        void setClientRandom(const CK::ByteArray& rnd);
+        // Sets the connection end entity.
+        void setEntity(ConnectionEnd end);
         // Indicate the the state is initialized.
         void setInitialized();
+        // Sets the calculated master secret.
+        void setMasterSecret(const CK::ByteArray& secret);
+        // Sets the server random value for signatures.
+        void setServerRandom(const CK::ByteArray& rnd);
 
     private:
+        bool initialized;
         ConnectionEnd entity;
         PRFAlgorithm prf;
         BulkCipherAlgorithm cipher;
@@ -76,7 +84,6 @@ class ConnectionState {
         CK::ByteArray serverWriteKey; 
         CK::ByteArray clientWriteIV; 
         CK::ByteArray serverWriteIV; 
-        bool initialized;
         int64_t sequenceNumber;
 
 

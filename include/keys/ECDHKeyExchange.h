@@ -33,10 +33,13 @@ class ECDHKeyExchange {
             uint32_t h;     // Cofactor
         };
 
+        static const CurveParams SECP256R1;
+        static const CurveParams SECP384R1;
+
     public:
         ByteArray getPublicKey();
         void setCurve(const CurveParams& params);
-        Point getSecret(const Point& fk);
+        Point getSecret(const ByteArray& fk);
 
     private:
         ByteArray elementToString(const BigInteger& e) const;
@@ -66,5 +69,8 @@ class ECDHKeyExchange {
 };
 
 }
+
+bool operator== (const CK::ECDHKeyExchange::Point& lhs, const CK::ECDHKeyExchange::Point& rhs);
+bool operator!= (const CK::ECDHKeyExchange::Point& lhs, const CK::ECDHKeyExchange::Point& rhs);
 
 #endif  // ECDHKEYEXCHANGE_H_INCLUDED

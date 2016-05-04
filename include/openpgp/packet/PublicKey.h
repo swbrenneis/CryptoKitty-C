@@ -33,6 +33,7 @@ class PublicKey : public Packet {
     public:
         uint8_t getAlgorithm() const;
         const CK::BigInteger& getRSAExponent() const;
+        CK::RSAPublicKey *getRSAPublicKey();
         void setPublicKey(CK::RSAPublicKey *pk, uint8_t algorithm);
 
     public:

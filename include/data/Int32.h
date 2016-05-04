@@ -21,6 +21,8 @@ class Int32 {
         Int32& operator= (const Int32& other);
 
     public:
+        // Decode a byte array.
+        void decode(const ByteArray& encoded, int endian);
         // Returns an encoded array in the native endian order.
         ByteArray getEncoded() const;
         // Returns an encoded array in the specified endian order.
@@ -33,7 +35,6 @@ class Int32 {
         static int32_t decode(const ByteArray& value);
                 
     private:
-        void decode(const ByteArray& encoded, int endian);
         void endianTest();
 
     public:

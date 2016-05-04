@@ -2,7 +2,10 @@
 #include "tls/HelloRequest.h"
 #include "tls/ClientHello.h"
 #include "tls/ServerHello.h"
+#include "tls/ServerCertificate.h"
 #include "tls/ServerHelloDone.h"
+#include "tls/ServerKeyExchange.h"
+#include "tls/ConnectionState.h"
 #include "data/Unsigned16.h"
 #include "data/Unsigned32.h"
 #include "exceptions/tls/RecordException.h"
@@ -19,22 +22,47 @@ HandshakeRecord::HandshakeRecord(HandshakeType h)
   body(0),
   type(h) {
 
+    ConnectionEnd end = ConnectionState::getCurrentRead()->getEntity();
+
     switch (type) {
         case hello_request:
-            // TODO: Validate that this is a server.
+            if (end != server) {
+                throw RecordException("Wrong connection state");
+            }
             body = new HelloRequest;
             break;
         case client_hello:
-            // TODO: Validate that this is a client.
+            if (end != client) {
+                throw RecordException("Wrong connection state");
+            }
             body = new ClientHello;
             break;
+        case certificate:
+            if (end == server) {
+                body = new ServerCertificate;
+            }
+            else {
+                // TODO: Client certificate.
+                body = 0;
+            }
+            break;
         case server_hello:
-            // TODO: Validate that this is a server.
+            if (end != server) {
+                throw RecordException("Wrong connection state");
+            }
             body = new ServerHello;
             break;
         case server_hello_done:
-            // TODO: Validate that this is a server.
+            if (end != server) {
+                throw RecordException("Wrong connection state");
+            }
             body = new ServerHelloDone;
+            break;
+        case server_key_exchange:
+            if (end != server) {
+                throw RecordException("Wrong connection state");
+            }
+            body = new ServerKeyExchange;
             break;
         default:
             throw RecordException("Invalid handshake type");
@@ -71,20 +99,22 @@ void HandshakeRecord::decode() {
 
     switch (type) {
         case hello_request:
-            // TODO: Validate that this is a client.
             body = new HelloRequest;
             break;
+        case certificate:
+            body = new ServerCertificate;
+            break;
         case client_hello:
-            // TODO: Validate that this is a server.
             body = new ClientHello;
             break;
         case server_hello:
-            // TODO: Validate that this is a server.
             body = new ServerHello;
             break;
         case server_hello_done:
-            // TODO: Validate that this is a server.
             body = new ServerHelloDone;
+            break;
+        case server_key_exchange:
+            body = new ServerKeyExchange;
             break;
         default:
             throw RecordException("Invalid handshake type");
@@ -116,16 +146,9 @@ HandshakeBody *HandshakeRecord::getBody() {
 
 }
 
-HandshakeRecord::HandshakeType HandshakeRecord::getType() const {
+HandshakeType HandshakeRecord::getType() const {
 
     return type;
-
-}
-
-void HandshakeRecord::setBody(HandshakeBody *hs) {
-
-    delete body;
-    body = hs;
 
 }
 

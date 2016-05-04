@@ -67,6 +67,8 @@ class BigInteger {
         int bitLength() const;
         // Returns the total number of bits
         int bitSize() const;
+        // Decode a byte array
+        void decode(const ByteArray& bytes, int endian);
         // Returns a BigInteger equal to this divided by divisor.
         BigInteger divide(const BigInteger& divisor) const;
         // Returns true if this = other.

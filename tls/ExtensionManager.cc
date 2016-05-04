@@ -1,4 +1,5 @@
 #include "tls/ExtensionManager.h"
+#include "tls/Constants.h"
 
 namespace CKTLS {
 
@@ -34,7 +35,7 @@ void ExtensionManager::decode(const CK::ByteArray& encoded) {
     unsigned index = 0;
     while (index < encoded.getLength()) {
         Extension e;
-        e.type = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+        e.type.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
         index += 2;
         CK::Unsigned16 edl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
         uint16_t edataLen = edl.getUnsignedValue();

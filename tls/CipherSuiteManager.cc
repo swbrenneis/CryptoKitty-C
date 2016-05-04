@@ -8,23 +8,23 @@ namespace CKTLS {
 // Static initialization.
 CipherSuiteList CipherSuiteManager::preferred;
 const CipherSuite
-CipherSuiteManager::TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 = { 0x00, 0x9f, false };
+CipherSuiteManager::TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 = 0x009f;
 const CipherSuite
-CipherSuiteManager::TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 = { 0x00, 0x9e, false };
+CipherSuiteManager::TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 = 0x009e;
 const CipherSuite
-CipherSuiteManager::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = { 0xC0, 0x2B, true };
+CipherSuiteManager::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = 0xC02B;
 const CipherSuite
-CipherSuiteManager::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 = { 0xC0, 0x2C, true };
+CipherSuiteManager::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 = 0xC02C;
 const CipherSuite
-CipherSuiteManager::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = { 0xC0, 0x2F, true };
+CipherSuiteManager::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xC02F;
 const CipherSuite
-CipherSuiteManager::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 = { 0xC0, 0x30, true };
+CipherSuiteManager::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 = 0xC030;
 const CipherSuite
-CipherSuiteManager::TLS_RSA_WITH_AES_256_CBC_SHA256 = { 0x00, 0x3D, false };
+CipherSuiteManager::TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x003D;
 const CipherSuite
-CipherSuiteManager::TLS_RSA_WITH_AES_128_CBC_SHA256 = { 0x00, 0x3C, false };
+CipherSuiteManager::TLS_RSA_WITH_AES_128_CBC_SHA256 = 0x003C;
 const CipherSuite
-CipherSuiteManager::TLS_NULL_WITH_NULL_NULL = { 0, 0, false };
+CipherSuiteManager::TLS_NULL_WITH_NULL_NULL = 0;
 
 CipherSuiteManager::CipherSuiteManager() {
 
@@ -54,10 +54,7 @@ void CipherSuiteManager::initialize() {
 void CipherSuiteManager::debugOut(std::ostream& out) const {
 
     for (CipherConstIter it = suites.begin(); it != suites.end(); ++it) {
-        CK::ByteArray s(2);
-        s[0] = (*it).sel[0];
-        s[1] = (*it).sel[1];
-        out << "Cipher suite: " << s.toString() << std::endl;
+        out << "Cipher suite: " << *it << std::endl;
     }
 
 }
@@ -66,10 +63,9 @@ void CipherSuiteManager::decode(const CK::ByteArray& encoded) {
 
     unsigned index = 0;
     while (index < encoded.getLength()) {
-        CipherSuite c;
-        c.sel[0] = encoded[index++];
-        c.sel[1] = encoded[index++];
-        suites.push_back(c);
+        CK::Unsigned16 c(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+        index += 2;
+        suites.push_back(c.getUnsignedValue());
     }
 
 }
@@ -79,12 +75,31 @@ CK::ByteArray CipherSuiteManager::encode() const {
     CK::ByteArray encoded;
     for (CipherConstIter it = suites.begin();
                                     it != suites.end(); ++it) {
-        encoded.append(it->sel[0]);
-        encoded.append(it->sel[1]);
+        CK::Unsigned16 c(*it);
+        encoded.append(c.getEncoded(CK::Unsigned16::BIGENDIAN));
     }
 
     return encoded;
 
+}
+
+CipherSuite CipherSuiteManager::getServerSuite() const {
+
+    return suites.front();
+
+}
+
+bool CipherSuiteManager::isCurve(CipherSuite c) const {
+
+    switch (c) {
+        case TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
+        case TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:
+        case TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:
+        case TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:
+         return true;
+    }
+
+    return false;
 }
 
 void CipherSuiteManager::loadPreferred() {
@@ -100,7 +115,7 @@ void CipherSuiteManager::loadPreferred() {
 
 }
 
-const CipherSuite& CipherSuiteManager::matchCipherSuite() const {
+CipherSuite CipherSuiteManager::matchCipherSuite() const {
 
     for (CipherConstIter pit = preferred.begin(); pit != preferred.end(); ++pit) {
         for (CipherConstIter sit = suites.begin(); sit != suites.end(); ++sit) {
@@ -114,7 +129,7 @@ const CipherSuite& CipherSuiteManager::matchCipherSuite() const {
 
 }
 
-void CipherSuiteManager::setPreferred(const CipherSuite& suite) {
+void CipherSuiteManager::setPreferred(CipherSuite suite) {
 
     suites.push_back(suite);
 
@@ -122,7 +137,3 @@ void CipherSuiteManager::setPreferred(const CipherSuite& suite) {
 
 }
 
-bool operator ==(const CKTLS::CipherSuite& lhs, const CKTLS::CipherSuite& rhs)
-{ return lhs.sel[0] == rhs.sel[0] && lhs.sel[1] == rhs.sel[1]; } 
-bool operator !=(const CKTLS::CipherSuite& lhs, const CKTLS::CipherSuite& rhs)
-{ return lhs.sel[0] != rhs.sel[0] || lhs.sel[1] != rhs.sel[1]; } 

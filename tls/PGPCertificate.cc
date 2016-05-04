@@ -105,6 +105,7 @@ void PGPCertificate::decode(const CK::ByteArray& encoded) {
                     signatures = false;
                 }
             }
+            userIds.push_back(id);
         }
         else if (packet->getTag() == CKPGP::Packet::USERATTRIBUTE) {
             if (!userSection) {
@@ -125,6 +126,7 @@ void PGPCertificate::decode(const CK::ByteArray& encoded) {
                     signatures = false;
                 }
             }
+            userAttributes.push_back(attr);
         }
         else if (packet->getTag() == CKPGP::Packet::PUBLICSUBKEY) {
             userSection = false;
@@ -231,6 +233,12 @@ CK::ByteArray PGPCertificate::encode() {
     }
 
     return encoded;
+
+}
+
+CKPGP::PublicKey *PGPCertificate::getPublicKey() {
+
+    return publicKey;
 
 }
 

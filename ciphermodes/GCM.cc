@@ -287,28 +287,28 @@ void GCM::shiftBlock(ByteArray& block) const {
     Unsigned32 v(value);
     block.copy(12, v.getEncoded(Unsigned32::BIGENDIAN), 0, 4);
 
-    be = Unsigned32(block.range(8, 4), Unsigned32::BIGENDIAN);
+    be.decode(block.range(8, 4), Unsigned32::BIGENDIAN);
     value = be.getUnsignedValue();
     value = value >> 1;
     if ((block[7] & 0x01) != 0) {
         value |= 0x80000000;
     }
-    v = Unsigned32(value);
+    v.setValue(value);
     block.copy(8, v.getEncoded(Unsigned32::BIGENDIAN), 0, 4);
 
-    be = Unsigned32(block.range(4, 4), Unsigned32::BIGENDIAN);
+    be.decode(block.range(4, 4), Unsigned32::BIGENDIAN);
     value = be.getUnsignedValue();
     value = value >> 1;
     if ((block[3] & 0x01) != 0) {
         value |= 0x80000000;
     }
-    v = Unsigned32(value);
+    v.setValue(value);
     block.copy(4,v.getEncoded(Unsigned32::BIGENDIAN), 0, 4);
 
-    be = Unsigned32(block.range(0, 4), Unsigned32::BIGENDIAN);
+    be.decode(block.range(0, 4), Unsigned32::BIGENDIAN);
     value = be.getUnsignedValue();
     value = value >> 1;
-    v = Unsigned32(value);
+    v.setValue(value);
     block.copy(0, v.getEncoded(Unsigned32::BIGENDIAN), 0, 4);
 
 }

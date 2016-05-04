@@ -199,20 +199,20 @@ void Signature::decode(const CK::ByteArray& encoded) {
             len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
             index += 2;
             dlen = len.getUnsignedValue();
-            RSASig = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
+            RSASig.decode(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
             break;
         case DSA:
             len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
             index += 2;
             dlen = len.getUnsignedValue();
-            DSAr = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
+            DSAr.decode(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
             index += len.getUnsignedValue();
             len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
             index += 2;
             dlen = len.getUnsignedValue();
-            DSAs = CK::BigInteger(encoded.range(index, ceil(dlen / 8)),
+            DSAs.decode(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
             break;
     }
@@ -495,7 +495,7 @@ void Signature::sign(const CK::RSAPrivateKey& pk) {
             // Cipher owns digest pointer.
             CK::PKCS1rsassa rsa(digest);
             CK::ByteArray sig(rsa.sign(pk, hash));
-            RSASig = CK::BigInteger(sig, CK::BigInteger::BIGENDIAN);
+            RSASig.decode(sig, CK::BigInteger::BIGENDIAN);
             }
             break;
         default:

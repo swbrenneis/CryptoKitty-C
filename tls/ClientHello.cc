@@ -23,6 +23,7 @@ ClientHello::~ClientHello() {
 
 void ClientHello::debugOut(std::ostream& out) {
 
+    out << "client_hello" << std::endl;
     int j = majorVersion;
     int n = minorVersion;
     out << "Version: " << j << "." << n << std::endl;
@@ -138,9 +139,15 @@ uint8_t ClientHello::getMinorVersion() const {
 
 }
 
-const CipherSuite& ClientHello::getPreferred() const {
+CipherSuite ClientHello::getPreferred() const {
 
     return suites.matchCipherSuite();
+
+}
+
+const CK::ByteArray& ClientHello::getRandom() const {
+
+    return random;
 
 }
 
@@ -148,7 +155,7 @@ void ClientHello::initState() {
 
     gmt = time(0);
     CK::SecureRandom *rnd =
-            CK::SecureRandom::getSecureRandom("BBS");
+            CK::SecureRandom::getSecureRandom("Fortuna");
     rnd->nextBytes(random);
     delete rnd;
     suites.loadPreferred();

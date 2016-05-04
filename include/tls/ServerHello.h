@@ -21,9 +21,10 @@ class ServerHello : public HandshakeBody {
         void debugOut(std::ostream& out);
         void decode(const CK::ByteArray& stream);
         CK::ByteArray encode() const;
+        CipherSuite getCipherSuite() const;
+        const CK::ByteArray& getRandom() const;
         void initState();
         void initState(const ClientHello& hello);
-        void setCipherSuite(const CipherSuite& cipher);
 
     private:
         uint32_t gmt;
@@ -34,7 +35,6 @@ class ServerHello : public HandshakeBody {
         CK::ByteArray compressionMethods;
 
         CipherSuiteManager suites;
-
         ExtensionManager extensions;
 
 };

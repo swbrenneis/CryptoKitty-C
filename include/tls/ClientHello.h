@@ -22,8 +22,9 @@ class ClientHello : public HandshakeBody {
         bool getExtension(uint16_t etype, Extension& ex) const;
         uint8_t getMajorVersion() const;
         uint8_t getMinorVersion() const;
+        const CK::ByteArray& getRandom() const;
         void initState();
-        const CipherSuite& getPreferred() const;
+        CipherSuite getPreferred() const;
 
     private:
         uint32_t gmt;

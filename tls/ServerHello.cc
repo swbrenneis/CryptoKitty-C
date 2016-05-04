@@ -1,5 +1,7 @@
 #include "tls/ServerHello.h"
 #include "tls/ClientHello.h"
+#include "tls/Constants.h"
+#include "tls/ServerKeyExchange.h"
 #include "data/Unsigned32.h"
 #include "random/SecureRandom.h"
 #include "exceptions/OutOfRangeException.h"
@@ -23,6 +25,7 @@ ServerHello::~ServerHello() {
 
 void ServerHello::debugOut(std::ostream& out) {
 
+    out << "server_hello" << std::endl;
     int j = majorVersion;
     int n = minorVersion;
     out << "Version: " << j << "." << n << std::endl;
@@ -58,6 +61,10 @@ void ServerHello::decode(const CK::ByteArray& encoded) {
     uint16_t csLen = csl.getUnsignedValue();
     suites.decode(encoded.range(index+2, csLen));
     index += csLen + 2;
+    // There should only be one suite
+    if (suites.isCurve(suites.getServerSuite())) {
+        ServerKeyExchange::setAlgorithm(ec_diffie_hellman);
+    }
     // Compression methods
     uint8_t compMethods = encoded[index++];
     while (compMethods > 0) {
@@ -120,6 +127,12 @@ CK::ByteArray ServerHello::encode() const {
 
 }
 
+const CK::ByteArray& ServerHello::getRandom() const {
+
+    return random;
+
+}
+
 void ServerHello::initState() {
 
     // Not sure if we really need this.
@@ -134,14 +147,17 @@ void ServerHello::initState(const ClientHello& hello) {
     rnd->nextBytes(random);
     delete rnd;
 
-    CipherSuite c(hello.getPreferred());
+    CipherSuite c = hello.getPreferred();
     suites.setPreferred(c);
+    if (suites.isCurve(c)) {
+        ServerKeyExchange::setAlgorithm(ec_diffie_hellman);
+    }
 
     compressionMethods.append(0);
 
     Extension ext;
     // Set up extensions
-    if (c.ec) {
+    if (suites.isCurve(c)) {
         if (hello.getExtension(ExtensionManager::SUPPORTED_CURVES, ext)) {
             CK::ByteArray edata(ext.data);
             ext.data.clear();

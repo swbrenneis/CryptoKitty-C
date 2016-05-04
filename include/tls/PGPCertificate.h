@@ -30,6 +30,7 @@ class PGPCertificate {
         void addUserID(const CKPGP::UserID& uid, const CKPGP::Signature& sig);
         CK::ByteArray encode();
         void encode(std::ostream& out);
+        CKPGP::PublicKey *getPublicKey();
         void setPublicKey(CKPGP::PublicKey *pk);
 
     private:

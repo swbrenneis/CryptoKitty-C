@@ -151,22 +151,22 @@ void PublicKey::decodeDSAIntegers(const CK::ByteArray& encoded) {
 
     CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
     uint32_t index = 2;
-    dsaPrime = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    dsaPrime.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
     index += len.getUnsignedValue() / 8;
-    len = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
-    dsaOrder = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    dsaOrder.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
     index += len.getUnsignedValue() / 8;
-    len = CK::Unsigned16(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
-    dsaGenerator = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    dsaGenerator.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
     index += len.getUnsignedValue() / 8;
-    len = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
-    dsaValue = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    dsaValue.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
 
 }
@@ -175,17 +175,17 @@ void PublicKey::decodeElgamalIntegers(const CK::ByteArray& encoded) {
 
     CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
     uint32_t index = 2;
-    elgamalPrime = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    elgamalPrime.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
     index += len.getUnsignedValue() / 8;
-    len = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
-    elgamalGenerator = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    elgamalGenerator.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
     index += len.getUnsignedValue() / 8;
-    len = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
-    elgamalValue = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    elgamalValue.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
 
 }
@@ -194,12 +194,12 @@ void PublicKey::decodeRSAIntegers(const CK::ByteArray& encoded) {
 
     CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
     uint32_t index = 2;
-    rsaModulus = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    rsaModulus.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
     index += len.getUnsignedValue() / 8;
-    len = CK::Unsigned16(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
     index += 2;
-    rsaExponent = CK::BigInteger(encoded.range(index, len.getUnsignedValue()/8),
+    rsaExponent.decode(encoded.range(index, len.getUnsignedValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
 
 }
@@ -343,6 +343,12 @@ uint8_t PublicKey::getAlgorithm() const {
 const CK::BigInteger& PublicKey::getRSAExponent() const {
 
     return rsaExponent;
+
+}
+
+CK::RSAPublicKey *PublicKey::getRSAPublicKey() {
+
+    return new CK::RSAPublicKey(rsaModulus, rsaExponent);
 
 }
 

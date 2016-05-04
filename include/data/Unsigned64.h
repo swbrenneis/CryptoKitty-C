@@ -21,6 +21,8 @@ class Unsigned64 {
         Unsigned64& operator= (const Unsigned64& other);
 
     public:
+        // Decode a byte array.
+        void decode(const ByteArray& encoded, int endian);
         // Returns an encoded array in the native endian order.
         ByteArray getEncoded() const;
         // Returns an encoded array in the specified endian order.
@@ -35,7 +37,6 @@ class Unsigned64 {
         static uint64_t decode(const ByteArray& value);
                 
     private:
-        void decode(const ByteArray& encoded, int endian);
         void endianTest();
 
     public:

@@ -3,19 +3,14 @@
 
 #include "data/ByteArray.h"
 #include "tls/Plaintext.h"
+#include "tls/Constants.h"
 
 namespace CKTLS {
 
 class HandshakeBody;
+class ConnectionState;
 
 class HandshakeRecord : public Plaintext {
-
-    public:
-        enum HandshakeType { hello_request=0, client_hello=1,
-                server_hello=2, certificate=11, server_key_exchange=12,
-                certificate_request=13, server_hello_done=14,
-                certificate_verify=15, client_key_exchange=16,
-                finished=20 };
 
     public:
         HandshakeRecord();
@@ -29,7 +24,6 @@ class HandshakeRecord : public Plaintext {
         CK::ByteArray encode();
         HandshakeBody *getBody();
         HandshakeType getType() const;
-        void setBody(HandshakeBody *hs);
 
     private:
         HandshakeBody *body;

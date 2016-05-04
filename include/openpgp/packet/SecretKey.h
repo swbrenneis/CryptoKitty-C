@@ -6,7 +6,7 @@
 #include "data/Unsigned16.h"
 
 namespace CK {
-    class RSAPrivateCrtKey;
+    class RSAPrivateKey;
 }
 
 namespace CKPGP {
@@ -32,8 +32,8 @@ class SecretKey : public Packet {
         SecretKey& operator= (const SecretKey& other);
 
     public:
-        CK::RSAPrivateCrtKey *getRSAPrivateKey() const;
-        void setPrivateKey(CK::RSAPrivateCrtKey *pk);
+        CK::RSAPrivateKey *getRSAPrivateKey() const;
+        void setPrivateKey(CK::RSAPrivateKey *pk);
 
     public:
         void encode();
