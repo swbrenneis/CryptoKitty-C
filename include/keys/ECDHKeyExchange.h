@@ -35,6 +35,7 @@ class ECDHKeyExchange {
 
         static const CurveParams SECP256R1;
         static const CurveParams SECP384R1;
+        static const CurveParams SECP256K1;
 
     public:
         ByteArray getPublicKey();

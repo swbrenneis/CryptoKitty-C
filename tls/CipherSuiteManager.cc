@@ -7,25 +7,16 @@ namespace CKTLS {
 
 // Static initialization.
 CipherSuiteList CipherSuiteManager::preferred;
-const CipherSuite
-CipherSuiteManager::TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 = 0x009f;
-const CipherSuite
-CipherSuiteManager::TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 = 0x009e;
-const CipherSuite
-CipherSuiteManager::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = 0xC02B;
-const CipherSuite
-CipherSuiteManager::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 = 0xC02C;
-const CipherSuite
-CipherSuiteManager::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xC02F;
-const CipherSuite
-CipherSuiteManager::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 = 0xC030;
-const CipherSuite
-CipherSuiteManager::TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x003D;
-const CipherSuite
-CipherSuiteManager::TLS_RSA_WITH_AES_128_CBC_SHA256 = 0x003C;
-const CipherSuite
-CipherSuiteManager::TLS_NULL_WITH_NULL_NULL = 0;
-
+/*const CipherSuite TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 = 0x009f;
+const CipherSuite TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 = 0x009e;
+const CipherSuite TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = 0xC02B;
+const CipherSuite TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 = 0xC02C;
+const CipherSuite TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xC02F;
+const CipherSuite TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 = 0xC030;
+const CipherSuite TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x003D;
+const CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA256 = 0x003C;
+const CipherSuite TLS_NULL_WITH_NULL_NULL = 0;
+*/
 CipherSuiteManager::CipherSuiteManager() {
 
     initialize();
@@ -38,10 +29,10 @@ CipherSuiteManager::~CipherSuiteManager() {
 void CipherSuiteManager::initialize() {
 
     if (preferred.size() == 0) {
-        preferred.push_back(TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
-        preferred.push_back(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
         preferred.push_back(TLS_DHE_RSA_WITH_AES_256_GCM_SHA384);
         preferred.push_back(TLS_DHE_RSA_WITH_AES_128_GCM_SHA256);
+        preferred.push_back(TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384);
+        preferred.push_back(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256);
         preferred.push_back(TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384);
         preferred.push_back(TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256);
         preferred.push_back(TLS_RSA_WITH_AES_256_CBC_SHA256);
@@ -54,7 +45,28 @@ void CipherSuiteManager::initialize() {
 void CipherSuiteManager::debugOut(std::ostream& out) const {
 
     for (CipherConstIter it = suites.begin(); it != suites.end(); ++it) {
-        out << "Cipher suite: " << *it << std::endl;
+        CK::Unsigned16 cs(*it);
+        CK::ByteArray csb(cs.getEncoded(CK::Unsigned16::BIGENDIAN));
+        out << "Cipher suite: 0x";
+        for (int i = 0; i < 2; ++i) {
+            char c = (csb[i] >> 4) & 0x0f;
+            if (c < 0x0a) {
+                c = c + '0';
+            }
+            else {
+                c = (c - 0x0a) + 'a';
+            }
+            std::cout << c;
+            c = csb[i] & 0x0f;
+            if (c < 0x0a) {
+                c = c + '0';
+            }
+            else {
+                c = (c - 0x0a) + 'a';
+            }
+            std::cout << c;
+        }
+        std::cout << std::endl;
     }
 
 }

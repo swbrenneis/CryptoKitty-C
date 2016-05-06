@@ -61,10 +61,6 @@ void ServerHello::decode(const CK::ByteArray& encoded) {
     uint16_t csLen = csl.getUnsignedValue();
     suites.decode(encoded.range(index+2, csLen));
     index += csLen + 2;
-    // There should only be one suite
-    if (suites.isCurve(suites.getServerSuite())) {
-        ServerKeyExchange::setAlgorithm(ec_diffie_hellman);
-    }
     // Compression methods
     uint8_t compMethods = encoded[index++];
     while (compMethods > 0) {
@@ -127,6 +123,12 @@ CK::ByteArray ServerHello::encode() const {
 
 }
 
+CipherSuite ServerHello::getCipherSuite() const {
+
+    return suites.getServerSuite();
+
+}
+
 const CK::ByteArray& ServerHello::getRandom() const {
 
     return random;
@@ -149,9 +151,6 @@ void ServerHello::initState(const ClientHello& hello) {
 
     CipherSuite c = hello.getPreferred();
     suites.setPreferred(c);
-    if (suites.isCurve(c)) {
-        ServerKeyExchange::setAlgorithm(ec_diffie_hellman);
-    }
 
     compressionMethods.append(0);
 

@@ -1,6 +1,8 @@
 #ifndef CONSTANTS_H_INCLUDED
 #define CONSTANTS_H_INCLUDED
 
+#include <cstdint>
+
 namespace CKTLS {
 
 enum HandshakeType { hello_request=0, client_hello=1,
@@ -44,6 +46,18 @@ enum NamedCurve { sect163k1=1, sect163r1=2, sect163r2=3, sect193r1=4,
                     arbitrary_explicit_char2_curves=0xFF02 };
 
 enum CertificateType { x_509=0, openpgp=1 };
+
+// Cipher suites
+typedef uint16_t CipherSuite;
+static const CipherSuite TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 = 0x009f;
+static const CipherSuite TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 = 0x009e;
+static const CipherSuite TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = 0xc02b;
+static const CipherSuite TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 = 0xc02c;
+static const CipherSuite TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xc02f;
+static const CipherSuite TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 = 0xc030;
+static const CipherSuite TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x003d;
+static const CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA256 = 0x003c;
+static const CipherSuite TLS_NULL_WITH_NULL_NULL = 0;
 
 }
 

@@ -5,6 +5,7 @@
 #include "tls/ServerCertificate.h"
 #include "tls/ServerHelloDone.h"
 #include "tls/ServerKeyExchange.h"
+#include "tls/ClientKeyExchange.h"
 #include "tls/ConnectionState.h"
 #include "data/Unsigned16.h"
 #include "data/Unsigned32.h"
@@ -22,7 +23,7 @@ HandshakeRecord::HandshakeRecord(HandshakeType h)
   body(0),
   type(h) {
 
-    ConnectionEnd end = ConnectionState::getCurrentRead()->getEntity();
+    ConnectionEnd end = ConnectionState::getPendingRead()->getEntity();
 
     switch (type) {
         case hello_request:
@@ -63,6 +64,12 @@ HandshakeRecord::HandshakeRecord(HandshakeType h)
                 throw RecordException("Wrong connection state");
             }
             body = new ServerKeyExchange;
+            break;
+        case client_key_exchange:
+            if (end != client) {
+                throw RecordException("Wrong connection state");
+            }
+            body = new ClientKeyExchange;
             break;
         default:
             throw RecordException("Invalid handshake type");
@@ -115,6 +122,9 @@ void HandshakeRecord::decode() {
             break;
         case server_key_exchange:
             body = new ServerKeyExchange;
+            break;
+        case client_key_exchange:
+            body = new ClientKeyExchange;
             break;
         default:
             throw RecordException("Invalid handshake type");

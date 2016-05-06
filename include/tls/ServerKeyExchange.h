@@ -26,15 +26,22 @@ class ServerKeyExchange : public HandshakeBody {
         void decode(const CK::ByteArray& encoded);
         CK::ByteArray encode() const;
         CK::ECDHKeyExchange::CurveParams getCurve() const;
+        const CK::BigInteger& getDHGenerator() const;
+        const CK::BigInteger& getDHModulus() const;
+        const CK::BigInteger& getDHPublicKey() const;
         const CK::ByteArray& getECPublicKey() const;
         void initState() {}
         void initState(NamedCurve curve, const CK::ByteArray& pk);
         void initState(const CK::ECDHKeyExchange::CurveParams& p,
                                                 const CK::ByteArray& pk);
+        void initState(const CK::BigInteger& g, const CK::BigInteger& p,
+                                                const CK::BigInteger& pk);
         static void setAlgorithm(KeyExchangeAlgorithm alg);
 
     private:
+        void decodeDH(const CK::ByteArray& encoded);
         void decodeECDH(const CK::ByteArray& encoded);
+        CK::ByteArray encodeDH() const;
         CK::ByteArray encodeECDH() const;
 
     private:

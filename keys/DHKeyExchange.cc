@@ -12,6 +12,7 @@ DHKeyExchange::DHKeyExchange()
 : bitsize(2048),
   g(BigInteger::ZERO),
   p(BigInteger::ZERO),
+  a(BigInteger::ZERO),
   s(BigInteger::ZERO),
   publicKey(BigInteger::ZERO) {
 }
@@ -19,9 +20,9 @@ DHKeyExchange::DHKeyExchange()
 DHKeyExchange::~DHKeyExchange() {
 }
 
-BigInteger DHKeyExchange::generatePublicKey() {
+const BigInteger& DHKeyExchange::generatePublicKey() {
 
-    SecureRandom *rnd = SecureRandom::getSecureRandom("BBS");
+    SecureRandom *rnd = SecureRandom::getSecureRandom("Fortuna");
 
     if (p == BigInteger::ZERO) {
         p = BigInteger(bitsize, false, *rnd);
@@ -32,7 +33,10 @@ BigInteger DHKeyExchange::generatePublicKey() {
         g = g % p;
     }
 
-    a = BigInteger(512, false, *rnd);
+    if (a == BigInteger::ZERO) {
+        a = BigInteger(512, false, *rnd);
+    }
+
     publicKey = g.modPow(a, p);
 
     delete rnd;
@@ -44,7 +48,7 @@ BigInteger DHKeyExchange::generatePublicKey() {
  * Return the generator. Will be ZERO if not explicitly set or if
  * the public key has not been generated.
  */
-BigInteger DHKeyExchange::getGenerator() const {
+const BigInteger& DHKeyExchange::getGenerator() const {
 
     return g;
 
@@ -54,7 +58,7 @@ BigInteger DHKeyExchange::getGenerator() const {
  * Return the modulus. Will be ZERO if not explicitly set or if
  * the public key has not been generated.
  */
-BigInteger DHKeyExchange::getModulus() const {
+const BigInteger& DHKeyExchange::getModulus() const {
 
     return p;
 
@@ -64,7 +68,7 @@ BigInteger DHKeyExchange::getModulus() const {
  * Return the D-H public key. Will be ZERO if not explicitly set or if
  * the public key has not been generated.
  */
-BigInteger DHKeyExchange::getPublicKey() const {
+const BigInteger& DHKeyExchange::getPublicKey() const {
 
     return publicKey;
 
@@ -73,7 +77,12 @@ BigInteger DHKeyExchange::getPublicKey() const {
 /*
  * Generate and return the D-H public key.
  */
-BigInteger DHKeyExchange::getSecret(const BigInteger& fpk) {
+const BigInteger& DHKeyExchange::getSecret(const BigInteger& fpk) {
+
+    if (a == BigInteger::ZERO) {
+        SecureRandom *rnd = SecureRandom::getSecureRandom("Fortuna");
+        a = BigInteger(512, false, *rnd);
+    }
 
     s = fpk.modPow(a, p);
     return s;
@@ -84,7 +93,7 @@ BigInteger DHKeyExchange::getSecret(const BigInteger& fpk) {
  * Return the D-H public key. Will be ZERO if if hasn't been
  * generated with the foreign public key.
  */
-BigInteger DHKeyExchange::getSecret() {
+const BigInteger& DHKeyExchange::getSecret() {
 
     return s;
 

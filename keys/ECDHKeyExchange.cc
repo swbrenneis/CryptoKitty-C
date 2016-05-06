@@ -90,6 +90,34 @@ const ECDHKeyExchange::CurveParams ECDHKeyExchange::SECP384R1 = {
     BigInteger(ByteArray(p384bytes, sizeof(p384bytes)), BigInteger::BIGENDIAN),
     0x01 };
 
+static const uint8_t p256kbytes[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                    0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xfc, 0x2f };
+static const uint8_t a256kbytes[] = { 0x00 };
+static const uint8_t b256kbytes[] = { 0x07 };
+static const uint8_t xg256kbytes[] = { 0x79, 0xbe, 0x66, 0x7e, 0xf9, 0xdc, 0xbb, 0xac,
+                                    0x55, 0xa0, 0x62, 0x95, 0xce, 0x87, 0x0b, 0x07,
+                                    0x02, 0x9b, 0xfc, 0xdb, 0x2d, 0xce, 0x28, 0xd9,
+                                    0x59, 0xf2, 0x81, 0x5b, 0x16, 0xf8, 0x17, 0x98 };
+static const uint8_t yg256kbytes[] = { 0x48, 0x3a, 0xda, 0x77, 0x26, 0xa3, 0xc4, 0x65,
+                                    0x5d, 0xa4, 0xfb, 0xfc, 0x0e, 0x11, 0x08, 0xa8,
+                                    0xfd, 0x17, 0xb4, 0x48, 0xa6, 0x85, 0x54, 0x19,
+                                    0x9c, 0x47, 0xd0, 0x8f, 0xfb, 0x10, 0xd4, 0xb8 };
+static const uint8_t n256kbytes[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe,
+                                    0xba, 0xae, 0xdc, 0xe6, 0xaf, 0x48, 0xa0, 0x3b,
+                                    0xbf, 0xd2, 0x5e, 0x8c, 0xd0, 0x36, 0x41, 0x41 };
+const ECDHKeyExchange::CurveParams ECDHKeyExchange::SECP256K1 = {
+    0,
+    BigInteger(ByteArray(n256kbytes, sizeof(n256kbytes)), BigInteger::BIGENDIAN),
+    BigInteger(ByteArray(a256kbytes, sizeof(a256kbytes)), BigInteger::BIGENDIAN),
+    BigInteger(ByteArray(b256kbytes, sizeof(b256kbytes)), BigInteger::BIGENDIAN),
+    BigInteger(ByteArray(xg256kbytes, sizeof(xg256kbytes)), BigInteger::BIGENDIAN),
+    BigInteger(ByteArray(yg256kbytes, sizeof(yg256kbytes)), BigInteger::BIGENDIAN),
+    BigInteger(ByteArray(p256kbytes, sizeof(p256kbytes)), BigInteger::BIGENDIAN),
+    0x01 };
+
 ECDHKeyExchange::ECDHKeyExchange()
 : curveSet(false),
   galois(false) {
@@ -201,11 +229,12 @@ bool ECDHKeyExchange::isOnCurve(const Point& point) const {
         throw IllegalStateException("Curve parameters not set");
     }
 
-    BigInteger lhs = point.y.pow(2) % p;
-    BigInteger rhs = (point.x.pow(3) + (a * point.x) + b) % p;
+    if (point == PAI) {
+        // Point at infinity is always on the curve.
+        return true;
+    }
 
-    return lhs == rhs;
-    //return true;
+    return (point.y.pow(2) - point.x.pow(3) - a * point.x - b) % p == BigInteger::ZERO;
 
 }
 
@@ -237,22 +266,6 @@ ECDHKeyExchange::pointAdd(const Point& P, const Point& Q) const {
         return PAI;
     }
 
-    /*BigInteger s;
-    BigInteger x3;
-    BigInteger y3;
-
-    if (P != Q) {
-        s = (y2 - y1) / (x2 - x1);
-        x3 = s.pow(2) - x1 - x2;
-    }
-    else {
-        BigInteger three(3L);
-        BigInteger two(2L);
-        s = ((three * x1.pow(2)) + a) / (two * y1);
-        x3 = s.pow(2) - (two * x1);
-    }
-    y3 = (s * (x1 - x3)) - y1; */
-
     BigInteger m;
     BigInteger x3;
     BigInteger y3;
@@ -260,14 +273,14 @@ ECDHKeyExchange::pointAdd(const Point& P, const Point& Q) const {
     if (P == Q) {
         BigInteger two(2L);
         BigInteger three(3L);
-        m = ((three * (x1.pow(2))) + a) * (two * y1).modInverse(p);
+        m = (three * x1.pow(2) + a) * (two * y1).modInverse(p);
     }
     else {
         m = (y1 - y2) * (x1 - x2).modInverse(p);
     }
 
     x3 = m.pow(2) - x1 - x2;
-    y3 = y1 + (m * (x3 - x1));
+    y3 = y1 + m * (x3 - x1);
 
     Point result = { x3 % p, -y3 % p };
 
@@ -330,22 +343,51 @@ ByteArray ECDHKeyExchange::pointToString(const Point& point, bool compress) {
 ECDHKeyExchange::Point
 ECDHKeyExchange::scalarMultiply(const BigInteger& m, const Point& point) const {
 
-    std::cout << "m = " << m << std::endl;
-    Point T(point);
-
-    for (int i = 0; i < m.bitLength(); ++i) {
-        if (m.testBit(i)) {
-            T = pointAdd(T, point);
-        }
-        T = pointAdd(T, T);
-        std::cout << i << ": T = " << T.x << ", " << T.y << std::endl;
+    if (!isOnCurve(point)) {   // Something went horribly, horribly wrong.
+        throw IllegalStateException("Invalid point input to scalar multiplication");
     }
 
-    if (!isOnCurve(T)) {   // Something went horribly, horribly wrong.
+    if (m % n == BigInteger::ZERO || point == PAI) {
+        std::cout << " m mod n = 0 or point = PAI. Returning PAI." << std::endl;
+        return PAI;
+    }
+
+    std::cout << "m = " << m << std::endl;
+    if (m < BigInteger::ZERO) {
+        // k * point = -k * (-point)
+        std::cout << "Negating." << std::endl;
+        Point neg = { point.x, -point.y % p };
+        if (!isOnCurve(neg)) {   // Something went horribly, horribly wrong.
+            throw IllegalStateException("Point negation off curve");
+        }
+        return scalarMultiply(-m, neg);
+    }
+
+    Point result = PAI;
+    Point addend = point;
+    BigInteger k(m);
+
+    int i = 0;
+    while (k != BigInteger::ZERO) {
+        if ((k & BigInteger::ONE) != BigInteger::ZERO) {
+            // Add.
+            result = pointAdd(result, addend);
+        }
+
+        // Double.
+        addend = pointAdd(addend, addend);
+
+        k = k >> 1;
+        std::cout << ++i << ": result = " << result.x << ", " << result.y << std::endl;
+        std::cout << i << ": addend = " << addend.x << ", " << addend.y << std::endl;
+    }
+
+
+    if (!isOnCurve(result)) {   // Something went horribly, horribly wrong.
         throw IllegalStateException("Invalid scalar multiplication result");
     }
 
-    return T;
+    return result;
 
 }
 

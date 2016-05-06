@@ -19,12 +19,12 @@ class DHKeyExchange {
         DHKeyExchange& operator= (const DHKeyExchange& other);
 
     public:
-        BigInteger generatePublicKey();
-        BigInteger getGenerator() const;
-        BigInteger getModulus() const;
-        BigInteger getPublicKey() const;
-        BigInteger getSecret();
-        BigInteger getSecret(const BigInteger& fpk);
+        const BigInteger& generatePublicKey();
+        const BigInteger& getGenerator() const;
+        const BigInteger& getModulus() const;
+        const BigInteger& getPublicKey() const;
+        const BigInteger& getSecret();
+        const BigInteger& getSecret(const BigInteger& fpk);
         void setBitsize(int b);
         void setGenerator(const BigInteger& gen);
         void setModulus(const BigInteger& mod);

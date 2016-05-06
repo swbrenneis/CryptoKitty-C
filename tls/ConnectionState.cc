@@ -3,6 +3,7 @@
 #include "mac/HMAC.h"
 #include "exceptions/tls/StateException.h"
 #include "exceptions/BadParameterException.h"
+#include <iostream>
 
 namespace CKTLS {
 
@@ -21,15 +22,38 @@ ConnectionState::ConnectionState()
 ConnectionState::~ConnectionState() {
 }
 
+ConnectionState::ConnectionState(const ConnectionState& other)
+: initialized(false),
+  entity(other.entity),
+  prf(other.prf),
+  cipher(other.cipher),
+  mode(other.mode),
+  mac(other.mac),
+  compression(other.compression),
+  encryptionKeyLength(other.encryptionKeyLength),
+  blockLength(other.blockLength),
+  fixedIVLength(other.fixedIVLength),
+  recordIVLength(other.recordIVLength),
+  macLength(other.macLength),
+  macKeyLength(other.macKeyLength),
+  masterSecret(other.masterSecret),
+  clientRandom(other.clientRandom),
+  serverRandom(other.serverRandom),
+  clientWriteMACKey(other.clientWriteMACKey),
+  serverWriteMACKey(other.serverWriteMACKey),
+  clientWriteKey(other.clientWriteKey),
+  serverWriteKey(other.serverWriteKey),
+  clientWriteIV(other.clientWriteIV),
+  serverWriteIV(other.serverWriteIV),
+  sequenceNumber(other.sequenceNumber) {
+  }
+
 /*
  * Generate the master secret and the client and server write keys.
  */
 void ConnectionState::generateKeys(const CK::ByteArray& premasterSecret) {
 
-    if (premasterSecret.getLength() < 48) {
-        throw CK::BadParameterException("Invalid premaster key length");
-    }
-
+    masterSecret.clear();
     CK::HMAC prf(new CK::SHA256);
     prf.setKey(premasterSecret);
     CK::ByteArray seed("master secret");
@@ -44,6 +68,7 @@ void ConnectionState::generateKeys(const CK::ByteArray& premasterSecret) {
         masterSecret.append(phash);
     }
     masterSecret = masterSecret.range(0, 48);
+    std::cout << "Master Secret = " << masterSecret << std::endl;
 
     prf.setKey(masterSecret);
     unsigned keyLength = (encryptionKeyLength + fixedIVLength
@@ -80,7 +105,7 @@ const CK::ByteArray& ConnectionState::getClientRandom() const {
 ConnectionState *ConnectionState::getCurrentRead() {
 
     if (currentRead == 0) {
-        currentRead = new ConnectionState;
+        throw StateException("Current state not valid");
     }
 
     return currentRead;
@@ -90,7 +115,7 @@ ConnectionState *ConnectionState::getCurrentRead() {
 ConnectionState *ConnectionState::getCurrentWrite() {
 
     if (currentWrite == 0) {
-        currentWrite = new ConnectionState;
+        throw StateException("Current state not valid");
     }
 
     return currentWrite;
@@ -153,11 +178,8 @@ void ConnectionState::promoteRead() {
         throw StateException("Pending read state not initialized.");
     }
 
-    pendingRead->sequenceNumber = currentRead->sequenceNumber;
     delete currentRead;
-    currentRead = pendingRead;
-    pendingRead = new ConnectionState;
-    pendingRead->entity = currentRead->entity;
+    currentRead = new ConnectionState(*pendingRead);
 
 }
 
@@ -171,11 +193,8 @@ void ConnectionState::promoteWrite() {
         throw StateException("Pending write state not initialized.");
     }
 
-    pendingWrite->sequenceNumber = currentWrite->sequenceNumber;
     delete currentWrite;
-    currentWrite = pendingWrite;
-    pendingWrite = new ConnectionState;
-    pendingWrite->entity = currentWrite->entity;
+    currentWrite = new ConnectionState(*pendingWrite);
 
 }
 

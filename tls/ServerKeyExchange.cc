@@ -13,13 +13,13 @@
 
 namespace CKTLS {
 
-// Static initilization.
+// Static initialization.
 KeyExchangeAlgorithm ServerKeyExchange::algorithm;
 
 ServerKeyExchange::ServerKeyExchange() {
 
-    clientRandom = ConnectionState::getCurrentRead()->getClientRandom();
-    serverRandom = ConnectionState::getCurrentRead()->getServerRandom();
+    clientRandom = ConnectionState::getPendingRead()->getClientRandom();
+    serverRandom = ConnectionState::getPendingRead()->getServerRandom();
     rsaKey = ServerCertificate::getRSAPrivateKey();
 
 }
@@ -30,11 +30,85 @@ ServerKeyExchange::~ServerKeyExchange() {
 void ServerKeyExchange::decode(const CK::ByteArray& encoded) {
 
     switch (algorithm) {
+        case dhe_rsa:
+            decodeDH(encoded);
+            break;
         case ec_diffie_hellman:
             decodeECDH(encoded);
             break;
         default:
             throw RecordException("Invalid key exchange algorithm");
+    }
+
+}
+
+void ServerKeyExchange::decodeDH(const CK::ByteArray& encoded) {
+
+    CK::ByteArray serverDHParams;
+
+    uint32_t index = 0;
+    serverDHParams.append(encoded.range(index, 2));
+    CK::Unsigned16 len(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += 2;
+    uint16_t length = len.getUnsignedValue();
+    serverDHParams.append(encoded.range(index, length));
+    dP.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
+    index += length;
+
+    serverDHParams.append(encoded.range(index, 2));
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += 2;
+    length = len.getUnsignedValue();
+    serverDHParams.append(encoded.range(index, length));
+    dG.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
+    index += length;
+
+    serverDHParams.append(encoded.range(index, 2));
+    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += 2;
+    length = len.getUnsignedValue();
+    serverDHParams.append(encoded.range(index, length));
+    dYs.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
+    index += length;
+
+    CK::ByteArray hash(clientRandom);
+    hash.append(serverRandom);
+    hash.append(serverDHParams);
+
+    HashAlgorithm ha = static_cast<HashAlgorithm>(encoded[index++]);
+    CK::Digest *digest;
+    switch (ha) {
+        case sha256:
+            digest = new CK::SHA256;
+            break;
+        case sha384:
+            digest = new CK::SHA384;
+            break;
+        case sha512:
+            digest = new CK::SHA512;
+            break;
+        default:
+            throw EncodingException("Unsupported signature hash algorithm");
+    }
+
+    SignatureAlgorithm sa = static_cast<SignatureAlgorithm>(encoded[index++]);
+    CK::Unsigned16 siglen(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += 2;
+    CK::ByteArray sig(encoded.range(index, siglen.getUnsignedValue()));
+
+    switch (sa) {
+        case rsa:
+            {
+            CK::PKCS1rsassa sign(digest);
+            CK::RSAPublicKey *pubKey = ServerCertificate::getRSAPublicKey();
+            if (!sign.verify(*pubKey, hash, sig)) {
+                dYs = CK::BigInteger::ZERO;
+                throw EncodingException("Key not verified");
+            }
+            }
+            break;
+        default:
+            throw EncodingException("Unsupported signature algorithm");
     }
 
 }
@@ -116,6 +190,15 @@ void ServerKeyExchange::decodeECDH(const CK::ByteArray& encoded) {
                     primeP = CK::ECDHKeyExchange::SECP384R1.p;
                     cofactor = CK::ECDHKeyExchange::SECP384R1.h;
                     break;
+                case secp256k1:
+                    order = CK::ECDHKeyExchange::SECP256K1.n;
+                    curve.a = CK::ECDHKeyExchange::SECP256K1.a;
+                    curve.b = CK::ECDHKeyExchange::SECP256K1.b;
+                    baseX = CK::ECDHKeyExchange::SECP256K1.xG;
+                    baseY = CK::ECDHKeyExchange::SECP256K1.yG;
+                    primeP = CK::ECDHKeyExchange::SECP256K1.p;
+                    cofactor = CK::ECDHKeyExchange::SECP256K1.h;
+                    break;
                 default:
                     throw EncodingException("Invalid named curve");
             }
@@ -180,12 +263,52 @@ CK::ByteArray ServerKeyExchange::encode() const {
     CK::ByteArray encoded;
 
     switch (algorithm) {
+        case dhe_rsa:
+            encoded.append(encodeDH());
+            break;
         case ec_diffie_hellman:
             encoded.append(encodeECDH());
             break;
         default:
             throw RecordException("Invalid key exchange algorithm");
     }
+
+    return encoded;
+
+}
+
+CK::ByteArray ServerKeyExchange::encodeDH() const {
+
+    CK::ByteArray encoded;
+
+    CK::ByteArray serverDHParams;
+    CK::ByteArray p(dP.getEncoded(CK::BigInteger::BIGENDIAN));
+    CK::Unsigned16 len(p.getLength());
+    serverDHParams.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    serverDHParams.append(p);
+    CK::ByteArray g(dG.getEncoded(CK::BigInteger::BIGENDIAN));
+    len.setValue(g.getLength());
+    serverDHParams.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    serverDHParams.append(g);
+    CK::ByteArray pk(dYs.getEncoded(CK::BigInteger::BIGENDIAN));
+    len.setValue(pk.getLength());
+    serverDHParams.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    serverDHParams.append(pk);
+    encoded.append(serverDHParams);
+
+    CK::ByteArray hash(clientRandom);
+    hash.append(serverRandom);
+    hash.append(serverDHParams);
+
+    CK::PKCS1rsassa sign(new CK::SHA256);
+    CK::ByteArray sig(sign.sign(*rsaKey, hash));
+
+
+    CK::Unsigned16 siglen(sig.getLength());
+    encoded.append(sha256);
+    encoded.append(rsa);
+    encoded.append(siglen.getEncoded(CK::Unsigned16::BIGENDIAN));
+    encoded.append(sig);
 
     return encoded;
 
@@ -278,9 +401,36 @@ CK::ECDHKeyExchange::CurveParams ServerKeyExchange::getCurve() const {
 
 }
 
+const CK::BigInteger& ServerKeyExchange::getDHGenerator() const {
+
+    return dG;
+
+}
+
+const CK::BigInteger& ServerKeyExchange::getDHModulus() const {
+
+    return dP;
+
+}
+
+const CK::BigInteger& ServerKeyExchange::getDHPublicKey() const {
+
+    return dYs;
+
+}
+
 const CK::ByteArray& ServerKeyExchange::getECPublicKey() const {
 
     return ecPublicKey;
+
+}
+
+void ServerKeyExchange::initState(const CK::BigInteger& g, const CK::BigInteger& p,
+                                                    const CK::BigInteger& pk) {
+
+    dP = p;
+    dG = g;
+    dYs = pk;
 
 }
 

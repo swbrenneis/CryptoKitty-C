@@ -16,12 +16,6 @@ class ConnectionState {
         ~ConnectionState();
 
     public:
-        /*PRFAlgorithm getPRFAlgorithm() const;
-        BulkCipherAlgorithm getBulkCipherAlgorithm() const;
-        CipherType getCipherType() const;
-        MACAlgorithm getMACAlgorithm() const;
-        CompressionMethod getCompressionMethod() const;*/
-
         void generateKeys(const CK::ByteArray& premasterSecret);
         // Get the client random bytes for signatures.
         const CK::ByteArray& getClientRandom() const;
