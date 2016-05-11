@@ -15,9 +15,12 @@ class ServerHelloDone : public HandshakeBody {
         ServerHelloDone(const ServerHelloDone& other);
         ServerHelloDone& operator= (const ServerHelloDone& other);
 
-        void decode(const CK::ByteArray& stream) {}
-        CK::ByteArray encode() const { return CK::ByteArray(0); }
+    public:
+        const CK::ByteArray& encode() { return encoded; }
         void initState() {}
+
+    protected:
+        void decode() {}
 
 };
 

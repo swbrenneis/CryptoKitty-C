@@ -2,8 +2,6 @@
 #include "exceptions/IllegalStateException.h"
 #include "exceptions/BadParameterException.h"
 #include "random/SecureRandom.h"
-#include "random/CMWCRandom.h"
-#include "data/NanoTime.h"
 #include "digest/Digest.h"
 
 namespace CK {
@@ -40,11 +38,7 @@ ByteArray HMAC::generateKey(unsigned bitsize) {
         throw BadParameterException("Invalid key size");
     }
 
-    CMWCRandom rnd;
-    NanoTime nt;
-    rnd.setSeed(nt.getFullTime());
-    SecureRandom* secure = SecureRandom::getSecureRandom("BBS");
-    secure->setSeed(rnd.nextLong());
+    SecureRandom* secure = SecureRandom::getSecureRandom("Fortuna");
     K.setLength(bitsize / 8);
     secure->nextBytes(K);
     return K;

@@ -14,7 +14,7 @@ ClientKeyExchange::ClientKeyExchange() {
 ClientKeyExchange::~ClientKeyExchange() {
 }
 
-void ClientKeyExchange::decode(const CK::ByteArray& encoded) {
+void ClientKeyExchange::decode() {
 
     switch (algorithm) {
         case dhe_rsa:
@@ -39,9 +39,7 @@ void ClientKeyExchange::decodeDH(const CK::ByteArray& encoded) {
 void ClientKeyExchange::decodeECDH(const CK::ByteArray& encoded) {
 }
 
-CK::ByteArray ClientKeyExchange::encode() const {
-
-    CK::ByteArray encoded;
+const CK::ByteArray& ClientKeyExchange::encode() {
 
     switch (algorithm) {
         case dhe_rsa:

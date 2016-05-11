@@ -25,15 +25,19 @@ class ServerCertificate : public HandshakeBody {
                                             subkey_cert_fingerprint=3 };
 
     public:
+#ifdef _DEBUG
         void debugOut(std::ostream& out);
-        void decode(const CK::ByteArray& encoded);
-        CK::ByteArray encode() const;
+#endif
+        const CK::ByteArray& encode();
         static CK::RSAPrivateKey *getRSAPrivateKey();
         static CK::RSAPublicKey *getRSAPublicKey();
         void initState();
         void setKeyID(uint64_t id);
         void setCertificate(PGPCertificate *c);
         static void setRSAPrivateKey(CK::RSAPrivateKey *pk);
+
+    protected:
+        void decode();
 
     private:
         PGPCertificate *cert;

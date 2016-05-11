@@ -23,8 +23,7 @@ class ServerKeyExchange : public HandshakeBody {
         ServerKeyExchange& operator= (const ServerKeyExchange& other);
 
     public:
-        void decode(const CK::ByteArray& encoded);
-        CK::ByteArray encode() const;
+        const CK::ByteArray& encode();
         CK::ECDHKeyExchange::CurveParams getCurve() const;
         const CK::BigInteger& getDHGenerator() const;
         const CK::BigInteger& getDHModulus() const;
@@ -38,11 +37,14 @@ class ServerKeyExchange : public HandshakeBody {
                                                 const CK::BigInteger& pk);
         static void setAlgorithm(KeyExchangeAlgorithm alg);
 
+    protected:
+        void decode();
+
     private:
-        void decodeDH(const CK::ByteArray& encoded);
-        void decodeECDH(const CK::ByteArray& encoded);
-        CK::ByteArray encodeDH() const;
-        CK::ByteArray encodeECDH() const;
+        void decodeDH();
+        void decodeECDH();
+        void encodeDH();
+        void encodeECDH();
 
     private:
         static KeyExchangeAlgorithm algorithm;

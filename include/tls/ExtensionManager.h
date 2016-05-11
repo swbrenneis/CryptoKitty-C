@@ -21,15 +21,17 @@ class ExtensionManager {
 
     public:
         ExtensionManager();
+        ExtensionManager(const ExtensionManager& other);
         ~ExtensionManager();
 
     private:
-        ExtensionManager(const ExtensionManager& other);
         ExtensionManager& operator= (const ExtensionManager& other);
 
     public:
         void addExtension(const Extension& ext);
+#ifdef _DEBUG
         void debugOut(std::ostream& out) const;
+#endif
         void decode(const CK::ByteArray& encoded);
         CK::ByteArray encode() const;
         const Extension& getExtension(uint16_t etype) const;

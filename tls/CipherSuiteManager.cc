@@ -23,6 +23,10 @@ CipherSuiteManager::CipherSuiteManager() {
 
 }
 
+CipherSuiteManager::CipherSuiteManager(const CipherSuiteManager& other)
+: suites(other.suites) {
+}
+
 CipherSuiteManager::~CipherSuiteManager() {
 }
 
@@ -42,6 +46,8 @@ void CipherSuiteManager::initialize() {
 
 
 }
+
+#ifdef _DEBUG
 void CipherSuiteManager::debugOut(std::ostream& out) const {
 
     for (CipherConstIter it = suites.begin(); it != suites.end(); ++it) {
@@ -56,7 +62,7 @@ void CipherSuiteManager::debugOut(std::ostream& out) const {
             else {
                 c = (c - 0x0a) + 'a';
             }
-            std::cout << c;
+            out << c;
             c = csb[i] & 0x0f;
             if (c < 0x0a) {
                 c = c + '0';
@@ -64,12 +70,13 @@ void CipherSuiteManager::debugOut(std::ostream& out) const {
             else {
                 c = (c - 0x0a) + 'a';
             }
-            std::cout << c;
+            out << c;
         }
-        std::cout << std::endl;
+        out << std::endl;
     }
 
 }
+#endif
 
 void CipherSuiteManager::decode(const CK::ByteArray& encoded) {
 

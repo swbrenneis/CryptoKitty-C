@@ -14,17 +14,22 @@ class ClientHello : public HandshakeBody {
     public:
         ClientHello();
         ~ClientHello();
+        ClientHello(const ClientHello& other);
 
     public:
+#ifdef _DEBUG
         void debugOut(std::ostream& out);
-        void decode(const CK::ByteArray& stream);
-        CK::ByteArray encode() const;
+#endif
+        const CK::ByteArray& encode();
         bool getExtension(uint16_t etype, Extension& ex) const;
         uint8_t getMajorVersion() const;
         uint8_t getMinorVersion() const;
         const CK::ByteArray& getRandom() const;
         void initState();
         CipherSuite getPreferred() const;
+
+    protected:
+        void decode();
 
     private:
         uint32_t gmt;

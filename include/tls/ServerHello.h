@@ -18,13 +18,17 @@ class ServerHello : public HandshakeBody {
         ~ServerHello();
 
     public:
+#ifdef _DEBUG
         void debugOut(std::ostream& out);
-        void decode(const CK::ByteArray& stream);
-        CK::ByteArray encode() const;
+#endif
+        const CK::ByteArray& encode();
         CipherSuite getCipherSuite() const;
         const CK::ByteArray& getRandom() const;
         void initState();
         void initState(const ClientHello& hello);
+
+    protected:
+        void decode();
 
     private:
         uint32_t gmt;

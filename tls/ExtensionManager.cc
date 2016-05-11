@@ -12,6 +12,10 @@ const Extension ExtensionManager::dummy = { CK::Unsigned16(0xffff), CK::ByteArra
 ExtensionManager::ExtensionManager() {
 }
 
+ExtensionManager::ExtensionManager(const ExtensionManager& other)
+: extensions(other.extensions) {
+}
+
 ExtensionManager::~ExtensionManager() {
 }
 
@@ -21,6 +25,7 @@ void ExtensionManager::addExtension(const Extension& ext) {
 
 }
 
+#ifdef _DEBUG
 void ExtensionManager::debugOut(std::ostream& out) const {
 
     for (ExtConstIter it = extensions.begin(); it != extensions.end(); ++it) {
@@ -29,6 +34,7 @@ void ExtensionManager::debugOut(std::ostream& out) const {
     }
 
 }
+#endif
 
 void ExtensionManager::decode(const CK::ByteArray& encoded) {
 

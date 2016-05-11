@@ -23,6 +23,7 @@ ServerHello::ServerHello()
 ServerHello::~ServerHello() {
 }
 
+#ifdef _DEBUG
 void ServerHello::debugOut(std::ostream& out) {
 
     out << "server_hello" << std::endl;
@@ -37,8 +38,9 @@ void ServerHello::debugOut(std::ostream& out) {
     extensions.debugOut(out);
 
 }
+#endif
 
-void ServerHello::decode(const CK::ByteArray& encoded) {
+void ServerHello::decode() {
 
     unsigned index = 0;
     // Protocol version
@@ -89,10 +91,7 @@ void ServerHello::decode(const CK::ByteArray& encoded) {
 
 }
 
-CK::ByteArray ServerHello::encode() const {
-
-    // First three bytes are for 24 bit length.
-    CK::ByteArray encoded;
+const CK::ByteArray& ServerHello::encode() {
 
     encoded.append(majorVersion);
     encoded.append(minorVersion);
@@ -145,7 +144,7 @@ void ServerHello::initState(const ClientHello& hello) {
 
     gmt = time(0);
     CK::SecureRandom *rnd =
-            CK::SecureRandom::getSecureRandom("BBS");
+            CK::SecureRandom::getSecureRandom("Fortuna");
     rnd->nextBytes(random);
     delete rnd;
 

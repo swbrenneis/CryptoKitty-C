@@ -15,7 +15,7 @@ FortunaGenerator *FortunaSecureRandom::generator = 0;
 
 FortunaSecureRandom::FortunaSecureRandom() {
 
-    Lock lock(new Mutex);
+    Lock lock();
 
     if (!initialized) {
         initialize();

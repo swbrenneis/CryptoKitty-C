@@ -3,8 +3,12 @@
 
 namespace CKTLS {
 
+Alert::Alert()
+: RecordProtocol(alert) {
+}
+
 Alert::Alert(AlertDescription d, bool f)
-: Plaintext(alert),
+: RecordProtocol(alert),
   desc(d) {
 
     level = f ? fatal : warning;
@@ -58,25 +62,35 @@ void Alert::decode() {
 
 }
 
-CK::ByteArray Alert::encode() {
+void Alert::encode() {
 
-    CK::ByteArray alert(2);
-    alert[0] = level;
-    alert[1] = desc;
-
-    return alert;
+    //CK::ByteArray alert(2);
+    //alert[0] = level;
+    //alert[1] = desc;
 
 }
 
-Alert::AlertDescription Alert::getDescription() const {
+AlertDescription Alert::getDescription() const {
 
     return desc;
 
 }
 
-bool Alert::isFatal() const {
+AlertLevel Alert::getLevel() const {
 
-    return level == fatal;
+    return level;
+
+}
+
+void Alert::setDescription(AlertDescription d) {
+
+    desc = d;
+
+}
+
+void Alert::setLevel(AlertLevel l) {
+
+    level = l;
 
 }
 

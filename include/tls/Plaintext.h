@@ -1,48 +1,23 @@
 #ifndef PLAINTEXT_H_INCLUDED
 #define PLAINTEXT_H_INCLUDED
 
+#include "tls/RecordProtocol.h"
 #include "data/ByteArray.h"
 #include <cstdint>
 
 namespace CKTLS {
 
-class Plaintext {
-
-    public:
-        enum ContentType { change_cipher_spec=20, alert=21, handshake=22,
-                            application_data=23 };
+class Plaintext : public RecordProtocol {
 
     protected:
-        Plaintext(ContentType c);
-        Plaintext(const Plaintext& other);
+        Plaintext();
 
     private:
-        Plaintext();
+        Plaintext(const Plaintext& other);
         Plaintext& operator= (const Plaintext& other);
 
     public:
         virtual ~Plaintext();
-
-    public:
-        ContentType decodePreamble(const CK::ByteArray& encoded);
-        virtual void decode()=0;
-        virtual CK::ByteArray encode()=0;
-        uint16_t getFragmentLength() const;
-        ContentType getContentType() const;
-        void setFragment(const CK::ByteArray& frag);
-
-    protected:
-        CK::ByteArray encodePreamble() const;
-
-    protected:
-        ContentType content;
-        uint8_t recordMajorVersion;
-        uint8_t recordMinorVersion;
-        uint16_t fragLength;
-        CK::ByteArray fragment;
-
-        static const uint8_t MAJOR;
-        static const uint8_t MINOR;
 
 };
 

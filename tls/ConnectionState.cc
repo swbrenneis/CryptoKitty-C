@@ -16,6 +16,7 @@ ConnectionState *ConnectionState::pendingWrite = 0;
 ConnectionState::ConnectionState()
 : initialized(false),
   prf(tls_prf_sha256),
+  compression(cm_null),
   sequenceNumber(0) {
 }
 
@@ -45,8 +46,20 @@ ConnectionState::ConnectionState(const ConnectionState& other)
   serverWriteKey(other.serverWriteKey),
   clientWriteIV(other.clientWriteIV),
   serverWriteIV(other.serverWriteIV),
-  sequenceNumber(other.sequenceNumber) {
+  sequenceNumber(0) {
   }
+
+/*
+ * Copies the pending write state to the pending read state.
+ */
+void ConnectionState::copyWriteToRead() {
+
+    ConnectionEnd end = pendingRead->entity;
+    delete pendingRead;
+    pendingRead = new ConnectionState(*pendingWrite);
+    pendingRead->entity = end;
+
+}
 
 /*
  * Generate the master secret and the client and server write keys.
@@ -68,7 +81,7 @@ void ConnectionState::generateKeys(const CK::ByteArray& premasterSecret) {
         masterSecret.append(phash);
     }
     masterSecret = masterSecret.range(0, 48);
-    std::cout << "Master Secret = " << masterSecret << std::endl;
+    //std::cout << "Master Secret = " << masterSecret << std::endl;
 
     prf.setKey(masterSecret);
     unsigned keyLength = (encryptionKeyLength + fixedIVLength
@@ -93,6 +106,18 @@ void ConnectionState::generateKeys(const CK::ByteArray& premasterSecret) {
                                                 fixedIVLength);
     clientWriteIV = keyBytes.range((macKeyLength*2)+(encryptionKeyLength*2)
                                                 +fixedIVLength,fixedIVLength);
+
+}
+
+BulkCipherAlgorithm ConnectionState::getCipherAlgorithm() const {
+
+    return cipher;
+
+}
+
+CipherType ConnectionState::getCipherType() const {
+
+    return mode;
 
 }
 
@@ -122,6 +147,30 @@ ConnectionState *ConnectionState::getCurrentWrite() {
 
 }
 
+const CK::ByteArray& ConnectionState::getEncryptionKey() const {
+
+    return entity == server ? clientWriteKey : serverWriteKey;
+
+}
+
+uint32_t ConnectionState::getEncryptionKeyLength() const {
+
+    return encryptionKeyLength * 8;
+
+}
+
+const CK::ByteArray& ConnectionState::getIV() const {
+
+    return entity == server ? clientWriteIV : serverWriteIV;
+
+}
+
+const CK::ByteArray& ConnectionState::getMacKey() const {
+
+    return entity == server ? clientWriteMACKey : serverWriteMACKey;
+
+}
+
 /*
  * Return the connection entity.
  */
@@ -131,6 +180,23 @@ ConnectionEnd ConnectionState::getEntity() const {
 
 }
 
+MACAlgorithm ConnectionState::getHMAC() const {
+
+    return mac;
+
+}
+
+uint32_t ConnectionState::getMacKeyLength() const {
+
+    return macKeyLength;
+
+}
+
+const CK::ByteArray& ConnectionState::getMasterSecret() const {
+
+    return masterSecret;
+
+}
 
 ConnectionState *ConnectionState::getPendingRead() {
 
@@ -153,18 +219,26 @@ ConnectionState *ConnectionState::getPendingWrite() {
 }
 
 /*
- * Manages the sequence number. Returns the current value
- * and then increments it.
+ * Returns the current sequence number.
  */
-int64_t ConnectionState::getSequenceNumber() {
+int64_t ConnectionState::getSequenceNumber() const {
 
-    return sequenceNumber++;
+    return sequenceNumber;
 
 }
 
 const CK::ByteArray& ConnectionState::getServerRandom() const {
 
     return serverRandom;
+
+}
+
+/*
+ * Increments the current sequence number.
+ */
+void ConnectionState::incrementSequence() {
+
+    sequenceNumber++;
 
 }
 
@@ -198,15 +272,104 @@ void ConnectionState::promoteWrite() {
 
 }
 
+void ConnectionState::setCipherAlgorithm(BulkCipherAlgorithm alg) {
+
+    cipher = alg;
+
+    switch (cipher) {
+        case rc4:
+            // TODO
+            break;
+        case tdes:
+            // TODO
+            break;
+        case aes:
+            blockLength = 16;
+            if (mode == block) {
+                fixedIVLength = 16;
+            }
+            break;
+        default:
+            throw StateException("Invalid block cipher algorithm");
+    }
+
+}
+
+void ConnectionState::setCipherType(CipherType type) {
+
+    mode = type;
+
+    switch (mode) {
+        case stream:
+            // Needs RC4 cipher.
+            break;
+        case block:
+            // CBC mode. IV length = cipher block lenght
+            break;
+        case aead:
+            // GCM mode. IV length = 12 for performance reasons.
+            fixedIVLength = 12;
+            break;
+        default:
+            throw StateException("Invalid HMAC algorithm");
+    }
+
+}
+
 void ConnectionState::setClientRandom(const CK::ByteArray& rnd) {
 
     clientRandom = rnd;
 
 }
 
+void ConnectionState::setEncryptionKeyLength(uint32_t keyLength) {
+
+    if (keyLength % 8 != 0) {
+        throw CK::BadParameterException("Invalid key size");
+    }
+
+    encryptionKeyLength = keyLength / 8;
+
+}
+
 void ConnectionState::setEntity(ConnectionEnd end) {
 
     entity = end;
+
+}
+
+void ConnectionState::setHMAC(MACAlgorithm m) {
+
+    mac = m;
+
+    switch (mac) {
+        case mac_null:
+            macLength = 0;
+            break;
+        case hmac_md5:
+            macLength = macKeyLength = 16;
+            break;
+        case hmac_sha1:
+            macLength = macKeyLength = 20;
+            break;
+        case hmac_sha256:
+            macLength = macKeyLength = 32;
+            break;
+        case hmac_sha384:
+            macLength = macKeyLength = 48;
+            break;
+        case hmac_sha512:
+            macLength = macKeyLength = 64;
+            break;
+        default:
+            throw StateException("Invalid HMAC algorithm");
+    }
+
+}
+
+void ConnectionState::setInitialized() {
+
+    initialized = true;
 
 }
 

@@ -200,11 +200,11 @@ void AES::Cipher(const ByteArray& plaintext, const Word *keySchedule) {
 ByteArray AES::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
 
     if (ciphertext.getLength() != Nb * 4) {
-        throw BadParameterException("encrypt: Illegal ciphertext size");
+        throw BadParameterException("decrypt: Illegal ciphertext size");
     }
 
     if (key.getLength() != keySize) {
-        throw BadParameterException("encrypt: Invalid key");
+        throw BadParameterException("decrypt: Invalid key");
     }
 
     Word *keySchedule = new Word[keyScheduleSize];

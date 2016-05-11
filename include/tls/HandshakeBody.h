@@ -9,16 +9,26 @@ namespace CKTLS {
 class HandshakeBody {
 
     protected:
-        HandshakeBody() {}
+        HandshakeBody();
 
     public:
-        virtual ~HandshakeBody() {}
+        virtual ~HandshakeBody();
+
+    private:
+        HandshakeBody(const HandshakeBody& other);
+        HandshakeBody& operator= (const HandshakeBody& other);
 
     public:
         virtual void debugOut(std::ostream& out) {}
-        virtual void decode(const CK::ByteArray& stream)=0;
-        virtual CK::ByteArray encode() const=0;
+        virtual void decode(const CK::ByteArray& stream);
+        virtual const CK::ByteArray& encode()=0;
         virtual void initState()=0;
+
+    protected:
+        virtual void decode()=0;
+
+    protected:
+        CK::ByteArray encoded;
 
 };
 

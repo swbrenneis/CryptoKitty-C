@@ -7,7 +7,6 @@
 #include "data/Unsigned64.h"
 #include "data/NanoTime.h"
 #include "cthread/Lock.h"
-#include "cthread/Mutex.h"
 #include <fstream>
 #include <cmath>
 
@@ -82,7 +81,7 @@ void FortunaGenerator::reseed(const ByteArray& seed) {
 
 void FortunaGenerator::start() {
 
-    Lock lock(new Mutex);
+    Lock lock();
 
     if (!run) {
         // Initialize pools

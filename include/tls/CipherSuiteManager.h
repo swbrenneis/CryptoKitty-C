@@ -20,14 +20,16 @@ class CipherSuiteManager {
 
     public:
         CipherSuiteManager();
+        CipherSuiteManager(const CipherSuiteManager& other);
         ~CipherSuiteManager();
 
     private:
-        CipherSuiteManager(const CipherSuiteManager& other);
         CipherSuiteManager& operator= (const CipherSuiteManager& other);
 
     public:
+#ifdef _DEBUG
         void debugOut(std::ostream& out) const;
+#endif
         void decode(const CK::ByteArray& encoded);
         CK::ByteArray encode() const;
         CipherSuite getServerSuite() const;

@@ -23,8 +23,7 @@ class ClientKeyExchange : public HandshakeBody {
         ClientKeyExchange& operator= (const ClientKeyExchange& other);
 
     public:
-        void decode(const CK::ByteArray& encoded);
-        CK::ByteArray encode() const;
+        const CK::ByteArray& encode();
         const CK::BigInteger& getDHPublicKey() const;
         const CK::ByteArray& getECPublicKey() const;
         void initState() {}
@@ -33,6 +32,9 @@ class ClientKeyExchange : public HandshakeBody {
                                                 const CK::ByteArray& pk);
         void initState(const CK::BigInteger& pk);
         static void setAlgorithm(KeyExchangeAlgorithm alg);
+
+    protected:
+        void decode();
 
     private:
         void decodeDH(const CK::ByteArray& encoded);

@@ -18,6 +18,7 @@ ServerCertificate::ServerCertificate()
 ServerCertificate::~ServerCertificate() {
 }
 
+#ifdef _DEBUG
 void ServerCertificate::debugOut(std::ostream& out) {
 
     out << "certificate" << std::endl;
@@ -38,8 +39,9 @@ void ServerCertificate::debugOut(std::ostream& out) {
     out << "Certificate: " << std::endl;
 
 }
+#endif
 
-void ServerCertificate::decode(const CK::ByteArray& encoded) {
+void ServerCertificate::decode() {
 
     type = static_cast<OpenPGPCertDescriptorType>(encoded[0]);
     if (type != subkey_cert) {
@@ -58,9 +60,7 @@ void ServerCertificate::decode(const CK::ByteArray& encoded) {
 
 }
 
-CK::ByteArray ServerCertificate::encode() const {
-
-    CK::ByteArray encoded;
+const CK::ByteArray& ServerCertificate::encode() {
 
     encoded.append(type);
     CK::Unsigned64 id(keyID);

@@ -2,7 +2,7 @@
 #define HANDSHAKERECORD_H_INCLUDED
 
 #include "data/ByteArray.h"
-#include "tls/Plaintext.h"
+#include "tls/RecordProtocol.h"
 #include "tls/Constants.h"
 
 namespace CKTLS {
@@ -10,7 +10,7 @@ namespace CKTLS {
 class HandshakeBody;
 class ConnectionState;
 
-class HandshakeRecord : public Plaintext {
+class HandshakeRecord : public RecordProtocol {
 
     public:
         HandshakeRecord();
@@ -20,14 +20,17 @@ class HandshakeRecord : public Plaintext {
         ~HandshakeRecord();
 
     public:
-        void decode();
-        CK::ByteArray encode();
         HandshakeBody *getBody();
-        HandshakeType getType() const;
+        HandshakeType getHandshakeType() const;
+
+    protected:
+        void decode();
+        void encode();
 
     private:
         HandshakeBody *body;
         HandshakeType type;
+        CK::ByteArray encoded;
 
 };
 

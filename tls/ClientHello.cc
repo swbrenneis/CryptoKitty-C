@@ -18,9 +18,21 @@ ClientHello::ClientHello()
   minorVersion(MINOR) {
 }
 
+ClientHello::ClientHello(const ClientHello& other) 
+: gmt(other.gmt),
+  random(other.random),
+  sessionID(other.sessionID),
+  majorVersion(other.majorVersion),
+  minorVersion(other.minorVersion),
+  compressionMethods(other.compressionMethods),
+  suites(other.suites),
+  extensions(other.extensions) {
+}
+
 ClientHello::~ClientHello() {
 }
 
+#ifdef _DEBUG
 void ClientHello::debugOut(std::ostream& out) {
 
     out << "client_hello" << std::endl;
@@ -35,8 +47,9 @@ void ClientHello::debugOut(std::ostream& out) {
     extensions.debugOut(out);
 
 }
+#endif
 
-void ClientHello::decode(const CK::ByteArray& encoded) {
+void ClientHello::decode() {
 
     unsigned index = 0;
     // Protocol version
@@ -87,9 +100,7 @@ void ClientHello::decode(const CK::ByteArray& encoded) {
 
 }
 
-CK::ByteArray ClientHello::encode() const {
-
-    CK::ByteArray encoded;
+const CK::ByteArray& ClientHello::encode() {
 
     encoded.append(majorVersion);
     encoded.append(minorVersion);

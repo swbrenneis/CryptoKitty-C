@@ -21,7 +21,7 @@ class SHA384 : public DigestBase {
 
     public:
         uint32_t getBlockSize() const { return 64; }
-        uint32_t getDigestLength() const { return 64; }
+        uint32_t getDigestLength() const { return 48; }
 
     protected:
         ByteArray finalize(const ByteArray& bytes) const;

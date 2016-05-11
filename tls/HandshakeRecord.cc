@@ -6,6 +6,7 @@
 #include "tls/ServerHelloDone.h"
 #include "tls/ServerKeyExchange.h"
 #include "tls/ClientKeyExchange.h"
+#include "tls/Finished.h"
 #include "tls/ConnectionState.h"
 #include "data/Unsigned16.h"
 #include "data/Unsigned32.h"
@@ -14,12 +15,12 @@
 namespace CKTLS {
 
 HandshakeRecord::HandshakeRecord()
-: Plaintext(handshake),
+: RecordProtocol(handshake),
   body(0) {
 }
 
 HandshakeRecord::HandshakeRecord(HandshakeType h)
-: Plaintext(handshake),
+: RecordProtocol(handshake),
   body(0),
   type(h) {
 
@@ -71,6 +72,9 @@ HandshakeRecord::HandshakeRecord(HandshakeType h)
             }
             body = new ClientKeyExchange;
             break;
+        case finished:
+            body = new Finished;
+            break;
         default:
             throw RecordException("Invalid handshake type");
     }
@@ -88,12 +92,8 @@ HandshakeRecord::~HandshakeRecord() {
  */
 void HandshakeRecord::decode() {
 
-    if (content != handshake) {
-        throw RecordException("Not a handshake record");
-    }
-
     type = static_cast<HandshakeType>(fragment[0]);
-    // Decode the body length.
+    // Decode the 24 bit body length.
     CK::ByteArray bLen(1, 0);
     bLen.append(fragment.range(1, 3));
     CK::Unsigned32 bodyLen(bLen, CK::Unsigned32::BIGENDIAN);
@@ -102,7 +102,6 @@ void HandshakeRecord::decode() {
         throw RecordException("Invalid body length");
     }
 
-    CK::ByteArray bodyBytes(fragment.range(4, length));
 
     switch (type) {
         case hello_request:
@@ -126,27 +125,28 @@ void HandshakeRecord::decode() {
         case client_key_exchange:
             body = new ClientKeyExchange;
             break;
+        case finished:
+            body = new Finished;
+            break;
         default:
             throw RecordException("Invalid handshake type");
     }
-    body->decode(bodyBytes);
+
+    encoded = fragment.range(4, length);
+    body->decode(encoded);
 
 }
 
-CK::ByteArray HandshakeRecord::encode() {
+void HandshakeRecord::encode() {
 
     fragment.clear();
+    encoded.clear();
     fragment.append(type);
-    CK::ByteArray encBody(body->encode());
-    CK::Unsigned32 bodyLen(encBody.getLength());
-    CK::ByteArray bl = bodyLen.getEncoded(CK::Unsigned32::BIGENDIAN);
-    fragment.append(bl.range(1, 3));
-    fragment.append(encBody);
-    fragLength = fragment.getLength();
-
-    CK::ByteArray plaintext(encodePreamble());
-    plaintext.append(fragment);
-    return plaintext;
+    encoded = body->encode();
+    CK::Unsigned32 bodyLen(encoded.getLength());
+    CK::ByteArray bl(bodyLen.getEncoded(CK::Unsigned32::BIGENDIAN));
+    fragment.append(bl.range(1, 3));    // 24 bit length.
+    fragment.append(encoded);
 
 }
 
@@ -156,7 +156,7 @@ HandshakeBody *HandshakeRecord::getBody() {
 
 }
 
-HandshakeType HandshakeRecord::getType() const {
+HandshakeType HandshakeRecord::getHandshakeType() const {
 
     return type;
 

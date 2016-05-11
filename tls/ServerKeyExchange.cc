@@ -27,14 +27,14 @@ ServerKeyExchange::ServerKeyExchange() {
 ServerKeyExchange::~ServerKeyExchange() {
 }
 
-void ServerKeyExchange::decode(const CK::ByteArray& encoded) {
+void ServerKeyExchange::decode() {
 
     switch (algorithm) {
         case dhe_rsa:
-            decodeDH(encoded);
+            decodeDH();
             break;
         case ec_diffie_hellman:
-            decodeECDH(encoded);
+            decodeECDH();
             break;
         default:
             throw RecordException("Invalid key exchange algorithm");
@@ -42,7 +42,7 @@ void ServerKeyExchange::decode(const CK::ByteArray& encoded) {
 
 }
 
-void ServerKeyExchange::decodeDH(const CK::ByteArray& encoded) {
+void ServerKeyExchange::decodeDH() {
 
     CK::ByteArray serverDHParams;
 
@@ -113,7 +113,7 @@ void ServerKeyExchange::decodeDH(const CK::ByteArray& encoded) {
 
 }
 
-void ServerKeyExchange::decodeECDH(const CK::ByteArray& encoded) {
+void ServerKeyExchange::decodeECDH() {
 
     curveType = static_cast<ECCurveType>(encoded[0]);
     uint32_t index = 1;
@@ -258,16 +258,14 @@ void ServerKeyExchange::decodeECDH(const CK::ByteArray& encoded) {
 
 }
 
-CK::ByteArray ServerKeyExchange::encode() const {
-
-    CK::ByteArray encoded;
+const CK::ByteArray& ServerKeyExchange::encode() {
 
     switch (algorithm) {
         case dhe_rsa:
-            encoded.append(encodeDH());
+            encodeDH();
             break;
         case ec_diffie_hellman:
-            encoded.append(encodeECDH());
+            encodeECDH();
             break;
         default:
             throw RecordException("Invalid key exchange algorithm");
@@ -277,9 +275,7 @@ CK::ByteArray ServerKeyExchange::encode() const {
 
 }
 
-CK::ByteArray ServerKeyExchange::encodeDH() const {
-
-    CK::ByteArray encoded;
+void ServerKeyExchange::encodeDH() {
 
     CK::ByteArray serverDHParams;
     CK::ByteArray p(dP.getEncoded(CK::BigInteger::BIGENDIAN));
@@ -310,13 +306,9 @@ CK::ByteArray ServerKeyExchange::encodeDH() const {
     encoded.append(siglen.getEncoded(CK::Unsigned16::BIGENDIAN));
     encoded.append(sig);
 
-    return encoded;
-
 }
 
-CK::ByteArray ServerKeyExchange::encodeECDH() const {
-
-    CK::ByteArray encoded;
+void ServerKeyExchange::encodeECDH() {
 
     CK::ByteArray params;   // ECParameters
     params.append(curveType);
@@ -380,8 +372,6 @@ CK::ByteArray ServerKeyExchange::encodeECDH() const {
     encoded.append(rsa);
     encoded.append(siglen.getEncoded(CK::Unsigned16::BIGENDIAN));
     encoded.append(sig);
-
-    return encoded;
 
 }
 
