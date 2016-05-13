@@ -3,7 +3,7 @@
 
 #include "SecureRandom.h"
 #include "data/BigInteger.h"
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 
 namespace CK {
 
@@ -19,7 +19,7 @@ class FortunaSecureRandom : public SecureRandom {
         ~FortunaSecureRandom();
 
     public:
-        virtual void nextBytes(ByteArray& bytes);
+        virtual void nextBytes(coder::ByteArray& bytes);
         virtual uint32_t nextInt();
         virtual uint64_t nextLong();
 

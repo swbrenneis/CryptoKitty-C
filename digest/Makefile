@@ -1,6 +1,8 @@
+DEV_HOME= $(HOME)/dev
+
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
-CPPINCLUDES= -I../include
+CPPINCLUDES= -I../include -I$(DEV_HOME)/include
 CPPFLAGS= -Wall -g -MMD -std=c++11 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
 CPP_SOURCES= SHA256.cc SHA384.cc SHA512.cc DigestBase.cc

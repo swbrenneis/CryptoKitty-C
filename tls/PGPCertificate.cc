@@ -6,8 +6,8 @@
 #include "openpgp/encode/ArmoredData.h"
 #include "exceptions/tls/RecordException.h"
 #include "exceptions/tls/EncodingException.h"
-#include "data/Unsigned16.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned16.h"
+#include "coder/Unsigned32.h"
 
 namespace CKTLS {
 
@@ -16,7 +16,7 @@ PGPCertificate::PGPCertificate()
 : publicKey(0) {
 }
 
-PGPCertificate::PGPCertificate(const CK::ByteArray& encoded) {
+PGPCertificate::PGPCertificate(const coder::ByteArray& encoded) {
 
     decode(encoded);
 
@@ -71,7 +71,7 @@ void PGPCertificate::addUserID(const CKPGP::UserID& uid, const CKPGP::Signature&
 
 }
 
-void PGPCertificate::decode(const CK::ByteArray& encoded) {
+void PGPCertificate::decode(const coder::ByteArray& encoded) {
 
     CKPGP::Packet *packet = CKPGP::Packet::decodePacket(encoded);
     if (packet->getTag() != CKPGP::Packet::PUBLICKEY) {
@@ -161,15 +161,15 @@ void PGPCertificate::decode(std::istream& in) {
     CKPGP::Encrypted *enc = dynamic_cast<CKPGP::Encrypted*>(packet);
     CKPGP::PGPCFM cfm(new CK::AES(CK::AES::AES128));
 
-    CK::ByteArray salt("dopoodoo");
+    coder::ByteArray salt("dopoodoo");
     CKPGP::String2Key s2k(CKPGP::String2Key::SHA256, salt);
-    CK::ByteArray key(s2k.generateKey("carve up my pot roast", 128));
+    coder::ByteArray key(s2k.generateKey("carve up my pot roast", 128));
 
     decode(cfm.decrypt(enc->getCiphertext(), key));
 
 }
 
-uint32_t PGPCertificate::decodePGPLength(std::istream& in, CK::ByteArray& lBytes) const {
+uint32_t PGPCertificate::decodePGPLength(std::istream& in, coder::ByteArray& lBytes) const {
 
     char octets[5];
     uint8_t *ubuf = reinterpret_cast<uint8_t*>(octets);
@@ -181,22 +181,22 @@ uint32_t PGPCertificate::decodePGPLength(std::istream& in, CK::ByteArray& lBytes
     else if (octets[0] == 0xff) {
         in.get(octets, 4);
         lBytes.append(ubuf, 4);
-        CK::Unsigned32 len(lBytes.range(1, 4), CK::Unsigned32::BIGENDIAN);
-        return len.getUnsignedValue();
+        coder::Unsigned32 len(lBytes.range(1, 4), coder::bigendian);
+        return len.getValue();
     }
     else {
         in.get(octets[0]);
         lBytes.append(ubuf[0]);
-        CK::Unsigned16 len(lBytes, CK::Unsigned16::BIGENDIAN);
-        return len.getUnsignedValue();
+        coder::Unsigned16 len(lBytes, coder::bigendian);
+        return len.getValue();
     }
 
 }
 
-CK::ByteArray PGPCertificate::encode() {
+coder::ByteArray PGPCertificate::encode() {
 
     // PGP structures are a series of self-contained packets.
-    CK::ByteArray encoded;
+    coder::ByteArray encoded;
     encoded.append(publicKey->getEncoded());
     if (encoded.getLength() == 0) {
         throw RecordException("Invalid public key");

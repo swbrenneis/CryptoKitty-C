@@ -21,7 +21,7 @@ RSA::~RSA() {
 /*
  * Convert an integer representation to an octet string.
  */
-ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
+coder::ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
 
     // This was a Java limitation. Since I don't want
     // to have to configure the memory size kernel parameters,
@@ -32,7 +32,7 @@ ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
     }
 
     //std::cout << "i2sop x = " << x << std::endl;
-    ByteArray work(x.getEncoded(BigInteger::BIGENDIAN));
+    coder::ByteArray work(x.getEncoded(BigInteger::BIGENDIAN));
     while (work.getLength() != xLen) {
         work.push(0);
     }
@@ -50,7 +50,7 @@ ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
  * Convert an octet string to an integer. Just using the constructor gives
  * unreliable results, so we'll do it the hard way.
  */
-BigInteger RSA::os2ip(const ByteArray& X) {
+BigInteger RSA::os2ip(const coder::ByteArray& X) {
 
     return BigInteger(X, BigInteger::BIGENDIAN);
 
@@ -88,20 +88,5 @@ BigInteger RSA::rsavp1(const RSAPublicKey& K, const BigInteger& s) {
     return result;
 
 }
-
-/*
- * Byte array bitwise exclusive or.
- */
-//ByteArray RSA::rsaXor(const ByteArray& a, const ByteArray& b) const {
-
-    /*if (a.getLength() != b.getLength()) {
-        throw BadParameterException("Xor byte arrays must be same length");
-    }*/
-
-    //ByteArray result(a.getLength());
-//    ByteArray result(a ^ b);
-//    return result;
-
-//}
 
 }

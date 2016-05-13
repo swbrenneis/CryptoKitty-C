@@ -2,7 +2,6 @@
 #define GCM_H_INCLUDED
 
 #include "ciphermodes/CipherMode.h"
-#include "data/ByteArray.h"
 #include "data/BigInteger.h"
 #include <cstdint>
 
@@ -17,7 +16,7 @@ class Cipher;
 class GCM : public CipherMode {
 
     public:
-        GCM(Cipher* c, const ByteArray& iv);
+        GCM(Cipher* c, const coder::ByteArray& iv);
         ~GCM();
 
     private:
@@ -25,18 +24,18 @@ class GCM : public CipherMode {
         GCM& operator= (const GCM& other);
 
     public:
-        ByteArray decrypt(const ByteArray& ciphertext, const ByteArray& key);
-        ByteArray encrypt(const ByteArray& plaintext, const ByteArray& key);
-        const ByteArray& getAuthTag() const;
-        void setAuthTag(const ByteArray& tag);
-        void setAuthData(const ByteArray& ad);
+        coder::ByteArray decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key);
+        coder::ByteArray encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key);
+        const coder::ByteArray& getAuthTag() const;
+        void setAuthTag(const coder::ByteArray& tag);
+        void setAuthData(const coder::ByteArray& ad);
 
     private:
-        ByteArray GHASH(const ByteArray& H, const ByteArray& A,
-                                                const ByteArray& C) const;
-        ByteArray incr(const ByteArray& X) const;
-        ByteArray multiply(const ByteArray& X, const ByteArray& Y) const;
-        void shiftBlock(ByteArray& block) const;
+        coder::ByteArray GHASH(const coder::ByteArray& H, const coder::ByteArray& A,
+                                                const coder::ByteArray& C) const;
+        coder::ByteArray incr(const coder::ByteArray& X) const;
+        coder::ByteArray multiply(const coder::ByteArray& X, const coder::ByteArray& Y) const;
+        void shiftBlock(coder::ByteArray& block) const;
 
     private:
         struct GCMNonce {
@@ -44,9 +43,9 @@ class GCM : public CipherMode {
             uint8_t nonce_explicit[8];
         };
         Cipher *cipher;
-        ByteArray T;    // Authentication tag;
-        ByteArray IV;   // Initial value;
-        ByteArray A;   // Authenticated data;
+        coder::ByteArray T;    // Authentication tag;
+        coder::ByteArray IV;   // Initial value;
+        coder::ByteArray A;   // Authenticated data;
 
         static uint8_t t; // Authentication tag size;:w
 

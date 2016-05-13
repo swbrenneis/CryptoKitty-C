@@ -7,7 +7,7 @@ namespace CKTLS {
 const uint16_t ExtensionManager::CERT_TYPE = 0x0009;
 const uint16_t ExtensionManager::SUPPORTED_CURVES = 0x000a;
 const uint16_t ExtensionManager::POINT_FORMATS = 0x000b;
-const Extension ExtensionManager::dummy = { CK::Unsigned16(0xffff), CK::ByteArray(0) };
+const Extension ExtensionManager::dummy = { coder::Unsigned16(0xffff), coder::ByteArray(0) };
 
 ExtensionManager::ExtensionManager() {
 }
@@ -21,7 +21,7 @@ ExtensionManager::~ExtensionManager() {
 
 void ExtensionManager::addExtension(const Extension& ext) {
 
-    extensions[ext.type.getUnsignedValue()] = ext;
+    extensions[ext.type.getValue()] = ext;
 
 }
 
@@ -29,45 +29,46 @@ void ExtensionManager::addExtension(const Extension& ext) {
 void ExtensionManager::debugOut(std::ostream& out) const {
 
     for (ExtConstIter it = extensions.begin(); it != extensions.end(); ++it) {
-        out << "Extension.type: " << it->second.type.getUnsignedValue() << std::endl;
+        out << "Extension.type: " << it->second.type.getValue() << std::endl;
         out << "Extension.data: " << it->second.data.toString() << std::endl;
     }
 
 }
 #endif
 
-void ExtensionManager::decode(const CK::ByteArray& encoded) {
+void ExtensionManager::decode(const coder::ByteArray& encoded) {
 
     unsigned index = 0;
     while (index < encoded.getLength()) {
         Extension e;
-        e.type.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+        e.type.decode(encoded.range(index, 2), coder::bigendian);
         index += 2;
-        CK::Unsigned16 edl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
-        uint16_t edataLen = edl.getUnsignedValue();
+        coder::Unsigned16 edl(encoded.range(index, 2), coder::bigendian);
+        uint16_t edataLen = edl.getValue();
         index +=2;
         e.data = encoded.range(index, edataLen);
         index += edataLen;
-        extensions[e.type.getUnsignedValue()] = e;
+        extensions[e.type.getValue()] = e;
     }
 
 }
 
-CK::ByteArray ExtensionManager::encode() const {
+coder::ByteArray ExtensionManager::encode() const {
 
-    CK::ByteArray encoded;
+    coder::ByteArray encoded;
     if (extensions.size() > 0) {
         // 2 byte length.
-        CK::ByteArray ext;
+        coder::ByteArray ext;
         for (ExtConstIter it = extensions.begin();
                                     it != extensions.end(); ++it) {
-            ext.append(it->second.type.getEncoded(CK::Unsigned16::BIGENDIAN));
-            CK::Unsigned16 edlen(it->second.data.getLength());
-            ext.append(edlen.getEncoded(CK::Unsigned16::BIGENDIAN));
+            coder::Unsigned16 u16(it->second.type);
+            ext.append(u16.getEncoded(coder::bigendian));
+            coder::Unsigned16 edlen(it->second.data.getLength());
+            ext.append(edlen.getEncoded(coder::bigendian));
             ext.append(it->second.data);
         }
-        CK::Unsigned16 elen(ext.getLength());
-        encoded.append(elen.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned16 elen(ext.getLength());
+        encoded.append(elen.getEncoded(coder::bigendian));
         encoded.append(ext);
     }
 
@@ -91,12 +92,12 @@ void ExtensionManager::loadDefaults() {
     Extension ext;
 
     ext.type.setValue(SUPPORTED_CURVES);
-    CK::Unsigned16 extCount(4);     // Bytes of extension data
-    ext.data.append(extCount.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::Unsigned16 curve(secp384r1);
-    ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::Unsigned16 extCount(4);     // Bytes of extension data
+    ext.data.append(extCount.getEncoded(coder::bigendian));
+    coder::Unsigned16 curve(secp384r1);
+    ext.data.append(curve.getEncoded(coder::bigendian));
     curve.setValue(secp256r1);
-    ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
+    ext.data.append(curve.getEncoded(coder::bigendian));
     extensions[SUPPORTED_CURVES] = ext;
     ext.data.clear();
     ext.type.setValue(CERT_TYPE);

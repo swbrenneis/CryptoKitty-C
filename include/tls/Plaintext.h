@@ -2,8 +2,6 @@
 #define PLAINTEXT_H_INCLUDED
 
 #include "tls/RecordProtocol.h"
-#include "data/ByteArray.h"
-#include <cstdint>
 
 namespace CKTLS {
 

@@ -84,7 +84,7 @@ BigInteger::BigInteger(long initial)
 /*
  * Construct a BigInteger from a byte array
  */
-BigInteger::BigInteger(const ByteArray& bytes, int endian)
+BigInteger::BigInteger(const coder::ByteArray& bytes, int endian)
 : number(0) {
 
     decode(bytes, endian);
@@ -104,7 +104,7 @@ BigInteger::BigInteger(int bits, bool sgPrime, Random& rnd) {
     }
 
     double dbits = bits;
-    ByteArray pBytes(ceil(dbits / 8));
+    coder::ByteArray pBytes(ceil(dbits / 8));
     rnd.nextBytes(pBytes);
 
     // Load the big integer.
@@ -225,7 +225,7 @@ int BigInteger::bitLength() const {
 /*
  * Decode a byte array with the indicated byte order.
  */
-void BigInteger::decode(const ByteArray& bytes, int endian) {
+void BigInteger::decode(const coder::ByteArray& bytes, int endian) {
 
     delete number;
     number = new NTL::ZZ(0L);
@@ -282,11 +282,11 @@ BigInteger BigInteger::gcd(const BigInteger& a) const {
  * Encodes the absolute value of the integer into an array
  * in the specified byte order.
  */
-ByteArray BigInteger::getEncoded(int endian) const {
+coder::ByteArray BigInteger::getEncoded(int endian) const {
 
     NTL::ZZ work(NTL::abs(*number));
     int index = bitLength() / 8 + (bitLength() % 8 != 0 ? 1 : 0);
-    ByteArray result;
+    coder::ByteArray result;
     while (index > 0) {
         long byte = work % 256;
         switch (endian) {

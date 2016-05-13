@@ -1,7 +1,7 @@
 #ifndef CIPHER_H_INCLUDED
 #define CIPHER_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 
 namespace CK {
 
@@ -19,8 +19,10 @@ class Cipher {
 
     public:
         virtual unsigned blockSize() const=0;
-        virtual ByteArray encrypt(const ByteArray& plaintext, const ByteArray& key)=0;
-        virtual ByteArray decrypt(const ByteArray& ciphertext, const ByteArray& key)=0;
+        virtual coder::ByteArray
+                encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key)=0;
+        virtual coder::ByteArray
+                decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key)=0;
 
 };
 

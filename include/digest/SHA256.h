@@ -24,17 +24,17 @@ class SHA256 : public DigestBase {
         uint32_t getDigestLength() const { return 32; }
 
     protected:
-        ByteArray finalize(const ByteArray& bytes) const;
-        const ByteArray& getDER() const;
+        coder::ByteArray finalize(const coder::ByteArray& bytes) const;
+        const coder::ByteArray& getDER() const;
 
     private:
         typedef std::deque<uint32_t> W;
 
     private:
         uint32_t Ch(uint32_t x, uint32_t y, uint32_t z) const;
-        W decompose(const ByteArray& chunks) const;
+        W decompose(const coder::ByteArray& chunks) const;
         uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) const;
-        ByteArray pad(const ByteArray& in) const;
+        coder::ByteArray pad(const coder::ByteArray& in) const;
         uint32_t ror(uint32_t reg, int count) const;
         uint32_t sigma0(uint32_t w) const;
         uint32_t sigma1(uint32_t w) const;
@@ -42,7 +42,7 @@ class SHA256 : public DigestBase {
         uint32_t Sigma1(uint32_t w) const;
 
     private:
-        typedef std::deque<ByteArray> Chunks;
+        typedef std::deque<coder::ByteArray> Chunks;
 
         // Hash constants
         static const uint32_t H1, H2, H3, H4,
@@ -50,7 +50,7 @@ class SHA256 : public DigestBase {
         // Round constants
         static const uint32_t K[];
         // ASN.1 identifier encoding.
-        static const ByteArray DER;
+        static const coder::ByteArray DER;
 
 };
 

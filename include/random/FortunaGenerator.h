@@ -1,7 +1,7 @@
 #ifndef FORTUNAGENERATOR_H_INCLUDED
 #define FORTUNAGENERATOR_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 #include "data/BigInteger.h"
 #include "cthread/Thread.h"
 #include <deque>
@@ -21,23 +21,23 @@ class FortunaGenerator : public Thread::Callback {
         FortunaGenerator& operator= (const FortunaGenerator& other);
 
     public:
-        void generateRandomData(ByteArray& bytes, uint32_t length);
+        void generateRandomData(coder::ByteArray& bytes, uint32_t length);
         void start();
 
     private:
         void end();
-        ByteArray generateBlocks(uint16_t k);
-        void reseed(const ByteArray& seed);
+        coder::ByteArray generateBlocks(uint16_t k);
+        void reseed(const coder::ByteArray& seed);
         void *threadFunction();
 
     private:
         bool run;
         Thread *thread;
-        typedef std::deque<ByteArray> EntropyPools;
+        typedef std::deque<coder::ByteArray> EntropyPools;
         EntropyPools pools;
         uint32_t poolCounter;
         AES *cipher;
-        ByteArray key;
+        coder::ByteArray key;
         BigInteger counter;
         BigInteger limit;
 

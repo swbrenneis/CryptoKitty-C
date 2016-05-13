@@ -1,7 +1,7 @@
 #ifndef BIGINTEGER_H_INCLUDED
 #define BIGINTEGER_H_INCLUDED
 
-#include "ByteArray.h"
+#include "coder/ByteArray.h"
 #include <deque>
 #include <iostream>
 
@@ -36,7 +36,7 @@ class BigInteger {
         // Constructs a BigInteger object with a value of 0 
         BigInteger();
         BigInteger(const BigInteger& other);
-        BigInteger(const ByteArray& bytes, int endian);
+        BigInteger(const coder::ByteArray& bytes, int endian);
         // Constructs a BigInteger object with initial value
         BigInteger(long intial);
         // Constructs a BigInteger object with a probablistic
@@ -68,15 +68,15 @@ class BigInteger {
         // Returns the total number of bits
         int bitSize() const;
         // Decode a byte array
-        void decode(const ByteArray& bytes, int endian);
+        void decode(const coder::ByteArray& bytes, int endian);
         // Returns a BigInteger equal to this divided by divisor.
         BigInteger divide(const BigInteger& divisor) const;
         // Returns true if this = other.
         bool equals(const BigInteger& other) const;
         // Returns the greatest common denominator of this and a.
         BigInteger gcd(const BigInteger& a) const;
-        // Returns a ByteArray in the specified encoding.
-        ByteArray getEncoded(int endian) const;
+        // Returns a coder::ByteArray in the specified encoding.
+        coder::ByteArray getEncoded(int endian) const;
         // Returns a BigInteger that is the bitwise inversion of this.
         BigInteger invert() const;
         // Returns a BigInteger equal to this shifted left count times.
@@ -114,7 +114,7 @@ class BigInteger {
 
     private:
         NTL::ZZ *number;
-        
+
         static const unsigned long long ULLONG_MSB;
 
 };

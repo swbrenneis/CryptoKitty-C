@@ -1,7 +1,7 @@
 #include "ciphermodes/GCM.h"
 #include "cipher/Cipher.h"
-#include "data/Unsigned64.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned64.h"
+#include "coder/Unsigned32.h"
 #include "data/BigInteger.h"
 #include "exceptions/BadParameterException.h"
 #include "exceptions/AuthenticationException.h"
@@ -15,7 +15,7 @@ static const uint64_t P_MAX = 549755813632; // 2^39 - 256.
 static const uint64_t A_MAX = 0xffffffffffffffff;
 uint8_t GCM::t = 128;
 
-GCM::GCM(Cipher *c, const ByteArray& iv)
+GCM::GCM(Cipher *c, const coder::ByteArray& iv)
 : cipher(c),
 IV(iv) {
 
@@ -34,7 +34,7 @@ GCM::~GCM() {
 /*
  * Class decryption function.
  */
-ByteArray GCM::decrypt(const ByteArray& C, const ByteArray& K) {
+coder::ByteArray GCM::decrypt(const coder::ByteArray& C, const coder::ByteArray& K) {
 
     // l = (n - 1)128 + u
     int n = C.getLength() / 16;
@@ -44,30 +44,30 @@ ByteArray GCM::decrypt(const ByteArray& C, const ByteArray& K) {
         n--;
     }
 
-    ByteArray H(cipher->encrypt(ByteArray(16, 0), K));
+    coder::ByteArray H(cipher->encrypt(coder::ByteArray(16, 0), K));
 
-    ByteArray Y0;
+    coder::ByteArray Y0;
     if (IV.getLength() == 12) {
-        ByteArray ctr(4, 0);
+        coder::ByteArray ctr(4, 0);
         ctr[3] = 0x01;
         Y0.append(IV);
         Y0.append(ctr);
     }
     else {
-        Y0 = GHASH(H, ByteArray(0), IV);
+        Y0 = GHASH(H, coder::ByteArray(0), IV);
     }
 
-    ByteArray Tp(GHASH(H, A, C));
+    coder::ByteArray Tp(GHASH(H, A, C));
     Tp = Tp ^ cipher->encrypt(Y0, K);
     if (T != Tp) {
         throw AuthenticationException("GCM AEAD failed authentication");
     }
 
-    ByteArray Yi;           // Y(i)
-    ByteArray Yi1(Y0);      // Y(i-1)
-    ByteArray Ci;           // C(i)
-    ByteArray Pi;           // C(i);
-    ByteArray P;
+    coder::ByteArray Yi;           // Y(i)
+    coder::ByteArray Yi1(Y0);      // Y(i-1)
+    coder::ByteArray Ci;           // C(i)
+    coder::ByteArray Pi;           // C(i);
+    coder::ByteArray P;
 
     if (C.getLength() > 0) {
         for (int i = 1; i <= n; ++i) {
@@ -78,7 +78,7 @@ ByteArray GCM::decrypt(const ByteArray& C, const ByteArray& K) {
             Yi1 = Yi;
         }
         Yi = incr(Yi1);
-        ByteArray Cn(C.range(C.getLength()-u, u));
+        coder::ByteArray Cn(C.range(C.getLength()-u, u));
         P.append(Cn ^ (cipher->encrypt(Yi, K)).range(0, u));
     }
 
@@ -89,7 +89,7 @@ ByteArray GCM::decrypt(const ByteArray& C, const ByteArray& K) {
 /*
  * Class encryption function.
  */
-ByteArray GCM::encrypt(const ByteArray& P, const ByteArray& K) {
+coder::ByteArray GCM::encrypt(const coder::ByteArray& P, const coder::ByteArray& K) {
 
     // l = (n - 1)128 + u
     int n = P.getLength() / 16;
@@ -99,24 +99,24 @@ ByteArray GCM::encrypt(const ByteArray& P, const ByteArray& K) {
         n--;
     }
 
-    ByteArray H(cipher->encrypt(ByteArray(16, 0), K));
+    coder::ByteArray H(cipher->encrypt(coder::ByteArray(16, 0), K));
 
-    ByteArray Y0;
+    coder::ByteArray Y0;
     if (IV.getLength() == 12) {
-        ByteArray ctr(4, 0);
+        coder::ByteArray ctr(4, 0);
         ctr[3] = 0x01;
         Y0.append(IV);
         Y0.append(ctr);
     }
     else {
-        Y0 = GHASH(H, ByteArray(0), IV);
+        Y0 = GHASH(H, coder::ByteArray(0), IV);
     }
 
-    ByteArray Yi;           // Y(i)
-    ByteArray Yi1(Y0);      // Y(i-1)
-    ByteArray Pi;           // P(i)
-    ByteArray Ci;           // C(i);
-    ByteArray C;
+    coder::ByteArray Yi;           // Y(i)
+    coder::ByteArray Yi1(Y0);      // Y(i-1)
+    coder::ByteArray Pi;           // P(i)
+    coder::ByteArray Ci;           // C(i);
+    coder::ByteArray C;
 
     if (P.getLength() > 0) {
         for (int i = 1; i <= n; ++i) {
@@ -127,7 +127,7 @@ ByteArray GCM::encrypt(const ByteArray& P, const ByteArray& K) {
             Yi1 = Yi;
         }
         Yi = incr(Yi1);
-        ByteArray Pn(P.range(P.getLength()-u, u));
+        coder::ByteArray Pn(P.range(P.getLength()-u, u));
         C.append(Pn ^ (cipher->encrypt(Yi, K)).range(0, u));
     }
 
@@ -138,7 +138,7 @@ ByteArray GCM::encrypt(const ByteArray& P, const ByteArray& K) {
 
 }
 
-const ByteArray& GCM::getAuthTag() const {
+const coder::ByteArray& GCM::getAuthTag() const {
 
     return T;
 
@@ -149,8 +149,8 @@ const ByteArray& GCM::getAuthTag() const {
  * X must be an even multiple of 16 bytes. H is the subhash
  * key. Yi is always 128 bits.
 */
-ByteArray GCM::GHASH(const ByteArray& H, const ByteArray& A,
-                                            const ByteArray& C) const {
+coder::ByteArray GCM::GHASH(const coder::ByteArray& H, const coder::ByteArray& A,
+                                            const coder::ByteArray& C) const {
 
     if (H.getLength() != 16) {
         throw BadParameterException("Invalid hash sub-key");
@@ -169,10 +169,10 @@ ByteArray GCM::GHASH(const ByteArray& H, const ByteArray& A,
         n--;
     }
 
-    ByteArray Xi1(16, 0);           // X(i-1)
-    ByteArray Xi;                   // X(i)
-    ByteArray Ai;                   // A(i)
-    ByteArray Ci;                   // C(i)
+    coder::ByteArray Xi1(16, 0);           // X(i-1)
+    coder::ByteArray Xi;                   // X(i)
+    coder::ByteArray Ai;                   // A(i)
+    coder::ByteArray Ci;                   // C(i)
 
     int i = 1; // For tracking Xi index. Debug only.
     for (int j = 0; j < m; ++j) {
@@ -183,8 +183,8 @@ ByteArray GCM::GHASH(const ByteArray& H, const ByteArray& A,
     }
 
     if (A.getLength() > 0) {
-        ByteArray Am(A.range(A.getLength() - v, v));    // A(n)
-        ByteArray pad(16-v, 0);
+        coder::ByteArray Am(A.range(A.getLength() - v, v));    // A(n)
+        coder::ByteArray pad(16-v, 0);
         Am.append(pad);
         Xi = multiply(Xi1 ^ Am, H);
         i++;
@@ -199,19 +199,19 @@ ByteArray GCM::GHASH(const ByteArray& H, const ByteArray& A,
     }
 
     if (C.getLength() > 0) {
-        ByteArray Cn(C.range(C.getLength() - u, u));    // A(n)
-        ByteArray pad(16-u, 0);
+        coder::ByteArray Cn(C.range(C.getLength() - u, u));    // A(n)
+        coder::ByteArray pad(16-u, 0);
         Cn.append(pad);
         Xi = multiply(Xi1 ^ Cn, H);
         i++;
         Xi1 = Xi;
     }
 
-    ByteArray ac;
-    Unsigned64 al(A.getLength() * 8);
-    ac.append(al.getEncoded(Unsigned64::BIGENDIAN));
-    Unsigned64 cl(C.getLength() * 8);
-    ac.append(cl.getEncoded(Unsigned64::BIGENDIAN));
+    coder::ByteArray ac;
+    coder::Unsigned64 al(A.getLength() * 8);
+    ac.append(al.getEncoded(coder::bigendian));
+    coder::Unsigned64 cl(C.getLength() * 8);
+    ac.append(cl.getEncoded(coder::bigendian));
     Xi = multiply(Xi1 ^ ac, H);
 
     return Xi;
@@ -223,16 +223,16 @@ ByteArray GCM::GHASH(const ByteArray& H, const ByteArray& A,
  * Increments the rightmost s bits of X leaving the leftmost in
  * the bit string unchanged.
  */
-ByteArray GCM::incr(const ByteArray& X) const {
+coder::ByteArray GCM::incr(const coder::ByteArray& X) const {
 
     if (X.getLength() != 16) {
         throw BadParameterException("Illegal block size");
     }
 
-    ByteArray fixed(X.range(0, 12));
-    Unsigned32 x(X.range(12, 4), Unsigned32::BIGENDIAN);
-    Unsigned32 inc(x.getUnsignedValue() + 1);
-    fixed.append(inc.getEncoded(Unsigned32::BIGENDIAN));
+    coder::ByteArray fixed(X.range(0, 12));
+    coder::Unsigned32 x(X.range(12, 4), coder::bigendian);
+    coder::Unsigned32 inc(x.getValue() + 1);
+    fixed.append(inc.getEncoded(coder::bigendian));
 
     return fixed;
 
@@ -242,14 +242,14 @@ ByteArray GCM::incr(const ByteArray& X) const {
  * Galois multiplication function. See NIST SP 800-3D, Section 6.3.
  * X, Y, and Z are 128 bits.
  */
-ByteArray GCM::multiply(const ByteArray& X, const ByteArray& Y) const {
+coder::ByteArray GCM::multiply(const coder::ByteArray& X, const coder::ByteArray& Y) const {
 
     if (X.getLength() != 16 || Y.getLength() != 16) {
         throw BadParameterException("Invalid multiplicand or multiplier size");
     }
 
-    ByteArray Z(16,0);
-    ByteArray V(Y);
+    coder::ByteArray Z(16,0);
+    coder::ByteArray V(Y);
 
     //std:: cout << "X = " << X << std::endl
     //        << "Y = " << Y << std::endl << std::endl;
@@ -276,44 +276,44 @@ ByteArray GCM::multiply(const ByteArray& X, const ByteArray& Y) const {
 
 }
 
-void GCM::shiftBlock(ByteArray& block) const {
+void GCM::shiftBlock(coder::ByteArray& block) const {
 
-    Unsigned32 be(block.range(12, 4), Unsigned32::BIGENDIAN);
-    uint32_t value = be.getUnsignedValue();
+    coder::Unsigned32 be(block.range(12, 4), coder::bigendian);
+    uint32_t value = be.getValue();
     value = value >> 1;
     if ((block[11] & 0x01) != 0) {
         value |= 0x80000000;
     }
-    Unsigned32 v(value);
-    block.copy(12, v.getEncoded(Unsigned32::BIGENDIAN), 0, 4);
+    coder::Unsigned32 v(value);
+    block.copy(12, v.getEncoded(coder::bigendian), 0, 4);
 
-    be.decode(block.range(8, 4), Unsigned32::BIGENDIAN);
-    value = be.getUnsignedValue();
+    be.decode(block.range(8, 4), coder::bigendian);
+    value = be.getValue();
     value = value >> 1;
     if ((block[7] & 0x01) != 0) {
         value |= 0x80000000;
     }
     v.setValue(value);
-    block.copy(8, v.getEncoded(Unsigned32::BIGENDIAN), 0, 4);
+    block.copy(8, v.getEncoded(coder::bigendian), 0, 4);
 
-    be.decode(block.range(4, 4), Unsigned32::BIGENDIAN);
-    value = be.getUnsignedValue();
+    be.decode(block.range(4, 4), coder::bigendian);
+    value = be.getValue();
     value = value >> 1;
     if ((block[3] & 0x01) != 0) {
         value |= 0x80000000;
     }
     v.setValue(value);
-    block.copy(4,v.getEncoded(Unsigned32::BIGENDIAN), 0, 4);
+    block.copy(4,v.getEncoded(coder::bigendian), 0, 4);
 
-    be.decode(block.range(0, 4), Unsigned32::BIGENDIAN);
-    value = be.getUnsignedValue();
+    be.decode(block.range(0, 4), coder::bigendian);
+    value = be.getValue();
     value = value >> 1;
     v.setValue(value);
-    block.copy(0, v.getEncoded(Unsigned32::BIGENDIAN), 0, 4);
+    block.copy(0, v.getEncoded(coder::bigendian), 0, 4);
 
 }
 
-void GCM::setAuthData(const ByteArray& ad) {
+void GCM::setAuthData(const coder::ByteArray& ad) {
 
     if (ad.getLength() * 8 > A_MAX) {
         throw BadParameterException("Invalid authentication tag");
@@ -323,7 +323,7 @@ void GCM::setAuthData(const ByteArray& ad) {
 
 }
 
-void GCM::setAuthTag(const ByteArray& tag) {
+void GCM::setAuthTag(const coder::ByteArray& tag) {
 
     if (tag.getLength() * 8 != t) {
         throw BadParameterException("Invalid authentication tag");

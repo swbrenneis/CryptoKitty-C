@@ -10,7 +10,7 @@ class Cipher;
 class CTR : public CipherMode {
 
     public:
-        CTR(Cipher *cipher, const ByteArray& nonce);
+        CTR(Cipher *cipher, const coder::ByteArray& nonce);
         ~CTR();
 
     private:
@@ -18,15 +18,15 @@ class CTR : public CipherMode {
         CTR& operator= (const CTR& other);
 
     public:
-        ByteArray decrypt(const ByteArray& ciphertext, const ByteArray& key);
-        ByteArray encrypt(const ByteArray& plaintext, const ByteArray& key);
+        coder::ByteArray decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key);
+        coder::ByteArray encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key);
 
     private:
         void incrementCounter();
 
     private:
         Cipher *cipher;
-        ByteArray counter;
+        coder::ByteArray counter;
 
 };
 

@@ -10,7 +10,7 @@ class Cipher;
 class CBC : public CipherMode {
 
     public:
-        CBC(Cipher *c, const ByteArray& i);
+        CBC(Cipher *c, const coder::ByteArray& i);
         ~CBC();
 
     private:
@@ -18,20 +18,20 @@ class CBC : public CipherMode {
         CBC& operator= (const CBC& other);
 
     public:
-        ByteArray decrypt(const ByteArray& ciphertext,
-                                            const ByteArray& key);
-        ByteArray encrypt(const ByteArray& plaintext,
-                                            const ByteArray& key);
+        coder::ByteArray decrypt(const coder::ByteArray& ciphertext,
+                                            const coder::ByteArray& key);
+        coder::ByteArray encrypt(const coder::ByteArray& plaintext,
+                                            const coder::ByteArray& key);
     private:
-        ByteArray decrypt(const ByteArray& iv, const ByteArray& block,
-                                            const ByteArray& key) const;
-        ByteArray encrypt(const ByteArray& iv, const ByteArray& block,
-                                            const ByteArray& key) const;
+        coder::ByteArray decrypt(const coder::ByteArray& iv, const coder::ByteArray& block,
+                                            const coder::ByteArray& key) const;
+        coder::ByteArray encrypt(const coder::ByteArray& iv, const coder::ByteArray& block,
+                                            const coder::ByteArray& key) const;
 
     private:
         unsigned blockSize;
         Cipher *cipher;
-        ByteArray iv;
+        coder::ByteArray iv;
 
 };
 

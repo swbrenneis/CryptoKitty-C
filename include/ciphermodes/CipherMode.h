@@ -1,7 +1,7 @@
 #ifndef CIPHERMODE_H_INCLUDED
 #define CIPHERMODE_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 
 namespace CK {
 
@@ -18,10 +18,10 @@ class CipherMode {
         CipherMode& operator= (const CipherMode& other);
 
     public:
-        virtual ByteArray decrypt(const ByteArray& ciphertext,
-                                            const ByteArray& key)=0;
-        virtual ByteArray encrypt(const ByteArray& plaintext,
-                                            const ByteArray& key)=0;
+        virtual coder::ByteArray decrypt(const coder::ByteArray& ciphertext,
+                                            const coder::ByteArray& key)=0;
+        virtual coder::ByteArray encrypt(const coder::ByteArray& plaintext,
+                                            const coder::ByteArray& key)=0;
 
 };
 

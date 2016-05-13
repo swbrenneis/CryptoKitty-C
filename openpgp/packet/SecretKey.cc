@@ -2,8 +2,7 @@
 #include "exceptions/openpgp/BadParameterException.h"
 #include "exceptions/openpgp/EncodingException.h"
 #include "keys/RSAPrivateCrtKey.h"
-#include "data/Unsigned32.h"
-#include "data/Unsigned16.h"
+#include "coder/Unsigned16.h"
 #include <cmath>
 #include <time.h>
 
@@ -56,7 +55,7 @@ SecretKey::SecretKey(const CK::BigInteger& x, const PublicKey& pk)
 
 }
 
-SecretKey::SecretKey(const CK::ByteArray& encoded)
+SecretKey::SecretKey(const coder::ByteArray& encoded)
 : Packet(SECRETKEY) {
 
     decode(encoded);
@@ -104,7 +103,7 @@ SecretKey& SecretKey::operator= (const SecretKey& other) {
 
 }
 
-void SecretKey::decode(const CK::ByteArray& encoded) {
+void SecretKey::decode(const coder::ByteArray& encoded) {
 
     Packet *packet = decodePacket(encoded);
     if ((packet->getTag() & 0x3f) != Packet::PUBLICKEY) {
@@ -164,15 +163,15 @@ void SecretKey::decode(const CK::ByteArray& encoded) {
         index += blockSize;
     }
     // TODO: Encrypt key material
-    CK::ByteArray keyMaterial(encoded.range(index, encoded.getLength() - index));
+    coder::ByteArray keyMaterial(encoded.range(index, encoded.getLength() - index));
     if (s2kUsage == 0 || s2kUsage == 0xff) {
         uint16_t cksum;
         for (unsigned i = 0; i < keyMaterial.getLength() - 2; ++i) {
             cksum += keyMaterial[i];
         }
-        CK::Unsigned16 check(keyMaterial.range(keyMaterial.getLength() - 2, 2),
-                                                            CK::Unsigned16::BIGENDIAN);
-        if (check.getUnsignedValue() != cksum) {
+        coder::Unsigned16 check(keyMaterial.range(keyMaterial.getLength() - 2, 2),
+                                                            coder::bigendian);
+        if (check.getValue() != cksum) {
             throw EncodingException("Key material checksum error");
         }
     }
@@ -188,14 +187,14 @@ void SecretKey::decode(const CK::ByteArray& encoded) {
             break;
         case 16:    // PublicKey::ELGAMAL
             {
-            CK::Unsigned16 len(keyMaterial.range(0, 2));
+            coder::Unsigned16 len(keyMaterial.range(0, 2));
             elgamalx.decode(keyMaterial.range(2, keyMaterial.getLength() - 2),
                                                                 CK::BigInteger::BIGENDIAN);
             }
             break;
         case 17:    // PublicKey::DSA
             {
-            CK::Unsigned16 len(keyMaterial.range(0, 2));
+            coder::Unsigned16 len(keyMaterial.range(0, 2));
             dsax.decode(keyMaterial.range(2, keyMaterial.getLength() - 2),
                                                                 CK::BigInteger::BIGENDIAN);
             }
@@ -204,29 +203,29 @@ void SecretKey::decode(const CK::ByteArray& encoded) {
 
 }
 
-void SecretKey::decodeRSAIntegers(const CK::ByteArray& encoded) {
+void SecretKey::decodeRSAIntegers(const coder::ByteArray& encoded) {
 
-    CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 len(encoded.range(0, 2), coder::bigendian);
     uint32_t index = 2;
-    double dlen = len.getUnsignedValue();
+    double dlen = len.getValue();
     rsaExponent.decode(encoded.range(index, ceil(dlen / 8)),
                                                     CK::BigInteger::BIGENDIAN);
     index += ceil(dlen / 8);
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    dlen = len.getUnsignedValue();
+    dlen = len.getValue();
     rsap.decode(encoded.range(index, ceil(dlen / 8)),
                                                     CK::BigInteger::BIGENDIAN);
     index += ceil(dlen / 8);
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    dlen = len.getUnsignedValue();
+    dlen = len.getValue();
     rsaq.decode(encoded.range(index, ceil(dlen / 8)),
                                                     CK::BigInteger::BIGENDIAN);
     index += ceil(dlen / 8);
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    dlen = len.getUnsignedValue();
+    dlen = len.getValue();
     rsaqInv.decode(encoded.range(index, ceil(dlen / 8)),
                                                     CK::BigInteger::BIGENDIAN);
 
@@ -235,7 +234,7 @@ void SecretKey::decodeRSAIntegers(const CK::ByteArray& encoded) {
 void SecretKey::encode() {
 
     encoded.append(encodeTag());
-    CK::ByteArray sk;
+    coder::ByteArray sk;
 
     sk.append(publicKey->getEncoded());
     sk.append(s2kUsage);
@@ -245,7 +244,7 @@ void SecretKey::encode() {
         sk.append(iv);
     }
 
-    CK::ByteArray keyMaterial;
+    coder::ByteArray keyMaterial;
     switch (publicKey->getAlgorithm()) {
         case 1:     // PublicKey::RSAANY
         case 2:     // PublicKey::RSAENCRYPT
@@ -255,16 +254,16 @@ void SecretKey::encode() {
         case 16:    // PublicKey::ELGAMAL
             {
             double bits = elgamalx.bitLength();
-            CK::Unsigned16 len(ceil(bits / 8));
-            keyMaterial.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+            coder::Unsigned16 len(ceil(bits / 8));
+            keyMaterial.append(len.getEncoded(coder::bigendian));
             keyMaterial.append(elgamalx.getEncoded(CK::BigInteger::BIGENDIAN));
             }
             break;
         case 17:    // PublicKey::DSA
             {
             double bits = elgamalx.bitLength();
-            CK::Unsigned16 len(ceil(bits / 8));
-            keyMaterial.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+            coder::Unsigned16 len(ceil(bits / 8));
+            keyMaterial.append(len.getEncoded(coder::bigendian));
             keyMaterial.append(dsax.getEncoded(CK::BigInteger::BIGENDIAN));
             }
             break;
@@ -275,8 +274,8 @@ void SecretKey::encode() {
     for (unsigned i = 0; i < keyMaterial.getLength(); ++i) {
         cksum += keyMaterial[i];
     }
-    CK::Unsigned16 checksum(cksum);
-    keyMaterial.append(checksum.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::Unsigned16 checksum(cksum);
+    keyMaterial.append(checksum.getEncoded(coder::bigendian));
 
     sk.append(keyMaterial);
 
@@ -285,40 +284,40 @@ void SecretKey::encode() {
     encoded.append(sk);
 }
 
-CK::ByteArray  SecretKey::encodeRSAIntegers() {
+coder::ByteArray  SecretKey::encodeRSAIntegers() {
 
-    CK::ByteArray keyMaterial;
+    coder::ByteArray keyMaterial;
 
-    CK::Unsigned16 len;
+    coder::Unsigned16 len;
     len.setValue(rsaExponent.bitLength());
-    keyMaterial.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    keyMaterial.append(len.getEncoded(coder::bigendian));
     double bits = rsaExponent.bitLength();
-    CK::ByteArray rsae(rsaExponent.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad1(ceil(bits / 8) - rsae.getLength());
+    coder::ByteArray rsae(rsaExponent.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad1(ceil(bits / 8) - rsae.getLength());
     keyMaterial.append(pad1);
     keyMaterial.append(rsae);
 
     len.setValue(rsap.bitLength());
-    keyMaterial.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    keyMaterial.append(len.getEncoded(coder::bigendian));
     bits = rsap.bitLength();
-    CK::ByteArray rsapp(rsap.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad2(ceil(bits / 8) - rsapp.getLength());
+    coder::ByteArray rsapp(rsap.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad2(ceil(bits / 8) - rsapp.getLength());
     keyMaterial.append(pad2);
     keyMaterial.append(rsapp);
 
     len.setValue(rsaq.bitLength());
-    keyMaterial.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    keyMaterial.append(len.getEncoded(coder::bigendian));
     bits = rsaq.bitLength();
-    CK::ByteArray rsaqq(rsaq.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad3(ceil(bits / 8) - rsaqq.getLength());
+    coder::ByteArray rsaqq(rsaq.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad3(ceil(bits / 8) - rsaqq.getLength());
     keyMaterial.append(pad3);
     keyMaterial.append(rsaqq);
 
     len.setValue(rsaqInv.bitLength());
-    keyMaterial.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    keyMaterial.append(len.getEncoded(coder::bigendian));
     bits = rsaqInv.bitLength();
-    CK::ByteArray rsaqi(rsaqInv.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad4(ceil(bits / 8) - rsaqi.getLength());
+    coder::ByteArray rsaqi(rsaqInv.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad4(ceil(bits / 8) - rsaqi.getLength());
     keyMaterial.append(pad4);
     keyMaterial.append(rsaqi);
 

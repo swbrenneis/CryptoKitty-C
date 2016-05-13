@@ -1,13 +1,9 @@
 #ifndef AES_H_INCLUDED
 #define AES_H_INCLUDED
 
-#include "data/ByteArray.h"
 #include "cipher/Cipher.h"
-#include <cstdint>
 
 namespace CK {
-
-class ByteArray;
 
 class AES : public Cipher {
 
@@ -24,8 +20,10 @@ class AES : public Cipher {
 
     public:
         unsigned blockSize() const { return 16; }
-        ByteArray decrypt(const ByteArray& ciphertext, const ByteArray& key);
-        ByteArray encrypt(const ByteArray& plaintext, const ByteArray& key);
+        coder::ByteArray
+                decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key);
+        coder::ByteArray
+                encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key);
 
     private:
         typedef uint8_t Word[4];
@@ -61,15 +59,15 @@ class AES : public Cipher {
 
     private:
         void AddRoundKey(const Word *roundKey);
-        void Cipher(const ByteArray& plaintext, const Word *keySchedule);
-        void InvCipher(const ByteArray& ciphertext, const Word *KeySchedule);
+        void Cipher(const coder::ByteArray& plaintext, const Word *keySchedule);
+        void InvCipher(const coder::ByteArray& ciphertext, const Word *KeySchedule);
         void InvMixColumns();
         void InvShiftRows();
         void InvSubBytes();
-        void KeyExpansion(const ByteArray& key, Word *keySchedule) const;
+        void KeyExpansion(const coder::ByteArray& key, Word *keySchedule) const;
         void MixColumns();
         uint8_t RijndaelMult(uint8_t lhs, uint8_t rhs) const;
-        void Rotate(ByteArray& w) const;
+        void Rotate(coder::ByteArray& w) const;
         void ShiftRows();
         void SubBytes();
 

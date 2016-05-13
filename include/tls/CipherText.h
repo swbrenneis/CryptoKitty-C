@@ -2,7 +2,6 @@
 #define CIPHERTEXT_H_INCLUDED
 
 #include "tls/RecordProtocol.h"
-#include "data/ByteArray.h"
 
 namespace CK {
     class CipherMode;
@@ -21,15 +20,15 @@ class CipherText : public RecordProtocol {
         CipherText& operator= (const CipherText& other);
 
     public:
-        const CK::ByteArray& getPlaintext() const;
-        void setPlaintext(const CK::ByteArray& plain);
+        const coder::ByteArray& getPlaintext() const;
+        void setPlaintext(const coder::ByteArray& plain);
 
     protected:
         void encode();
         void decode();
 
     private:
-        CK::ByteArray plaintext;
+        coder::ByteArray plaintext;
 
 };
 

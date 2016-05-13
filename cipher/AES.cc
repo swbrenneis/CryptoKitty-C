@@ -152,7 +152,7 @@ void AES::AddRoundKey(const Word *roundKey) {
  * end
  *  
  */
-void AES::Cipher(const ByteArray& plaintext, const Word *keySchedule) {
+void AES::Cipher(const coder::ByteArray& plaintext, const Word *keySchedule) {
 
     if (plaintext.getLength() != Nb * 4) {
         throw BadParameterException("Cipher: Invalid block size.");
@@ -197,7 +197,7 @@ void AES::Cipher(const ByteArray& plaintext, const Word *keySchedule) {
  * Perform the block cipher on the plaintext using the
  * supplied key.
  */
-ByteArray AES::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
+coder::ByteArray AES::decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key) {
 
     if (ciphertext.getLength() != Nb * 4) {
         throw BadParameterException("decrypt: Illegal ciphertext size");
@@ -210,7 +210,7 @@ ByteArray AES::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
     Word *keySchedule = new Word[keyScheduleSize];
     KeyExpansion(key, keySchedule);
     InvCipher(ciphertext, keySchedule);
-    ByteArray plaintext;
+    coder::ByteArray plaintext;
     for (int col = 0; col < 4; ++col) {
         plaintext.append(state.row0[col]);
         plaintext.append(state.row1[col]);
@@ -227,7 +227,7 @@ ByteArray AES::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
  * Perform the block cipher on the plaintext using the
  * supplied key.
  */
-ByteArray AES::encrypt(const ByteArray& plaintext, const ByteArray& key) {
+coder::ByteArray AES::encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key) {
 
     if (plaintext.getLength() != Nb * 4) {
         throw BadParameterException("encrypt: Illegal plaintext size");
@@ -240,7 +240,7 @@ ByteArray AES::encrypt(const ByteArray& plaintext, const ByteArray& key) {
     Word *keySchedule = new Word[keyScheduleSize];
     KeyExpansion(key, keySchedule);
     Cipher(plaintext, keySchedule);
-    ByteArray ciphertext;
+    coder::ByteArray ciphertext;
     for (int col = 0; col < 4; ++col) {
         ciphertext.append(state.row0[col]);
         ciphertext.append(state.row1[col]);
@@ -286,7 +286,7 @@ ByteArray AES::encrypt(const ByteArray& plaintext, const ByteArray& key) {
  *
  * end
  */
-void AES::InvCipher(const ByteArray& ciphertext, const Word *keySchedule) {
+void AES::InvCipher(const coder::ByteArray& ciphertext, const Word *keySchedule) {
 
     if (ciphertext.getLength() != Nb * 4) {
         throw BadParameterException("Cipher: Invalid block size.");
@@ -430,7 +430,7 @@ void AES::InvSubBytes() {
  * end
  *  
  */
-void AES::KeyExpansion(const ByteArray& key, Word *keySchedule) const {
+void AES::KeyExpansion(const coder::ByteArray& key, Word *keySchedule) const {
 
     // Key consistency check.
     //if (key.getLength() != keySize
@@ -571,7 +571,7 @@ uint8_t AES::RijndaelMult(uint8_t lhs, uint8_t rhs) const {
 /*
  * Rotate a word left one byte.
  */
-void AES::Rotate(ByteArray& w) const {
+void AES::Rotate(coder::ByteArray& w) const {
 
     unsigned char t = w[3];
     w[3] = w[2];

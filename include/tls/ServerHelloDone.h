@@ -16,7 +16,7 @@ class ServerHelloDone : public HandshakeBody {
         ServerHelloDone& operator= (const ServerHelloDone& other);
 
     public:
-        const CK::ByteArray& encode() { return encoded; }
+        const coder::ByteArray& encode() { return encoded; }
         void initState() {}
 
     protected:

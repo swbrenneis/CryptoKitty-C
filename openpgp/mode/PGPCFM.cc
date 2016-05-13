@@ -18,16 +18,16 @@ PGPCFM::~PGPCFM() {
 
 }
 
-CK::ByteArray PGPCFM::decrypt(const CK::ByteArray& ciphertext,
-                                            const CK::ByteArray& key) {
+coder::ByteArray PGPCFM::decrypt(const coder::ByteArray& ciphertext,
+                                            const coder::ByteArray& key) {
 
-    CK::ByteArray P;
+    coder::ByteArray P;
 
     if (decryptPrefix(ciphertext.range(0, blockSize + 2), key)) {
         FR = ciphertext.range(2, blockSize);
         FRE = cipher->encrypt(FR, key);
         // Pull out the message ciphertext to make iterating easier.
-        CK::ByteArray ct(ciphertext.range(blockSize + 2,
+        coder::ByteArray ct(ciphertext.range(blockSize + 2,
                                     ciphertext.getLength() - (blockSize + 2)));
         uint32_t index = 0;
         while (index < ct.getLength()) {
@@ -39,8 +39,8 @@ CK::ByteArray PGPCFM::decrypt(const CK::ByteArray& ciphertext,
             else {
                 uint32_t partSize = ct.getLength() - index;
                 if (partSize > 0) {
-                    CK::ByteArray pad(blockSize - partSize, 0);
-                    CK::ByteArray partial(ct.range(index, partSize));
+                    coder::ByteArray pad(blockSize - partSize, 0);
+                    coder::ByteArray partial(ct.range(index, partSize));
                     partial.append(pad);
                     partial = FRE ^ partial;
                     P.append(partial.range(0, partSize));
@@ -58,11 +58,11 @@ CK::ByteArray PGPCFM::decrypt(const CK::ByteArray& ciphertext,
 /*
  * See encryptPrefix for details.
  */
-bool PGPCFM::decryptPrefix(const CK::ByteArray& ciphertext, const CK::ByteArray& key) {
+bool PGPCFM::decryptPrefix(const coder::ByteArray& ciphertext, const coder::ByteArray& key) {
 
     FR.setLength(blockSize, 0);
     FRE = cipher->encrypt(FR, key);
-    CK::ByteArray prefix(ciphertext.range(0, blockSize) ^ FRE);
+    coder::ByteArray prefix(ciphertext.range(0, blockSize) ^ FRE);
     FR = ciphertext.range(0, blockSize);
     FRE = cipher->encrypt(FR, key);
     prefix.append(FRE.range(FRE.getLength() - 2, 2) ^ ciphertext.range(blockSize, 2));
@@ -72,11 +72,11 @@ bool PGPCFM::decryptPrefix(const CK::ByteArray& ciphertext, const CK::ByteArray&
 
 }
 
-CK::ByteArray PGPCFM::encrypt(const CK::ByteArray& plaintext,
-                                            const CK::ByteArray& key) {
+coder::ByteArray PGPCFM::encrypt(const coder::ByteArray& plaintext,
+                                            const coder::ByteArray& key) {
 
 
-    CK::ByteArray C(encryptPrefix(key));
+    coder::ByteArray C(encryptPrefix(key));
 
     // 7.  (The resynchronization step) FR is loaded with C[3] through
     //     C[BS+2].
@@ -104,8 +104,8 @@ CK::ByteArray PGPCFM::encrypt(const CK::ByteArray& plaintext,
         else {
             uint32_t partSize = plaintext.getLength() - index;
             if (partSize > 0) {
-                CK::ByteArray pad(blockSize - partSize, 0);
-                CK::ByteArray partial(plaintext.range(index, partSize));
+                coder::ByteArray pad(blockSize - partSize, 0);
+                coder::ByteArray partial(plaintext.range(index, partSize));
                 partial.append(pad);
                 partial = FRE ^ partial;
                 C.append(partial.range(0, partSize));
@@ -122,10 +122,10 @@ CK::ByteArray PGPCFM::encrypt(const CK::ByteArray& plaintext,
  * Sets up the PGP prefix and encrypts it to C. FRE contains the
  * last block size bytes of C.
  */
-CK::ByteArray PGPCFM::encryptPrefix(const CK::ByteArray& key) {
+coder::ByteArray PGPCFM::encryptPrefix(const coder::ByteArray& key) {
 
     CK::SecureRandom *rnd = CK::SecureRandom::getSecureRandom("Fortuna");
-    CK::ByteArray prefix(blockSize);
+    coder::ByteArray prefix(blockSize);
     rnd->nextBytes(prefix);
     delete rnd;
     prefix.append(prefix[prefix.getLength() - 2]);
@@ -139,7 +139,7 @@ CK::ByteArray PGPCFM::encryptPrefix(const CK::ByteArray& key) {
     // 3.  FRE is xored with the first BS octets of random data prefixed to
     //     the plaintext to produce C[1] through C[BS], the first BS octets
     //     of ciphertext.
-    CK::ByteArray C(prefix.range(0, blockSize) ^ FRE);
+    coder::ByteArray C(prefix.range(0, blockSize) ^ FRE);
     // 4.  FR is loaded with C[1] through C[BS].
     FR = C;
     // 5.  FR is encrypted to produce FRE, the encryption of the first BS

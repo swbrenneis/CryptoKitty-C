@@ -1,7 +1,7 @@
 #ifndef HMAC_H_INCLUDED
 #define HMAC_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 
 namespace CK {
 
@@ -25,21 +25,21 @@ class HMAC {
         HMAC& operator= (const HMAC& other);
 
     public:
-        bool authenticate(const ByteArray& hmac);
-        ByteArray generateKey(unsigned bitsize);
+        bool authenticate(const coder::ByteArray& hmac);
+        coder::ByteArray generateKey(unsigned bitsize);
         unsigned getDigestLength() const;
-        ByteArray getHMAC();
-        void setKey(const ByteArray& k);
-        void setMessage(const ByteArray& m);
+        coder::ByteArray getHMAC();
+        void setKey(const coder::ByteArray& k);
+        void setMessage(const coder::ByteArray& m);
 
     private:
         Digest *hash;
-        ByteArray K;
-        ByteArray ipad;
-        ByteArray opad;
+        coder::ByteArray K;
+        coder::ByteArray ipad;
+        coder::ByteArray opad;
         unsigned B;
         unsigned L;
-        ByteArray text;
+        coder::ByteArray text;
 
 };
 

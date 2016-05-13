@@ -1,7 +1,7 @@
 #ifndef HANDSHAKEBODY_H_INCLUDED
 #define HANDSHAKEBODY_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 #include <iostream>
 
 namespace CKTLS {
@@ -20,15 +20,15 @@ class HandshakeBody {
 
     public:
         virtual void debugOut(std::ostream& out) {}
-        virtual void decode(const CK::ByteArray& stream);
-        virtual const CK::ByteArray& encode()=0;
+        virtual void decode(const coder::ByteArray& stream);
+        virtual const coder::ByteArray& encode()=0;
         virtual void initState()=0;
 
     protected:
         virtual void decode()=0;
 
     protected:
-        CK::ByteArray encoded;
+        coder::ByteArray encoded;
 
 };
 

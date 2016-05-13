@@ -5,7 +5,7 @@
 
 namespace CK {
 
-CBC::CBC(Cipher *c, const ByteArray& i)
+CBC::CBC(Cipher *c, const coder::ByteArray& i)
 : cipher(c),
   iv(i) {
 
@@ -22,28 +22,28 @@ CBC::~CBC() {
 
 }
 
-ByteArray CBC::decrypt(const ByteArray& iv, const ByteArray& block,
-                                            const ByteArray& key) const {
+coder::ByteArray CBC::decrypt(const coder::ByteArray& iv, const coder::ByteArray& block,
+                                            const coder::ByteArray& key) const {
 
-    ByteArray textblock(cipher->decrypt(block, key));
+    coder::ByteArray textblock(cipher->decrypt(block, key));
     return textblock ^ iv;
 
 }
 
-ByteArray CBC::encrypt(const ByteArray& iv, const ByteArray& block,
-                                            const ByteArray& key) const {
+coder::ByteArray CBC::encrypt(const coder::ByteArray& iv, const coder::ByteArray& block,
+                                            const coder::ByteArray& key) const {
 
     return cipher->encrypt(iv ^ block, key);
 
 }
 
-ByteArray CBC::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
+coder::ByteArray CBC::decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key) {
 
-    ByteArray plaintext;
-    ByteArray padded;
+    coder::ByteArray plaintext;
+    coder::ByteArray padded;
     unsigned textSize = ciphertext.getLength();
     unsigned blockOffset = 0;
-    ByteArray cblock;
+    coder::ByteArray cblock;
     if (textSize % blockSize != 0) {
         while (textSize > blockSize) {
             cblock = ciphertext.range(blockOffset, blockSize);
@@ -51,15 +51,15 @@ ByteArray CBC::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
             blockOffset += blockSize;
         }
         // Decrypt second to last block.
-        ByteArray padBlock(cipher->decrypt(cblock, key));
+        coder::ByteArray padBlock(cipher->decrypt(cblock, key));
         // Get padding bits.
-        ByteArray padBytes(padBlock.range(textSize, blockSize - textSize));
+        coder::ByteArray padBytes(padBlock.range(textSize, blockSize - textSize));
         padded = ciphertext;
         // Pad the original ciphertext.
         padded.append(padBytes);
         // Extract the last 2 blocks.
-        ByteArray b1(padded.range(padded.getLength()-(blockSize*2), blockSize));
-        ByteArray b2(padded.range(padded.getLength()-(blockSize), blockSize));
+        coder::ByteArray b1(padded.range(padded.getLength()-(blockSize*2), blockSize));
+        coder::ByteArray b2(padded.range(padded.getLength()-(blockSize), blockSize));
         // Swap blocks.
         padded = padded.range(0, padded.getLength()-(blockSize*2));
         padded.append(b2);
@@ -70,10 +70,10 @@ ByteArray CBC::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
     }
     textSize = padded.getLength();
     blockOffset = 0;
-    ByteArray input(iv);
+    coder::ByteArray input(iv);
     while (textSize > 0) {
-        ByteArray cipherblock(padded.range(blockOffset, blockSize));
-        ByteArray plainblock(decrypt(input, cipherblock, key));
+        coder::ByteArray cipherblock(padded.range(blockOffset, blockSize));
+        coder::ByteArray plainblock(decrypt(input, cipherblock, key));
         plaintext.append(plainblock);
         input = cipherblock;
         blockOffset += blockSize;
@@ -83,23 +83,23 @@ ByteArray CBC::decrypt(const ByteArray& ciphertext, const ByteArray& key) {
 
 }
 
-ByteArray CBC::encrypt(const ByteArray& plaintext, const ByteArray& key) {
+coder::ByteArray CBC::encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key) {
 
-    ByteArray ciphertext;
-    ByteArray padded(plaintext);
+    coder::ByteArray ciphertext;
+    coder::ByteArray padded(plaintext);
     // plaintext is padded. Need to steal cipherbits
     bool steal = padded.getLength() % blockSize != 0;
     while (padded.getLength() % blockSize != 0) {
         padded.append(0);
     }
     unsigned textLength = padded.getLength();
-    ByteArray input = iv;
-    ByteArray cipherblock;
-    std::deque<ByteArray> blocks;
+    coder::ByteArray input = iv;
+    coder::ByteArray cipherblock;
+    std::deque<coder::ByteArray> blocks;
     unsigned blockStart = 0;
     while (textLength > 0) {
-        ByteArray plainblock(padded.range(blockStart, blockSize));
-        ByteArray cipherblock(encrypt(input, plainblock, key));
+        coder::ByteArray plainblock(padded.range(blockStart, blockSize));
+        coder::ByteArray cipherblock(encrypt(input, plainblock, key));
         input = cipherblock;
         blocks.push_back(cipherblock);
         blockStart += blockSize;
@@ -108,9 +108,9 @@ ByteArray CBC::encrypt(const ByteArray& plaintext, const ByteArray& key) {
 
     if (steal) {
         // Swap last two blocks
-        ByteArray cn = blocks.back();
+        coder::ByteArray cn(blocks.back());
         blocks.pop_back();
-        ByteArray cn1 = blocks.back();
+        coder::ByteArray cn1(blocks.back());
         blocks.pop_back();
         blocks.push_back(cn);
         blocks.push_back(cn1);

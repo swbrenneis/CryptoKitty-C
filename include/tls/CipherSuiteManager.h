@@ -1,9 +1,8 @@
 #ifndef CIPHERSUITEMANAGER_H_INCLUDED
 #define CIPHERSUITEMANAGER_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 #include "tls/Constants.h"
-#include <cstdint>
 #include <deque>
 #include <iostream>
 
@@ -30,8 +29,8 @@ class CipherSuiteManager {
 #ifdef _DEBUG
         void debugOut(std::ostream& out) const;
 #endif
-        void decode(const CK::ByteArray& encoded);
-        CK::ByteArray encode() const;
+        void decode(const coder::ByteArray& encoded);
+        coder::ByteArray encode() const;
         CipherSuite getServerSuite() const;
         bool isCurve(CipherSuite c) const;
         void loadPreferred();

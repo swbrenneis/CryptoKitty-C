@@ -3,9 +3,11 @@
 
 #include <cstdint>
 
-namespace CK {
+namespace coder {
+    class ByteArray;
+}
 
-class ByteArray;
+namespace CK {
 
 /*
  * Random number generator.
@@ -26,7 +28,7 @@ class Random {
         Random& operator= (const Random& other);
 
     public:
-        virtual void nextBytes(ByteArray& bytes);
+        virtual void nextBytes(coder::ByteArray& bytes);
         virtual uint32_t nextInt();
         virtual uint64_t nextLong();
 

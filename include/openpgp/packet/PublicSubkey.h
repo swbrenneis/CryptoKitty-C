@@ -2,7 +2,6 @@
 #define PUBLICSUBKEY_H_INCLUDED
 
 #include "openpgp/packet/PublicKey.h"
-#include "data/BigInteger.h"
 
 namespace CKPGP {
 
@@ -16,7 +15,7 @@ class PublicSubkey : public PublicKey {
                     const CK::BigInteger g, const CK::BigInteger& v);    // DSA key
         PublicSubkey(const CK::BigInteger& p, const CK::BigInteger& g,
                     const CK::BigInteger& v);                           // Elgamal key
-        PublicSubkey(const CK::ByteArray& encoded);
+        PublicSubkey(const coder::ByteArray& encoded);
         ~PublicSubkey();
 
     public:

@@ -2,8 +2,8 @@
 #include "exceptions/openpgp/BadParameterException.h"
 #include "exceptions/openpgp/EncodingException.h"
 #include "keys/RSAPublicKey.h"
-#include "data/Unsigned32.h"
-#include "data/Unsigned16.h"
+#include "coder/Unsigned32.h"
+#include "coder/Unsigned16.h"
 #include <cmath>
 #include <time.h>
 
@@ -73,7 +73,7 @@ PublicKey::PublicKey(const CK::BigInteger& p, const CK::BigInteger& g,
 
 }
 
-PublicKey::PublicKey(const CK::ByteArray& encoded)
+PublicKey::PublicKey(const coder::ByteArray& encoded)
 : Packet(PUBLICKEY) {
 
     decode(encoded);
@@ -118,15 +118,15 @@ PublicKey& PublicKey::operator= (const PublicKey& other) {
 
 }
 
-void PublicKey::decode(const CK::ByteArray& encoded) {
+void PublicKey::decode(const coder::ByteArray& encoded) {
 
     version = encoded[0];
     if (version != 4) {
         throw EncodingException("Invalid public key version");
     }
 
-    CK::Unsigned32 created(encoded.range(1, 4), CK::Unsigned32::BIGENDIAN);
-    createTime = created.getUnsignedValue();
+    coder::Unsigned32 created(encoded.range(1, 4), coder::bigendian);
+    createTime = created.getValue();
 
     algorithm = encoded[5];
     switch (algorithm) {
@@ -147,59 +147,59 @@ void PublicKey::decode(const CK::ByteArray& encoded) {
 
 }
 
-void PublicKey::decodeDSAIntegers(const CK::ByteArray& encoded) {
+void PublicKey::decodeDSAIntegers(const coder::ByteArray& encoded) {
 
-    CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 len(encoded.range(0, 2), coder::bigendian);
     uint32_t index = 2;
-    dsaPrime.decode(encoded.range(index, len.getUnsignedValue()/8),
+    dsaPrime.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
-    index += len.getUnsignedValue() / 8;
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += len.getValue() / 8;
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    dsaOrder.decode(encoded.range(index, len.getUnsignedValue()/8),
+    dsaOrder.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
-    index += len.getUnsignedValue() / 8;
-    len.decode(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
+    index += len.getValue() / 8;
+    len.decode(encoded.range(0, 2), coder::bigendian);
     index += 2;
-    dsaGenerator.decode(encoded.range(index, len.getUnsignedValue()/8),
+    dsaGenerator.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
-    index += len.getUnsignedValue() / 8;
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += len.getValue() / 8;
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    dsaValue.decode(encoded.range(index, len.getUnsignedValue()/8),
+    dsaValue.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
 
 }
 
-void PublicKey::decodeElgamalIntegers(const CK::ByteArray& encoded) {
+void PublicKey::decodeElgamalIntegers(const coder::ByteArray& encoded) {
 
-    CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 len(encoded.range(0, 2), coder::bigendian);
     uint32_t index = 2;
-    elgamalPrime.decode(encoded.range(index, len.getUnsignedValue()/8),
+    elgamalPrime.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
-    index += len.getUnsignedValue() / 8;
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += len.getValue() / 8;
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    elgamalGenerator.decode(encoded.range(index, len.getUnsignedValue()/8),
+    elgamalGenerator.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
-    index += len.getUnsignedValue() / 8;
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += len.getValue() / 8;
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    elgamalValue.decode(encoded.range(index, len.getUnsignedValue()/8),
+    elgamalValue.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
 
 }
 
-void PublicKey::decodeRSAIntegers(const CK::ByteArray& encoded) {
+void PublicKey::decodeRSAIntegers(const coder::ByteArray& encoded) {
 
-    CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 len(encoded.range(0, 2), coder::bigendian);
     uint32_t index = 2;
-    rsaModulus.decode(encoded.range(index, len.getUnsignedValue()/8),
+    rsaModulus.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
-    index += len.getUnsignedValue() / 8;
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    index += len.getValue() / 8;
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    rsaExponent.decode(encoded.range(index, len.getUnsignedValue()/8),
+    rsaExponent.decode(encoded.range(index, len.getValue()/8),
                                                     CK::BigInteger::BIGENDIAN);
 
 }
@@ -207,14 +207,14 @@ void PublicKey::decodeRSAIntegers(const CK::ByteArray& encoded) {
 void PublicKey::encode() {
 
     encoded.append(encodeTag());
-    CK::ByteArray pk;
+    coder::ByteArray pk;
 
     pk.append(version);
-    CK::Unsigned32 created(createTime);
-    pk.append(created.getEncoded(CK::Unsigned32::BIGENDIAN));
+    coder::Unsigned32 created(createTime);
+    pk.append(created.getEncoded(coder::bigendian));
     pk.append(algorithm);
 
-    CK::Unsigned16 length;
+    coder::Unsigned16 length;
     switch (algorithm) {
         case RSASIGN:
         case RSAENCRYPT:
@@ -235,40 +235,40 @@ void PublicKey::encode() {
 
 }
 
-CK::ByteArray PublicKey::encodeDSAIntegers() const {
+coder::ByteArray PublicKey::encodeDSAIntegers() const {
 
-    CK::ByteArray dsa;
-    CK::Unsigned16 length;
+    coder::ByteArray dsa;
+    coder::Unsigned16 length;
 
     length.setValue(dsaPrime.bitLength());
     double len = dsaPrime.bitLength();
-    dsa.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray dsap(dsaPrime.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad1(ceil(len / 8) - dsap.getLength(), 0);
+    dsa.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray dsap(dsaPrime.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad1(ceil(len / 8) - dsap.getLength(), 0);
     dsa.append(pad1);
     dsa.append(dsap);
 
     length.setValue(dsaOrder.bitLength());
     len = dsaOrder.bitLength();
-    dsa.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray dsao(dsaOrder.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad2(ceil(len / 8) - dsao.getLength(), 0);
+    dsa.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray dsao(dsaOrder.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad2(ceil(len / 8) - dsao.getLength(), 0);
     dsa.append(pad2);
     dsa.append(dsao);
 
     length.setValue(dsaGenerator.bitLength());
     len = dsaGenerator.bitLength();
-    dsa.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray dsag(dsaGenerator.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad3(ceil(len / 8) - dsag.getLength(), 0);
+    dsa.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray dsag(dsaGenerator.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad3(ceil(len / 8) - dsag.getLength(), 0);
     dsa.append(pad3);
     dsa.append(dsag);
 
     length.setValue(dsaValue.bitLength());
     len = dsaValue.bitLength();
-    dsa.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray dsav(dsaValue.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad4(ceil(len / 8) - dsav.getLength(), 0);
+    dsa.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray dsav(dsaValue.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad4(ceil(len / 8) - dsav.getLength(), 0);
     dsa.append(pad4);
     dsa.append(dsav);
 
@@ -276,32 +276,32 @@ CK::ByteArray PublicKey::encodeDSAIntegers() const {
 
 }
 
-CK::ByteArray PublicKey::encodeElgamalIntegers() const {
+coder::ByteArray PublicKey::encodeElgamalIntegers() const {
 
-    CK::ByteArray elgamal;
-    CK::Unsigned16 length;
+    coder::ByteArray elgamal;
+    coder::Unsigned16 length;
 
     length.setValue(elgamalPrime.bitLength());
     double len = elgamalPrime.bitLength();
-    elgamal.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray elgamalp(elgamalPrime.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad1(ceil(len / 8) - elgamalp.getLength(), 0);
+    elgamal.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray elgamalp(elgamalPrime.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad1(ceil(len / 8) - elgamalp.getLength(), 0);
     elgamal.append(pad1);
     elgamal.append(elgamalp);
 
     length.setValue(elgamalGenerator.bitLength());
     len = elgamalGenerator.bitLength();
-    elgamal.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray elgamalg(elgamalGenerator.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad3(ceil(len / 8) - elgamalg.getLength(), 0);
+    elgamal.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray elgamalg(elgamalGenerator.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad3(ceil(len / 8) - elgamalg.getLength(), 0);
     elgamal.append(pad3);
     elgamal.append(elgamalg);
 
     length.setValue(elgamalValue.bitLength());
     len = elgamalValue.bitLength();
-    elgamal.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray elgamalv(elgamalValue.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad4(ceil(len / 8) - elgamalv.getLength(), 0);
+    elgamal.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray elgamalv(elgamalValue.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad4(ceil(len / 8) - elgamalv.getLength(), 0);
     elgamal.append(pad4);
     elgamal.append(elgamalv);
 
@@ -309,24 +309,24 @@ CK::ByteArray PublicKey::encodeElgamalIntegers() const {
 
 }
 
-CK::ByteArray PublicKey::encodeRSAIntegers() const {
+coder::ByteArray PublicKey::encodeRSAIntegers() const {
 
-    CK::ByteArray rsa;
-    CK::Unsigned16 length;
+    coder::ByteArray rsa;
+    coder::Unsigned16 length;
 
     length.setValue(rsaModulus.bitLength());
     double len = rsaModulus.bitLength();
-    rsa.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray rsam(rsaModulus.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad1(ceil(len / 8) - rsam.getLength(), 0);
+    rsa.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray rsam(rsaModulus.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad1(ceil(len / 8) - rsam.getLength(), 0);
     rsa.append(pad1);
     rsa.append(rsam);
 
     length.setValue(rsaExponent.bitLength());
     len = rsaExponent.bitLength();
-    rsa.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
-    CK::ByteArray rsae(rsaExponent.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::ByteArray pad2(ceil(len / 8) - rsae.getLength(), 0);
+    rsa.append(length.getEncoded(coder::bigendian));
+    coder::ByteArray rsae(rsaExponent.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pad2(ceil(len / 8) - rsae.getLength(), 0);
     rsa.append(pad2);
     rsa.append(rsae);
 

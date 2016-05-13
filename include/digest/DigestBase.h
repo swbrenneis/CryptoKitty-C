@@ -2,7 +2,6 @@
 #define DIGESTBASE_H_INCLUDED
 
 #include "digest/Digest.h"
-#include "data/ByteArray.h"
 #include <string>
 
 namespace CK {
@@ -25,18 +24,18 @@ class DigestBase : public Digest {
         virtual ~DigestBase();
 
     public:
-        ByteArray digest();
-        ByteArray digest(const ByteArray& bytes);
+        coder::ByteArray digest();
+        coder::ByteArray digest(const coder::ByteArray& bytes);
         void reset();
         void update(uint8_t byte);
-        void update(const ByteArray& bytes);
-        void update(const ByteArray& bytes, uint32_t offset, uint32_t length);
+        void update(const coder::ByteArray& bytes);
+        void update(const coder::ByteArray& bytes, uint32_t offset, uint32_t length);
 
     public:
         static Digest* getInstance(const std::string& algorithm);
 
     private:
-        ByteArray accumulator;
+        coder::ByteArray accumulator;
 
 };
 

@@ -16,14 +16,14 @@ MtE::~MtE() {
 
 }
 
-ByteArray MtE::decrypt(const ByteArray& ciphertext,
-                                    const ByteArray& key) {
+coder::ByteArray MtE::decrypt(const coder::ByteArray& ciphertext,
+                                    const coder::ByteArray& key) {
 
-    ByteArray ptm(cipher->decrypt(ciphertext, key));
+    coder::ByteArray ptm(cipher->decrypt(ciphertext, key));
     unsigned digestLength = hmac->getDigestLength();
     unsigned hmacOffset = ptm.getLength() - digestLength;
-    ByteArray mac(ptm.range(hmacOffset, digestLength));
-    ByteArray message(ptm.range(0, hmacOffset));
+    coder::ByteArray mac(ptm.range(hmacOffset, digestLength));
+    coder::ByteArray message(ptm.range(0, hmacOffset));
     hmac->setKey(key);
     hmac->setMessage(message);
     authenticated = hmac->authenticate(mac);
@@ -31,12 +31,12 @@ ByteArray MtE::decrypt(const ByteArray& ciphertext,
 
 }
 
-ByteArray MtE::encrypt(const ByteArray& plaintext,
-                                    const ByteArray& key) {
+coder::ByteArray MtE::encrypt(const coder::ByteArray& plaintext,
+                                    const coder::ByteArray& key) {
 
     hmac->setKey(key);
     hmac->setMessage(plaintext);
-    ByteArray ptm(plaintext);
+    coder::ByteArray ptm(plaintext);
     ptm.append(hmac->getHMAC());
     return cipher->encrypt(ptm, key);
 

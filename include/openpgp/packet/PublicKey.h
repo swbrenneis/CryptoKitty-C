@@ -20,7 +20,7 @@ class PublicKey : public Packet {
                     const CK::BigInteger g, const CK::BigInteger& v);    // DSA key
         PublicKey(const CK::BigInteger& p, const CK::BigInteger& g,
                     const CK::BigInteger& v);                           // Elgamal key
-        PublicKey(const CK::ByteArray& encoded);
+        PublicKey(const coder::ByteArray& encoded);
         ~PublicKey();
 
     protected:
@@ -47,13 +47,13 @@ class PublicKey : public Packet {
         void encode();
 
     private:
-        void decode(const CK::ByteArray& encoded);
-        void decodeDSAIntegers(const CK::ByteArray& encoded);
-        void decodeElgamalIntegers(const CK::ByteArray& encoded);
-        void decodeRSAIntegers(const CK::ByteArray& encoded);
-        CK::ByteArray encodeDSAIntegers() const;
-        CK::ByteArray encodeElgamalIntegers() const;
-        CK::ByteArray encodeRSAIntegers() const;
+        void decode(const coder::ByteArray& encoded);
+        void decodeDSAIntegers(const coder::ByteArray& encoded);
+        void decodeElgamalIntegers(const coder::ByteArray& encoded);
+        void decodeRSAIntegers(const coder::ByteArray& encoded);
+        coder::ByteArray encodeDSAIntegers() const;
+        coder::ByteArray encodeElgamalIntegers() const;
+        coder::ByteArray encodeRSAIntegers() const;
 
     private:
         uint8_t version;

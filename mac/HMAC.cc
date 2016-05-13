@@ -11,8 +11,8 @@ HMAC::HMAC(Digest *digest)
 
     B = hash->getBlockSize();
     L = hash->getDigestLength();
-    ipad = ByteArray(B, 0x36);
-    opad = ByteArray(B, 0x5C);
+    ipad = coder::ByteArray(B, 0x36);
+    opad = coder::ByteArray(B, 0x5C);
 
 }
 
@@ -22,7 +22,7 @@ HMAC::~HMAC() {
 
 }
 
-bool HMAC::authenticate(const ByteArray& hmac) {
+bool HMAC::authenticate(const coder::ByteArray& hmac) {
 
     return getHMAC() == hmac;
 
@@ -32,7 +32,7 @@ bool HMAC::authenticate(const ByteArray& hmac) {
  * Generate an HMAC key. The key size will be rounded
  * to a byte boundary. The Key must be at least L bytes.
  */
-ByteArray HMAC::generateKey(unsigned bitsize) {
+coder::ByteArray HMAC::generateKey(unsigned bitsize) {
 
     if (bitsize / 8 < L) {
         throw BadParameterException("Invalid key size");
@@ -57,14 +57,14 @@ unsigned HMAC::getDigestLength() const {
  * H(K XOR opad, H(K XOR ipad, text))
  *
  */
-ByteArray HMAC::getHMAC() {
+coder::ByteArray HMAC::getHMAC() {
 
     if (K.getLength() == 0) {
         throw IllegalStateException("Key not set");
     }
 
     // Pad or truncate the key until it is B bytes.
-    ByteArray k;
+    coder::ByteArray k;
     if (K.getLength() > B) {
         k = hash->digest(K);
     }
@@ -77,17 +77,17 @@ ByteArray HMAC::getHMAC() {
     hash->reset();
 
     // First mask.
-    ByteArray i(k ^ ipad);
+    coder::ByteArray i(k ^ ipad);
     i.append(text);
-    ByteArray h1(hash->digest(i));
+    coder::ByteArray h1(hash->digest(i));
     hash->reset();
-    ByteArray o(k ^ opad);
+    coder::ByteArray o(k ^ opad);
     o.append(h1);
     return hash->digest(o);
 
 }
 
-void HMAC::setKey(const ByteArray& k) {
+void HMAC::setKey(const coder::ByteArray& k) {
 
     if (k.getLength() < L) {
         throw BadParameterException("Invalid key");
@@ -97,7 +97,7 @@ void HMAC::setKey(const ByteArray& k) {
 
 }
 
-void HMAC::setMessage(const ByteArray& m) {
+void HMAC::setMessage(const coder::ByteArray& m) {
 
     text = m;
 

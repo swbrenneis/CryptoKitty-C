@@ -19,10 +19,10 @@ class MtE : public CipherMode {
 
     public:
         bool authenticate() { return authenticated; }
-        ByteArray decrypt(const ByteArray& ciphertext,
-                                            const ByteArray& key);
-        ByteArray encrypt(const ByteArray& plaintext,
-                                            const ByteArray& key);
+        coder::ByteArray decrypt(const coder::ByteArray& ciphertext,
+                                            const coder::ByteArray& key);
+        coder::ByteArray encrypt(const coder::ByteArray& plaintext,
+                                            const coder::ByteArray& key);
 
     private:
         unsigned blockSize;

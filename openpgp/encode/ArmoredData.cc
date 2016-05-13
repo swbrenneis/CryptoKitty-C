@@ -19,7 +19,7 @@ static const uint8_t SIGNATURE = 2;
 ArmoredData::ArmoredData() {
 }
 
-ArmoredData::ArmoredData(const CK::ByteArray& d)
+ArmoredData::ArmoredData(const coder::ByteArray& d)
 : data(d) {
 }
 
@@ -49,7 +49,7 @@ uint32_t ArmoredData::crc() {
  */
 void ArmoredData::decode(std::istream& in) {
 
-    CK::ByteArray bytesOut;
+    coder::ByteArray bytesOut;
 
     char buffer[100]; // Lines are 76 characters.
     uint8_t *ubuf = reinterpret_cast<uint8_t*>(buffer);
@@ -68,7 +68,7 @@ void ArmoredData::decode(std::istream& in) {
             
     //Load the encoded data into a byte array.
     in.getline(buffer, 100);
-    CK::ByteArray bOut;
+    coder::ByteArray bOut;
     while (buffer[0] != '=') {
         if (buffer[0] != 0) {
             bOut.append(ubuf, strlen(buffer));
@@ -148,7 +148,7 @@ void ArmoredData::encode(std::ostream& out) {
 /*
  * Return the decoded data.
  */
-CK::ByteArray ArmoredData::getData() {
+const coder::ByteArray& ArmoredData::getData() const {
 
         return data;
 

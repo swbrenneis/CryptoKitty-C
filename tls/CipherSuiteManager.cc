@@ -1,5 +1,5 @@
 #include "tls/CipherSuiteManager.h"
-#include "data/Unsigned16.h"
+#include "coder/Unsigned16.h"
 #include "exceptions/OutOfRangeException.h"
 #include "exceptions/tls/RecordException.h"
 
@@ -7,16 +7,7 @@ namespace CKTLS {
 
 // Static initialization.
 CipherSuiteList CipherSuiteManager::preferred;
-/*const CipherSuite TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 = 0x009f;
-const CipherSuite TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 = 0x009e;
-const CipherSuite TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = 0xC02B;
-const CipherSuite TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 = 0xC02C;
-const CipherSuite TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xC02F;
-const CipherSuite TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 = 0xC030;
-const CipherSuite TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x003D;
-const CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA256 = 0x003C;
-const CipherSuite TLS_NULL_WITH_NULL_NULL = 0;
-*/
+
 CipherSuiteManager::CipherSuiteManager() {
 
     initialize();
@@ -51,8 +42,8 @@ void CipherSuiteManager::initialize() {
 void CipherSuiteManager::debugOut(std::ostream& out) const {
 
     for (CipherConstIter it = suites.begin(); it != suites.end(); ++it) {
-        CK::Unsigned16 cs(*it);
-        CK::ByteArray csb(cs.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned16 cs(*it);
+        coder::ByteArray csb(cs.getEncoded(coder::bigendian));
         out << "Cipher suite: 0x";
         for (int i = 0; i < 2; ++i) {
             char c = (csb[i] >> 4) & 0x0f;
@@ -78,24 +69,24 @@ void CipherSuiteManager::debugOut(std::ostream& out) const {
 }
 #endif
 
-void CipherSuiteManager::decode(const CK::ByteArray& encoded) {
+void CipherSuiteManager::decode(const coder::ByteArray& encoded) {
 
     unsigned index = 0;
     while (index < encoded.getLength()) {
-        CK::Unsigned16 c(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+        coder::Unsigned16 c(encoded.range(index, 2), coder::bigendian);
         index += 2;
-        suites.push_back(c.getUnsignedValue());
+        suites.push_back(c.getValue());
     }
 
 }
 
-CK::ByteArray CipherSuiteManager::encode() const {
+coder::ByteArray CipherSuiteManager::encode() const {
 
-    CK::ByteArray encoded;
+    coder::ByteArray encoded;
     for (CipherConstIter it = suites.begin();
                                     it != suites.end(); ++it) {
-        CK::Unsigned16 c(*it);
-        encoded.append(c.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned16 c(*it);
+        encoded.append(c.getEncoded(coder::bigendian));
     }
 
     return encoded;

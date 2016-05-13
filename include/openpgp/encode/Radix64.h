@@ -5,7 +5,7 @@
 #include <sstream>
 #include <cstdint>
 
-namespace CK {
+namespace coder {
     class ByteArray;
 }
 
@@ -27,9 +27,9 @@ class Radix64 {
         Radix64& operator= (const Radix64& other);
 
     public:
-        void decode(const CK::ByteArray& in, CK::ByteArray& out) const;
+        void decode(const coder::ByteArray& in, coder::ByteArray& out) const;
 	    uint32_t decodeCRC(const std::string& encoded) const;
-	    void encode(const CK::ByteArray& in, std::ostream& out) const;
+	    void encode(const coder::ByteArray& in, std::ostream& out) const;
         std::string encodeCRC(uint32_t crcValue) const;
 
     private:

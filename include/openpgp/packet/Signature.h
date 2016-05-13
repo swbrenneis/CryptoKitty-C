@@ -3,7 +3,6 @@
 
 #include "openpgp/packet/Packet.h"
 #include "data/BigInteger.h"
-#include "data/ByteArray.h"
 #include <deque>
 
 namespace CK {
@@ -23,7 +22,7 @@ class Signature : public Packet {
     public:
         Signature();
         Signature(uint8_t type, uint8_t pk, uint8_t hash);
-        Signature(const CK::ByteArray& encoded);
+        Signature(const coder::ByteArray& encoded);
         ~Signature();
 
     public:
@@ -77,13 +76,13 @@ class Signature : public Packet {
 
     private:
         void createMessage();
-        void decode(const CK::ByteArray& encoded);
-        void decodeHashedSubpackets(const CK::ByteArray& encoded);
-        void decodeUnhashedSubpackets(const CK::ByteArray& encoded);
-        CK::ByteArray encodeHashedSubpackets() const;
+        void decode(const coder::ByteArray& encoded);
+        void decodeHashedSubpackets(const coder::ByteArray& encoded);
+        void decodeUnhashedSubpackets(const coder::ByteArray& encoded);
+        coder::ByteArray encodeHashedSubpackets() const;
         using Packet::encodeLength;
-        CK::ByteArray encodeLength(uint32_t len) const;
-        CK::ByteArray encodeUnhashedSubpackets() const;
+        coder::ByteArray encodeLength(uint32_t len) const;
+        coder::ByteArray encodeUnhashedSubpackets() const;
 
     private:
         uint8_t version;
@@ -91,7 +90,7 @@ class Signature : public Packet {
         uint8_t pkAlgorithm;
         uint8_t hashAlgorithm;
 
-        typedef std::deque<CK::ByteArray> SubpacketList;
+        typedef std::deque<coder::ByteArray> SubpacketList;
         typedef SubpacketList::const_iterator SubConstIter;
         SubpacketList hashedSubpackets;
         SubpacketList unhashedSubpackets;
@@ -101,11 +100,11 @@ class Signature : public Packet {
         CK::BigInteger DSAr;
         CK::BigInteger DSAs;
 
-        CK::ByteArray keyMaterial;
-        CK::ByteArray uidMaterial;
-        CK::ByteArray attrMaterial;
-        CK::ByteArray sigMaterial;
-        CK::ByteArray message;
+        coder::ByteArray keyMaterial;
+        coder::ByteArray uidMaterial;
+        coder::ByteArray attrMaterial;
+        coder::ByteArray sigMaterial;
+        coder::ByteArray message;
 
 };
 

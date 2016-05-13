@@ -7,8 +7,8 @@
 #include "openpgp/packet/UserID.h"
 #include "openpgp/packet/UserAttribute.h"
 #include "exceptions/openpgp/EncodingException.h"
-#include "data/Unsigned16.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned16.h"
+#include "coder/Unsigned32.h"
 
 namespace CKPGP {
 
@@ -49,7 +49,7 @@ Packet& Packet::operator= (const Packet& other) {
 
 }
 
-Packet *Packet::decodePacket(const CK::ByteArray& encoded) {
+Packet *Packet::decodePacket(const coder::ByteArray& encoded) {
 
     int index;
     uint32_t packetLength;
@@ -58,16 +58,16 @@ Packet *Packet::decodePacket(const CK::ByteArray& encoded) {
         index = 2;
     }
     else if (encoded[1] == 0xff) {
-        CK::Unsigned32 len(encoded.range(2, 4), CK::Unsigned32::BIGENDIAN);
-        packetLength = len.getUnsignedValue();
+        coder::Unsigned32 len(encoded.range(2, 4), coder::bigendian);
+        packetLength = len.getValue();
         index = 6;
     }
     else {
-        CK::ByteArray enc16(2);
+        coder::ByteArray enc16(2);
         enc16[0] = encoded[1] - 192;
         enc16[1] = encoded[2] + 192;
-        CK::Unsigned16 len(enc16, CK::Unsigned16::BIGENDIAN);
-        packetLength = len.getUnsignedValue();
+        coder::Unsigned16 len(enc16, coder::bigendian);
+        packetLength = len.getValue();
         index = 3;
     }
     uint32_t headerLength = index;
@@ -105,22 +105,22 @@ Packet *Packet::decodePacket(const CK::ByteArray& encoded) {
 
 }
 
-CK::ByteArray Packet::encodeLength() const {
+coder::ByteArray Packet::encodeLength() const {
 
-    CK::ByteArray encoded;
+    coder::ByteArray encoded;
     if (packetLength < 192) {
         encoded.append(packetLength);
     }
     else if (packetLength < 8384) {
-        CK::Unsigned16 len(packetLength);
-        CK::ByteArray enc16(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned16 len(packetLength);
+        coder::ByteArray enc16(len.getEncoded(coder::bigendian));
         encoded.append(enc16[0] + 192);
         encoded.append(enc16[1] - 192);
     }
     else {
         encoded.append(0xff);
-        CK::Unsigned32 len(packetLength);
-        encoded.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned32 len(packetLength);
+        encoded.append(len.getEncoded(coder::bigendian));
     }
 
     return encoded;
@@ -133,11 +133,9 @@ uint8_t Packet::encodeTag() const {
 
 }
 
-CK::ByteArray Packet::getEncoded() {
+const coder::ByteArray& Packet::getEncoded() {
 
-    if (encoded.getLength() == 0) {
-        encode();
-    }
+    encode();
     return encoded;
 
 }

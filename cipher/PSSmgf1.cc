@@ -1,6 +1,6 @@
 #include "cipher/PSSmgf1.h"
 #include "digest/Digest.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned32.h"
 #include "exceptions/BadParameterException.h"
 #include <cmath>
 
@@ -16,7 +16,7 @@ PSSmgf1::~PSSmgf1() {
 /*
 * Generate the mask.
 */
-ByteArray PSSmgf1::generateMask(const ByteArray& mgfSeed, int maskLen) {
+coder::ByteArray PSSmgf1::generateMask(const coder::ByteArray& mgfSeed, int maskLen) {
 
     hash->reset();
     int hLen = hash->getDigestLength();
@@ -24,15 +24,15 @@ ByteArray PSSmgf1::generateMask(const ByteArray& mgfSeed, int maskLen) {
         throw new BadParameterException("Mask length out of bounds");
     }
 
-    ByteArray T;
+    coder::ByteArray T;
     double doubleMaskLen = maskLen;
     for (int counter = 0; counter < std::ceil(doubleMaskLen / hLen);
                                                             ++counter) {
-        ByteArray C(Unsigned32(counter).getEncoded(Unsigned32::BIGENDIAN));
-        ByteArray h;
+        coder::ByteArray C(coder::Unsigned32(counter).getEncoded(coder::bigendian));
+        coder::ByteArray h;
         h.append(mgfSeed);
         h.append(C);
-        ByteArray t(hash->digest(h));
+        coder::ByteArray t(hash->digest(h));
 
         T.append(t);
     }

@@ -8,8 +8,7 @@
 #include "tls/ClientKeyExchange.h"
 #include "tls/Finished.h"
 #include "tls/ConnectionState.h"
-#include "data/Unsigned16.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned32.h"
 #include "exceptions/tls/RecordException.h"
 
 namespace CKTLS {
@@ -94,10 +93,10 @@ void HandshakeRecord::decode() {
 
     type = static_cast<HandshakeType>(fragment[0]);
     // Decode the 24 bit body length.
-    CK::ByteArray bLen(1, 0);
+    coder::ByteArray bLen(1, 0);
     bLen.append(fragment.range(1, 3));
-    CK::Unsigned32 bodyLen(bLen, CK::Unsigned32::BIGENDIAN);
-    uint32_t length = bodyLen.getUnsignedValue();
+    coder::Unsigned32 bodyLen(bLen, coder::bigendian);
+    uint32_t length = bodyLen.getValue();
     if (length + 4 != fragment.getLength()) {
         throw RecordException("Invalid body length");
     }
@@ -143,8 +142,8 @@ void HandshakeRecord::encode() {
     encoded.clear();
     fragment.append(type);
     encoded = body->encode();
-    CK::Unsigned32 bodyLen(encoded.getLength());
-    CK::ByteArray bl(bodyLen.getEncoded(CK::Unsigned32::BIGENDIAN));
+    coder::Unsigned32 bodyLen(encoded.getLength());
+    coder::ByteArray bl(bodyLen.getEncoded(coder::bigendian));
     fragment.append(bl.range(1, 3));    // 24 bit length.
     fragment.append(encoded);
 

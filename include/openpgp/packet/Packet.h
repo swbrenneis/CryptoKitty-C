@@ -1,8 +1,7 @@
 #ifndef PACKET_H_INCLUDED
 #define PACKET_H_INCLUDED
 
-#include "data/ByteArray.h"
-#include <cstdint>
+#include "coder/ByteArray.h"
 
 namespace CKPGP {
 
@@ -19,16 +18,16 @@ class Packet {
         Packet& operator= (const Packet& other);
 
     public:
-        virtual CK::ByteArray getEncoded();
+        virtual const coder::ByteArray& getEncoded();
         virtual uint32_t getHeaderLength() const;
         virtual uint32_t getPacketLength() const;
         virtual uint8_t getTag() const;
 
-        static Packet *decodePacket(const CK::ByteArray& encoded);
+        static Packet *decodePacket(const coder::ByteArray& encoded);
 
     protected:
         virtual void encode()=0;
-        virtual CK::ByteArray encodeLength() const;
+        virtual coder::ByteArray encodeLength() const;
         virtual uint8_t encodeTag() const;
 
     public:
@@ -46,7 +45,7 @@ class Packet {
         bool newFormat;
         uint32_t packetLength;  // Length of the packet without header
         uint32_t headerLength;
-        CK::ByteArray encoded;
+        coder::ByteArray encoded;
 
 };
 

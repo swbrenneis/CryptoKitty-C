@@ -11,7 +11,7 @@ UserID::UserID(const std::string& uid)
   userid(uid) {
 }
 
-UserID::UserID(const CK::ByteArray& encoded)
+UserID::UserID(const coder::ByteArray& encoded)
 : Packet(USERID) {
 
     uint8_t *enc = encoded.asArray();
@@ -56,7 +56,7 @@ void UserID::encode() {
     encoded.append(encodeTag());
     packetLength = userid.length();
     encoded.append(encodeLength());
-    encoded.append(CK::ByteArray(userid));
+    encoded.append(coder::ByteArray(userid));
 
 }
 

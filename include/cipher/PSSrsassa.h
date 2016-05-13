@@ -20,21 +20,21 @@ class PSSrsassa : public RSA {
         PSSrsassa& operator= (const PSSrsassa& other);
 
     public:
-        ByteArray decrypt(const RSAPrivateKey& K, const ByteArray& C);
-        ByteArray encrypt(const RSAPublicKey& K,
-                                const ByteArray& C);
-        ByteArray sign(const RSAPrivateKey& K, const ByteArray& M);
-        bool verify(const RSAPublicKey& K, const ByteArray& M,
-                                const ByteArray& S);
+        coder::ByteArray decrypt(const RSAPrivateKey& K, const coder::ByteArray& C);
+        coder::ByteArray encrypt(const RSAPublicKey& K,
+                                const coder::ByteArray& C);
+        coder::ByteArray sign(const RSAPrivateKey& K, const coder::ByteArray& M);
+        bool verify(const RSAPublicKey& K, const coder::ByteArray& M,
+                                const coder::ByteArray& S);
 
     private:
-        ByteArray emsaPSSEncode(const ByteArray&  M, int emLen);
-        bool emsaPSSVerify(const ByteArray& M, const ByteArray& EM,
+        coder::ByteArray emsaPSSEncode(const coder::ByteArray&  M, int emLen);
+        bool emsaPSSVerify(const coder::ByteArray& M, const coder::ByteArray& EM,
                                                             int emBits);
 
     private:
         Digest *digest;
-        ByteArray algorithmOID;
+        coder::ByteArray algorithmOID;
         int saltLength;
 
 };

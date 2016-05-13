@@ -1,6 +1,6 @@
 #include "digest/SHA256.h"
-#include "data/Unsigned32.h"
-#include "data/Unsigned64.h"
+#include "coder/Unsigned32.h"
+#include "coder/Unsigned64.h"
 #include <string.h>
 #include <climits>
 
@@ -27,7 +27,7 @@ const uint32_t SHA256::K[] =
 const uint8_t DERbytes[] = { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 
                                 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
                                 0x00, 0x04, 0x20 };
-const ByteArray SHA256::DER(DERbytes, sizeof(DERbytes));
+const coder::ByteArray SHA256::DER(DERbytes, sizeof(DERbytes));
 
 SHA256::SHA256(){
 }
@@ -55,13 +55,13 @@ unsigned SHA256::Ch(unsigned x, unsigned y, unsigned z) const {
  *
  * W(i) = σ1(W(i−2)) + W(i−7) + σ0(W(i−15)) + W(i−16), 17 ≤ i ≤ 64
  */
-SHA256::W SHA256::decompose(const ByteArray& chunks) const {
+SHA256::W SHA256::decompose(const coder::ByteArray& chunks) const {
 
     W w(64);
 
     for (int j = 0; j < 16; ++j) {
-        Unsigned32 c(chunks.range(j * 4, 4), Unsigned32::BIGENDIAN);
-        w[j] = c.getUnsignedValue();
+        coder::Unsigned32 c(chunks.range(j * 4, 4), coder::bigendian);
+        w[j] = c.getValue();
     }
 
     for (int j = 16; j < 64; ++j) {
@@ -72,17 +72,17 @@ SHA256::W SHA256::decompose(const ByteArray& chunks) const {
 
 }
 
-ByteArray SHA256::finalize(const ByteArray& in) const {
+coder::ByteArray SHA256::finalize(const coder::ByteArray& in) const {
 
     // Pad the message to an even multiple of 512 bits.
-    ByteArray context(pad(in));
+    coder::ByteArray context(pad(in));
 
     // Split the message up into 512 bit chunks.
     long n = context.getLength() / 64;
     // We need the chunk array to begin at index 1 so the indexing
     // works out below.
     Chunks chunks;
-    chunks.push_back(ByteArray(0));
+    chunks.push_back(coder::ByteArray(0));
     for (long i = 1; i <= n; i++) {
         chunks.push_back(context.range((i-1)*64, 64));
     }
@@ -145,14 +145,14 @@ ByteArray SHA256::finalize(const ByteArray& in) const {
 
     }
 
-    ByteArray d(Unsigned32(h1[n]).getEncoded(Unsigned32::BIGENDIAN)); 
-    d.append(Unsigned32(h2[n]).getEncoded(Unsigned32::BIGENDIAN)); 
-    d.append(Unsigned32(h3[n]).getEncoded(Unsigned32::BIGENDIAN)); 
-    d.append(Unsigned32(h4[n]).getEncoded(Unsigned32::BIGENDIAN)); 
-    d.append(Unsigned32(h5[n]).getEncoded(Unsigned32::BIGENDIAN)); 
-    d.append(Unsigned32(h6[n]).getEncoded(Unsigned32::BIGENDIAN)); 
-    d.append(Unsigned32(h7[n]).getEncoded(Unsigned32::BIGENDIAN)); 
-    d.append(Unsigned32(h8[n]).getEncoded(Unsigned32::BIGENDIAN)); 
+    coder::ByteArray d(coder::Unsigned32(h1[n]).getEncoded(coder::bigendian)); 
+    d.append(coder::Unsigned32(h2[n]).getEncoded(coder::bigendian)); 
+    d.append(coder::Unsigned32(h3[n]).getEncoded(coder::bigendian)); 
+    d.append(coder::Unsigned32(h4[n]).getEncoded(coder::bigendian)); 
+    d.append(coder::Unsigned32(h5[n]).getEncoded(coder::bigendian)); 
+    d.append(coder::Unsigned32(h6[n]).getEncoded(coder::bigendian)); 
+    d.append(coder::Unsigned32(h7[n]).getEncoded(coder::bigendian)); 
+    d.append(coder::Unsigned32(h8[n]).getEncoded(coder::bigendian)); 
 
     return d;
 
@@ -161,7 +161,7 @@ ByteArray SHA256::finalize(const ByteArray& in) const {
 /*
  * Return the ASN.1 encoding identifier
  */
-const ByteArray& SHA256::getDER() const {
+const coder::ByteArray& SHA256::getDER() const {
 
     return DER;
 
@@ -179,7 +179,7 @@ uint32_t SHA256::Maj(uint32_t x, uint32_t y, uint32_t z) const {
 /*
  * Pad the input array to an even multiple of 512 bits.
  */
-ByteArray SHA256:: pad(const ByteArray& in) const {
+coder::ByteArray SHA256:: pad(const coder::ByteArray& in) const {
 
     // Message size in bits - l
     long l = in.getLength() * 8;
@@ -191,18 +191,18 @@ ByteArray SHA256:: pad(const ByteArray& in) const {
      * value of 0x80, which is a single bit added to the end of
      * the message.
      */
-    ByteArray work = in;
+    coder::ByteArray work = in;
     work.append(0x80);
     // 512 bits = 64 bytes. The padded message includes the 64 bit
     // big endian representation of the message length in bits, so
     // in order to make the message modulo 512, we add bytes until
     // the whole message, including the length encoding is an even
     // multiple of 64,
-    ByteArray pad(64 - ((work.getLength() + 8) % 64));
+    coder::ByteArray pad(64 - ((work.getLength() + 8) % 64));
     work.append(pad);
     // Append the 64 bit encoded bit length
-    Unsigned64 l64(l);
-    work.append(l64.getEncoded(Unsigned64::BIGENDIAN));
+    coder::Unsigned64 l64(l);
+    work.append(l64.getEncoded(coder::bigendian));
     return work;
 
 }

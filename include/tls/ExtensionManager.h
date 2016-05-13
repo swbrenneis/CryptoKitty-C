@@ -1,8 +1,8 @@
 #ifndef EXTENSIONMANAGER_H_INCLUDED
 #define EXTENSIONMANAGER_H_INCLUDED
 
-#include "data/ByteArray.h"
-#include "data/Unsigned16.h"
+#include "coder/ByteArray.h"
+#include "coder/Unsigned16.h"
 #include <deque>
 #include <map>
 #include <iostream>
@@ -10,8 +10,8 @@
 namespace CKTLS {
 
 struct Extension {
-    CK::Unsigned16 type;
-    CK::ByteArray data;
+    coder::Unsigned16 type;
+    coder::ByteArray data;
 };
 
 typedef std::deque<Extension> ExtensionList;
@@ -32,8 +32,8 @@ class ExtensionManager {
 #ifdef _DEBUG
         void debugOut(std::ostream& out) const;
 #endif
-        void decode(const CK::ByteArray& encoded);
-        CK::ByteArray encode() const;
+        void decode(const coder::ByteArray& encoded);
+        coder::ByteArray encode() const;
         const Extension& getExtension(uint16_t etype) const;
         void loadDefaults();
 

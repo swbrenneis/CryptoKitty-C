@@ -28,7 +28,7 @@ class ServerCertificate : public HandshakeBody {
 #ifdef _DEBUG
         void debugOut(std::ostream& out);
 #endif
-        const CK::ByteArray& encode();
+        const coder::ByteArray& encode();
         static CK::RSAPrivateKey *getRSAPrivateKey();
         static CK::RSAPublicKey *getRSAPublicKey();
         void initState();

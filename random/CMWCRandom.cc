@@ -1,8 +1,8 @@
 #include "random/CMWCRandom.h"
 #include "data/NanoTime.h"
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 #include "data/BigInteger.h"
-#include "data/Unsigned64.h"
+#include "coder/Unsigned64.h"
 #include "digest/SHA256.h"
 #include <time.h>
 #include <climits>
@@ -85,11 +85,11 @@ unsigned long CMWCRandom::next(int bits) {
  */
 void CMWCRandom::seedGenerator() {
 
-    ByteArray fill(4096);
+    coder::ByteArray fill(4096);
     SHA256 digest;
     NanoTime nt;
     unsigned long nonce = seed;
-    ByteArray context;
+    coder::ByteArray context;
     int filled = 0;
 
     if (q.size() != 4096) {
@@ -99,15 +99,19 @@ void CMWCRandom::seedGenerator() {
         if (context.getLength() != 0) {
             digest.update(context);
         }
-        digest.update(Unsigned64::encode(nonce));
+        coder::Unsigned64 u64(nonce);
+        digest.update(u64.getEncoded());
         nonce++;
-        digest.update(Unsigned64::encode(nt.getFullTime()));
+        u64.setValue(nt.getFullTime());
+        digest.update(u64.getEncoded());
         context = digest.digest();
         fill.copy(filled, context, 0);
         filled += context.getLength();
     }
+    coder::Unsigned64 u64;
     for (int qi = 0; qi < 4088; qi += 8) {
-        q[qi] = Unsigned64::decode(fill.range(qi, 8));
+        u64.decode(fill.range(qi, 8));
+        q[qi] = u64.getValue();
     }
     nt.newTime();
     c = nt.getFullTime() % 809430659;  // Reset the reseed counter.

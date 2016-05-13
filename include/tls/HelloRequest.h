@@ -12,7 +12,7 @@ class HelloRequest : public HandshakeBody {
         ~HelloRequest() {}
 
     public:
-        const CK::ByteArray& encode() { return encoded; }
+        const coder::ByteArray& encode() { return encoded; }
         void initState() {}
 
     protected:

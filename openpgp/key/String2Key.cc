@@ -24,7 +24,7 @@ String2Key::String2Key(uint8_t alg)
 : type(0) {
 }
 
-String2Key::String2Key(uint8_t alg, const CK::ByteArray& s)
+String2Key::String2Key(uint8_t alg, const coder::ByteArray& s)
 : type(1),
   algorithm(alg),
   salt(s) {
@@ -35,7 +35,7 @@ String2Key::String2Key(uint8_t alg, const CK::ByteArray& s)
 
 }
 
-String2Key::String2Key(uint8_t alg, const CK::ByteArray& s, uint8_t c)
+String2Key::String2Key(uint8_t alg, const coder::ByteArray& s, uint8_t c)
 : type(2),
   algorithm(alg),
   salt(s),
@@ -54,13 +54,13 @@ String2Key::String2Key(uint8_t alg, const CK::ByteArray& s, uint8_t c)
 String2Key::~String2Key() {
 }
 
-CK::ByteArray String2Key::generateKey(const std::string& passphrase,
+coder::ByteArray String2Key::generateKey(const std::string& passphrase,
                                                         unsigned bitsize) const {
 
     double bits = bitsize;
     uint32_t keySize = ceil(bits / 8);
-    CK::ByteArray key;
-    CK::ByteArray pass(passphrase);
+    coder::ByteArray key;
+    coder::ByteArray pass(passphrase);
 
     CK::Digest *digest;
     switch (algorithm) {
@@ -75,7 +75,7 @@ CK::ByteArray String2Key::generateKey(const std::string& passphrase,
             break;
     }
 
-    CK::ByteArray context;
+    coder::ByteArray context;
     switch (type) {
         case SIMPLE:
             context.append(pass);
@@ -95,11 +95,11 @@ CK::ByteArray String2Key::generateKey(const std::string& passphrase,
 
     uint32_t digestLength = digest->getDigestLength();
     if (keySize <= digestLength) {
-        CK::ByteArray hash(digest->digest(context));
+        coder::ByteArray hash(digest->digest(context));
         key.append(hash.range(digestLength - keySize, keySize));
     }
     else {
-        CK::ByteArray pad;
+        coder::ByteArray pad;
         while (key.getLength() < keySize) {
             digest->update(pad);
             digest->update(context);
@@ -114,9 +114,9 @@ CK::ByteArray String2Key::generateKey(const std::string& passphrase,
 
 }
 
-CK::ByteArray String2Key::getSpecifier() const {
+coder::ByteArray String2Key::getSpecifier() const {
 
-    CK::ByteArray spec(1, type);
+    coder::ByteArray spec(1, type);
     spec.append(algorithm);
 
     switch (type) {

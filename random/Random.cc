@@ -1,6 +1,5 @@
-#include "../include/random/Random.h"
-#include "../include/data/ByteArray.h"
-#include <stdlib.h>
+#include "random/Random.h"
+#include "coder/ByteArray.h"
 #include <climits>
 #include <cmath>
 
@@ -32,9 +31,9 @@ uint64_t Random::next(int bits) {
 
 /*
  * Return a series of random bytes. The length of the series
- * is determined by the length of the ByteArray object.
+ * is determined by the length of the coder::ByteArray object.
  */
-void Random::nextBytes(ByteArray& bytes) {
+void Random::nextBytes(coder::ByteArray& bytes) {
 
     // Bit length.
     int l = bytes.getLength() * 8;

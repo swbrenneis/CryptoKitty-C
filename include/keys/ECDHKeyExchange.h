@@ -2,7 +2,6 @@
 #define ECDHKEYEXCHANGE_H_INCLUDED
 
 #include "data/BigInteger.h"
-#include "data/ByteArray.h"
 
 namespace CK {
 
@@ -38,19 +37,19 @@ class ECDHKeyExchange {
         static const CurveParams SECP256K1;
 
     public:
-        ByteArray getPublicKey();
+        coder::ByteArray getPublicKey();
         void setCurve(const CurveParams& params);
-        Point getSecret(const ByteArray& fk);
+        Point getSecret(const coder::ByteArray& fk);
 
     private:
-        ByteArray elementToString(const BigInteger& e) const;
+        coder::ByteArray elementToString(const BigInteger& e) const;
         bool isOnCurve(const Point& point) const;
         Point pointAdd(const Point& P, const Point& Q) const;
-        ByteArray pointToString(const Point& point, bool compress);
+        coder::ByteArray pointToString(const Point& point, bool compress);
         Point scalarMultiply(const BigInteger& m,
                                 const Point& point) const;
-        BigInteger stringToElement(const ByteArray& encoded) const;
-        Point stringToPoint(const ByteArray& encoded) const;
+        BigInteger stringToElement(const coder::ByteArray& encoded) const;
+        Point stringToPoint(const coder::ByteArray& encoded) const;
 
     private:
         bool curveSet;      // Curve parameters set.

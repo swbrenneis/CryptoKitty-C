@@ -2,7 +2,7 @@
 #include "tls/ClientHello.h"
 #include "tls/Constants.h"
 #include "tls/ServerKeyExchange.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned32.h"
 #include "random/SecureRandom.h"
 #include "exceptions/OutOfRangeException.h"
 #include "exceptions/tls/RecordException.h"
@@ -47,8 +47,8 @@ void ServerHello::decode() {
     majorVersion = encoded[index++];
     minorVersion = encoded[index++];
     // Random
-    CK::Unsigned32 g(encoded.range(index, 4), CK::Unsigned32::BIGENDIAN);
-    gmt = g.getUnsignedValue();
+    coder::Unsigned32 g(encoded.range(index, 4), coder::bigendian);
+    gmt = g.getValue();
     index += 4;
     random = encoded.range(index, 28);
     index += 28;
@@ -59,8 +59,8 @@ void ServerHello::decode() {
         index += sidLen;
     }
     // Cipher suites
-    CK::Unsigned16 csl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
-    uint16_t csLen = csl.getUnsignedValue();
+    coder::Unsigned16 csl(encoded.range(index, 2), coder::bigendian);
+    uint16_t csLen = csl.getValue();
     suites.decode(encoded.range(index+2, csLen));
     index += csLen + 2;
     // Compression methods
@@ -73,8 +73,8 @@ void ServerHello::decode() {
     // check to validate lengths.
     try {
         if (index < encoded.getLength() - 1) {
-            CK::Unsigned16 exl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
-            uint16_t exLength = exl.getUnsignedValue();
+            coder::Unsigned16 exl(encoded.range(index, 2), coder::bigendian);
+            uint16_t exLength = exl.getValue();
             index += 2;
             extensions.decode(encoded.range(index, exLength));
             index += exLength;
@@ -91,13 +91,13 @@ void ServerHello::decode() {
 
 }
 
-const CK::ByteArray& ServerHello::encode() {
+const coder::ByteArray& ServerHello::encode() {
 
     encoded.append(majorVersion);
     encoded.append(minorVersion);
 
-    CK::Unsigned32 g(gmt);
-    encoded.append(g.getEncoded(CK::Unsigned32::BIGENDIAN));
+    coder::Unsigned32 g(gmt);
+    encoded.append(g.getEncoded(coder::bigendian));
     encoded.append(random);
 
     uint8_t slen = sessionID.getLength();
@@ -106,9 +106,9 @@ const CK::ByteArray& ServerHello::encode() {
         encoded.append(sessionID);
     }
 
-    CK::ByteArray s(suites.encode());
-    CK::Unsigned16 suiteLen(s.getLength());
-    encoded.append(suiteLen.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::ByteArray s(suites.encode());
+    coder::Unsigned16 suiteLen(s.getLength());
+    encoded.append(suiteLen.getEncoded(coder::bigendian));
     encoded.append(s);
 
     encoded.append(compressionMethods.getLength());
@@ -128,7 +128,7 @@ CipherSuite ServerHello::getCipherSuite() const {
 
 }
 
-const CK::ByteArray& ServerHello::getRandom() const {
+const coder::ByteArray& ServerHello::getRandom() const {
 
     return random;
 
@@ -157,20 +157,20 @@ void ServerHello::initState(const ClientHello& hello) {
     // Set up extensions
     if (suites.isCurve(c)) {
         if (hello.getExtension(ExtensionManager::SUPPORTED_CURVES, ext)) {
-            CK::ByteArray edata(ext.data);
+            coder::ByteArray edata(ext.data);
             ext.data.clear();
             ext.data.append(0x00);
             ext.data.append(0x02);  // Curve data byte count
             bool matched = false;
-            CK::Unsigned16 cCount(ext.data.range(0, 2), CK::Unsigned16::BIGENDIAN);
-            for (unsigned i = 0; i < cCount.getUnsignedValue() && !matched; i += 2) {
-                CK::Unsigned16 curve(edata.range((i+2)*2, 2), CK::Unsigned16::BIGENDIAN);
-                if (static_cast<NamedCurve>(curve.getUnsignedValue()) == secp384r1) {
-                    ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
+            coder::Unsigned16 cCount(ext.data.range(0, 2), coder::bigendian);
+            for (unsigned i = 0; i < cCount.getValue() && !matched; i += 2) {
+                coder::Unsigned16 curve(edata.range((i+2)*2, 2), coder::bigendian);
+                if (static_cast<NamedCurve>(curve.getValue()) == secp384r1) {
+                    ext.data.append(curve.getEncoded(coder::bigendian));
                     matched = true;
                 }
-                else if (static_cast<NamedCurve>(curve.getUnsignedValue()) == secp256r1) {
-                    ext.data.append(curve.getEncoded(CK::Unsigned16::BIGENDIAN));
+                else if (static_cast<NamedCurve>(curve.getValue()) == secp256r1) {
+                    ext.data.append(curve.getEncoded(coder::bigendian));
                     matched = true;
                 }
             }

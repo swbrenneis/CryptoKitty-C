@@ -26,7 +26,7 @@ PKCS1rsassa::~PKCS1rsassa() {
 
 }
 
-ByteArray PKCS1rsassa::decrypt(const RSAPrivateKey& K, const ByteArray& C) {
+coder::ByteArray PKCS1rsassa::decrypt(const RSAPrivateKey& K, const coder::ByteArray& C) {
     throw IllegalOperationException("Unsupported signature operation");
 }
 
@@ -37,13 +37,13 @@ ByteArray PKCS1rsassa::decrypt(const RSAPrivateKey& K, const ByteArray& C) {
  * length of the encoded message.
  * Returns the encoded message as an octet string
  */
-ByteArray PKCS1rsassa::emsaPKCS1Encode(const ByteArray& M, int emLen) {
+coder::ByteArray PKCS1rsassa::emsaPKCS1Encode(const coder::ByteArray& M, int emLen) {
 
     // 1. Apply the hash function to the message M to produce a hash value
     //     H:
     //
     //         H = Digest(M).
-    ByteArray H(digest->digest(M));
+    coder::ByteArray H(digest->digest(M));
 
     // 2. Encode the algorithm ID for the hash function and the hash value
     //    into an ASN.1 value of type DigestInfo with the Distinguished
@@ -57,7 +57,7 @@ ByteArray PKCS1rsassa::emsaPKCS1Encode(const ByteArray& M, int emLen) {
     //    The first field identifies the hash function and the second
     //    contains the hash value.  Let T be the DER encoding of the
     //    DigestInfo value and let tLen be the length in octets of T.
-    ByteArray T;
+    coder::ByteArray T;
     T.append(algorithmOID);
     T.append(H);
     int tLen = T.getLength();
@@ -71,13 +71,13 @@ ByteArray PKCS1rsassa::emsaPKCS1Encode(const ByteArray& M, int emLen) {
     // 4. Generate an octet string PS consisting of emLen - tLen - 3 octets
     //    with hexadecimal value 0xff.  The length of PS will be at least 8
     //    octets.
-    ByteArray PS((emLen - tLen) - 3, 0xff);
+    coder::ByteArray PS((emLen - tLen) - 3, 0xff);
 
     // 5. Concatenate PS, the DER encoding T, and other padding to form the
     //    encoded message EM as
     //
     //       EM = 0x00 || 0x01 || PS || 0x00 || T.
-    ByteArray EM;
+    coder::ByteArray EM;
     EM.append(0x00);
     EM.append(0x01);
     EM.append(PS);
@@ -88,8 +88,8 @@ ByteArray PKCS1rsassa::emsaPKCS1Encode(const ByteArray& M, int emLen) {
 
 }
 
-ByteArray
-PKCS1rsassa::encrypt(const RSAPublicKey& K, const ByteArray& C) {
+coder::ByteArray
+PKCS1rsassa::encrypt(const RSAPublicKey& K, const coder::ByteArray& C) {
     throw IllegalOperationException("Unsupported signature operation");
 }
 
@@ -99,7 +99,7 @@ PKCS1rsassa::encrypt(const RSAPublicKey& K, const ByteArray& C) {
  * K is the signer's private key. M is the message to be signed.
  * Returns the signature as an octet string.
  */
-ByteArray PKCS1rsassa::sign(const RSAPrivateKey& K, const ByteArray& M) {
+coder::ByteArray PKCS1rsassa::sign(const RSAPrivateKey& K, const coder::ByteArray& M) {
 
     // 1. EMSA-PKCS1-v1_5 encoding: Apply the EMSA-PKCS1-v1_5 encoding
     //    operation (Section 9.2) to the message M to produce an encoded
@@ -111,7 +111,7 @@ ByteArray PKCS1rsassa::sign(const RSAPrivateKey& K, const ByteArray& M) {
     // too short" and stop.
 
     int k = K.getBitLength() / 8;
-    ByteArray EM;
+    coder::ByteArray EM;
     try {
         EM = emsaPKCS1Encode(M, k);
     }
@@ -152,8 +152,8 @@ ByteArray PKCS1rsassa::sign(const RSAPrivateKey& K, const ByteArray& M) {
 }
 
 bool
-PKCS1rsassa::verify(const RSAPublicKey& K, const ByteArray& M,
-                                            const ByteArray& S) {
+PKCS1rsassa::verify(const RSAPublicKey& K, const coder::ByteArray& M,
+                                            const coder::ByteArray& S) {
 
     // Length checking.
     // If the length of the signature S is not k octets,
@@ -188,7 +188,7 @@ PKCS1rsassa::verify(const RSAPublicKey& K, const ByteArray& M,
     // of length k octets:
     //
     //    EM = I2OSP (m, k).
-    ByteArray EM;
+    coder::ByteArray EM;
     try {
         // The padded message always begins with a zero byte. BigInteger
         // encoding will clip the byte, so the mesage length will always
@@ -217,7 +217,7 @@ PKCS1rsassa::verify(const RSAPublicKey& K, const ByteArray& M,
     //
     // This would violate the best practice of voiding the creation of
     // oracles. We will just fail silently on any exceptions.
-    ByteArray emPrime;
+    coder::ByteArray emPrime;
     try {
         emPrime = emsaPKCS1Encode(M, k);
     }

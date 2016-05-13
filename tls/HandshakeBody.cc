@@ -8,7 +8,7 @@ HandshakeBody::HandshakeBody() {
 HandshakeBody::~HandshakeBody() {
 }
 
-void HandshakeBody::decode(const CK::ByteArray& stream) {
+void HandshakeBody::decode(const coder::ByteArray& stream) {
 
     encoded = stream;
     decode();

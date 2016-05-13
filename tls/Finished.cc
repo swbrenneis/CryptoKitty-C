@@ -14,7 +14,7 @@ Finished::Finished() {
 Finished::~Finished() {
 }
 
-bool Finished::authenticate(const CK::ByteArray& fin) const {
+bool Finished::authenticate(const coder::ByteArray& fin) const {
 
     ConnectionState *state = ConnectionState::getCurrentRead();
     MACAlgorithm mac = state->getHMAC();
@@ -40,14 +40,14 @@ bool Finished::authenticate(const CK::ByteArray& fin) const {
     }
 
     ConnectionEnd end = state->getEntity();
-    CK::ByteArray seed(end == server ? "server finished" : "client finished");
-    CK::ByteArray hash(digest->digest(fin));
+    coder::ByteArray seed(end == server ? "server finished" : "client finished");
+    coder::ByteArray hash(digest->digest(fin));
     seed.append(hash);
 
     digest->reset();
     CK::HMAC hmac(digest);
     uint32_t keyLength = state->getMacKeyLength();
-    CK::ByteArray key(state->getMasterSecret());
+    coder::ByteArray key(state->getMasterSecret());
     hmac.setKey(key.range(0, keyLength));
 
     return hmac.authenticate(finished);
@@ -60,7 +60,7 @@ void Finished::decode() {
 
 }
 
-const CK::ByteArray& Finished::encode() {
+const coder::ByteArray& Finished::encode() {
 
     ConnectionState *state = ConnectionState::getCurrentWrite();
     MACAlgorithm mac = state->getHMAC();
@@ -86,14 +86,14 @@ const CK::ByteArray& Finished::encode() {
     }
 
     ConnectionEnd end = state->getEntity();
-    CK::ByteArray seed(end == server ? "server finished" : "client finished");
-    CK::ByteArray hash(digest->digest(finished));
+    coder::ByteArray seed(end == server ? "server finished" : "client finished");
+    coder::ByteArray hash(digest->digest(finished));
     seed.append(hash);
 
     digest->reset();
     CK::HMAC hmac(digest);
     uint32_t keyLength = state->getMacKeyLength();
-    CK::ByteArray key(state->getMasterSecret());
+    coder::ByteArray key(state->getMasterSecret());
     hmac.setKey(key.range(0, keyLength));
     encoded.append(hmac.getHMAC());
 
@@ -101,7 +101,7 @@ const CK::ByteArray& Finished::encode() {
 
 }
 
-void Finished::initState(const CK::ByteArray& f) {
+void Finished::initState(const coder::ByteArray& f) {
 
     finished = f;
 

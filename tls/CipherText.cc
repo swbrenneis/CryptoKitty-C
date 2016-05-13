@@ -1,6 +1,6 @@
 #include "tls/CipherText.h"
 #include "tls/Constants.h"
-#include "data/Unsigned16.h"
+#include "coder/Unsigned16.h"
 #include "ciphermodes/CipherMode.h"
 #include "tls/ConnectionState.h"
 
@@ -25,13 +25,13 @@ void CipherText::encode() {
 
 }
 
-const CK::ByteArray& CipherText::getPlaintext() const {
+const coder::ByteArray& CipherText::getPlaintext() const {
 
     return plaintext;
 
 }
 
-void CipherText::setPlaintext(const CK::ByteArray& plain) {
+void CipherText::setPlaintext(const coder::ByteArray& plain) {
 
     plaintext = plain;
 

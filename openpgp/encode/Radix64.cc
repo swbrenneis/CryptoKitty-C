@@ -1,14 +1,15 @@
 #include "openpgp/encode/Radix64.h"
 #include "exceptions/openpgp/EncodingException.h"
-#include "data/ByteArray.h"
-#include "data/Unsigned32.h"
+#include "coder/ByteArray.h"
+#include "coder/Unsigned32.h"
 #include <iostream>
 #include <algorithm>
 
 namespace CKPGP {
 
 // Static initialization
-const std::string Radix64::ALPHABET("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+const std::string
+Radix64::ALPHABET("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
 
 Radix64::Radix64() {
 }
@@ -21,12 +22,12 @@ Radix64::~Radix64() {
  * for the CRC delimiter. Really ugly plumbing code, but it can't
  * be helped.
  */
-void Radix64::decode(const CK::ByteArray& in, CK::ByteArray& out) const {
+void Radix64::decode(const coder::ByteArray& in, coder::ByteArray& out) const {
 
     unsigned index = 0;
-    CK::ByteArray sextets(4);
+    coder::ByteArray sextets(4);
     while (index < in.getLength()) {
-        CK::ByteArray letters(in.range(index, 4));
+        coder::ByteArray letters(in.range(index, 4));
         index += 4;
         for (unsigned i = 0; i < 4; ++i) {
             if (letters[i] == '=') {
@@ -53,8 +54,8 @@ void Radix64::decode(const CK::ByteArray& in, CK::ByteArray& out) const {
         bits = (bits << 6) | sextets[1];
         bits = (bits << 6) | sextets[0];
 
-        CK::Unsigned32 word(bits);
-        CK::ByteArray octets(word.getEncoded(CK::Unsigned32::LITTLEENDIAN));
+        coder::Unsigned32 word(bits);
+        coder::ByteArray octets(word.getEncoded(coder::littleendian));
         out.append(octets.range(0, range));
     }
 
@@ -83,21 +84,21 @@ uint32_t Radix64::decodeCRC(const std::string& encoded) const {
 * Encode an incoming stream of data to an output stream. More
 * plumbing code.
 */
-void Radix64::encode(const CK::ByteArray& in, std::ostream& out) const {
+void Radix64::encode(const coder::ByteArray& in, std::ostream& out) const {
 
     unsigned index = 0;
     int column = 0;
-    CK::ByteArray sextets(4);
+    coder::ByteArray sextets(4);
     unsigned bits24 = 3;
     while (index < in.getLength()) {
         unsigned count = std::min(bits24, in.getLength() - index);
-        CK::ByteArray octets(in.range(index, count));
+        coder::ByteArray octets(in.range(index, count));
         while (octets.getLength() < 4) {
             octets.append(0);
         }
         index += count;
-        CK::Unsigned32 word(octets, CK::Unsigned32::LITTLEENDIAN);
-        uint32_t bits = word.getUnsignedValue();
+        coder::Unsigned32 word(octets, coder::littleendian);
+        uint32_t bits = word.getValue();
         column = sendColumn(ALPHABET[bits & 0x3f], out, column);
         bits = bits >> 6;
         column = sendColumn(ALPHABET[bits & 0x3f], out, column);

@@ -2,8 +2,7 @@
 #include "tls/ConnectionState.h"
 #include "cipher/AES.h"
 #include "ciphermodes/GCM.h"
-#include "data/Unsigned64.h"
-#include "data/Unsigned16.h"
+#include "coder/Unsigned64.h"
 #include "exceptions/tls/EncodingException.h"
 #include "exceptions/tls/RecordException.h"
 
@@ -37,13 +36,13 @@ void ChangeCipherSpec::decode() {
         case aead:
             {
             CK::Cipher *cipher = getCipher(state);
-            const CK::ByteArray& iv(state->getIV());
+            const coder::ByteArray& iv(state->getIV());
             //std::cout << "Decode IV = " << iv << std::endl;
             CK::GCM gcm(cipher, iv);
-            const CK::ByteArray& key(state->getEncryptionKey());
+            const coder::ByteArray& key(state->getEncryptionKey());
             //std::cout << "Decode Key = " << key << std::endl;
-            CK::Unsigned64 seq(state->getSequenceNumber());
-            CK::ByteArray ad(seq.getEncoded(CK::Unsigned64::BIGENDIAN));
+            coder::Unsigned64 seq(state->getSequenceNumber());
+            coder::ByteArray ad(seq.getEncoded(coder::bigendian));
             ad.append(0);   // Compression type.
             ad.append(MAJORVERSION);   // Major version.
             ad.append(MINORVERSION);   // Minor version.
@@ -55,7 +54,7 @@ void ChangeCipherSpec::decode() {
                 throw EncodingException("Invalid ciphertext");
             }
             gcm.setAuthTag(fragment.range(1, 16));
-            CK::ByteArray plaintext(gcm.decrypt(fragment.range(0, 1), key));
+            coder::ByteArray plaintext(gcm.decrypt(fragment.range(0, 1), key));
             if (plaintext.getLength() != 1 || plaintext[0] != 1) {
                 throw EncodingException("Invalid plaintext");
             }
@@ -69,7 +68,7 @@ void ChangeCipherSpec::encode() {
 
     ConnectionState *state = ConnectionState::getPendingWrite();
 
-    CK::ByteArray plaintext(1, 1);
+    coder::ByteArray plaintext(1, 1);
 
     switch(state->getCipherType()) {
         case stream:
@@ -81,20 +80,20 @@ void ChangeCipherSpec::encode() {
         case aead:
             {
             CK::Cipher *cipher = getCipher(state);
-            const CK::ByteArray& iv(state->getIV());
+            const coder::ByteArray& iv(state->getIV());
             //std::cout << "Encode IV = " << iv << std::endl;
             CK::GCM gcm(cipher, iv);
-            const CK::ByteArray& key(state->getEncryptionKey());
+            const coder::ByteArray& key(state->getEncryptionKey());
             //std::cout << "Encode Key = " << key << std::endl;
-            CK::Unsigned64 seq(state->getSequenceNumber());
-            CK::ByteArray ad(seq.getEncoded(CK::Unsigned64::BIGENDIAN));
+            coder::Unsigned64 seq(state->getSequenceNumber());
+            coder::ByteArray ad(seq.getEncoded(coder::bigendian));
             ad.append(0);   // Compression type.
             ad.append(MAJORVERSION);   // Major version.
             ad.append(MINORVERSION);   // Minor version.
             ad.append(1);   // Data length.
             gcm.setAuthData(ad);
             //std::cout << "Decode ad = " << ad << std::endl;
-            CK::ByteArray ciphertext(gcm.encrypt(plaintext, key));
+            coder::ByteArray ciphertext(gcm.encrypt(plaintext, key));
             if (ciphertext.getLength() != 1) {
                 throw RecordException("Invalid ciphertext");
             }

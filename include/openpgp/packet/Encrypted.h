@@ -10,21 +10,21 @@ class Encrypted : public Packet {
 
     public:
         Encrypted();
-        Encrypted(const CK::ByteArray& encoded);
+        Encrypted(const coder::ByteArray& encoded);
         Encrypted(const Encrypted& other);
         Encrypted& operator= (const Encrypted& other);
         ~Encrypted();
 
     public:
-        const CK::ByteArray& getCiphertext() const;
-        void setCiphertext(const CK::ByteArray& c);
+        const coder::ByteArray& getCiphertext() const;
+        void setCiphertext(const coder::ByteArray& c);
 
     private:
-        void decode(const CK::ByteArray& encoded);
+        void decode(const coder::ByteArray& encoded);
         void encode();
 
     private:
-        CK::ByteArray ciphertext;
+        coder::ByteArray ciphertext;
 
 };
 

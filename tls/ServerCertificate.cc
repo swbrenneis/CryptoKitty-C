@@ -1,7 +1,7 @@
 #include "tls/ServerCertificate.h"
 #include "exceptions/tls/RecordException.h"
-#include "data/Unsigned64.h"
-#include "data/Unsigned16.h"
+#include "coder/Unsigned64.h"
+#include "coder/Unsigned16.h"
 
 namespace CKTLS {
 
@@ -49,26 +49,26 @@ void ServerCertificate::decode() {
     }
 
     uint8_t keySize = encoded[1];
-    CK::Unsigned64 id(encoded.range(2, keySize), CK::Unsigned64::BIGENDIAN);
-    keyID = id.getUnsignedValue();
+    coder::Unsigned64 id(encoded.range(2, keySize), coder::bigendian);
+    keyID = id.getValue();
     delete cert;
     uint32_t index = keySize + 2;
-    CK::Unsigned16 len(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 len(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    cert = new PGPCertificate(encoded.range(index, len.getUnsignedValue()));
+    cert = new PGPCertificate(encoded.range(index, len.getValue()));
     rsaPublicKey = cert->getPublicKey()->getRSAPublicKey();
 
 }
 
-const CK::ByteArray& ServerCertificate::encode() {
+const coder::ByteArray& ServerCertificate::encode() {
 
     encoded.append(type);
-    CK::Unsigned64 id(keyID);
+    coder::Unsigned64 id(keyID);
     encoded.append(8);
-    encoded.append(id.getEncoded(CK::Unsigned64::BIGENDIAN));
-    CK::ByteArray pgp(cert->encode());
-    CK::Unsigned16 len(pgp.getLength());
-    encoded.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    encoded.append(id.getEncoded(coder::bigendian));
+    coder::ByteArray pgp(cert->encode());
+    coder::Unsigned16 len(pgp.getLength());
+    encoded.append(len.getEncoded(coder::bigendian));
     encoded.append(pgp);
 
     return encoded;

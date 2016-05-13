@@ -6,7 +6,7 @@ PKESessionKey::PKESessionKey()
 : Packet(PKESESSIONKEY) {
 }
 
-PKESessionKey::PKESessionKey(const CK::ByteArray& encoded)
+PKESessionKey::PKESessionKey(const coder::ByteArray& encoded)
 : Packet(PKESESSIONKEY) {
 }
 

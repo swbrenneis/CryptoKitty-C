@@ -1,6 +1,6 @@
 #include "openpgp/packet/UserAttribute.h"
-#include "data/Unsigned16.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned16.h"
+#include "coder/Unsigned32.h"
 
 namespace CKPGP {
 
@@ -8,7 +8,7 @@ UserAttribute::UserAttribute()
 : Packet(USERID) {
 }
 
-UserAttribute::UserAttribute(const CK::ByteArray& encoded)
+UserAttribute::UserAttribute(const coder::ByteArray& encoded)
 : Packet(USERID) {
 
     decode(encoded);
@@ -49,7 +49,7 @@ UserAttribute& UserAttribute::operator= (UserAttribute *other) {
 
 }
 
-void UserAttribute::decode(const CK::ByteArray& encoded) {
+void UserAttribute::decode(const coder::ByteArray& encoded) {
 
     unsigned index = 0;
     unsigned length;
@@ -59,18 +59,18 @@ void UserAttribute::decode(const CK::ByteArray& encoded) {
             index++;
         }
         else if (encoded[index] == 0xff) {
-            CK::Unsigned32 len(encoded.range(index + 1, 4), CK::Unsigned32::BIGENDIAN);
-            length = len.getUnsignedValue();
+            coder::Unsigned32 len(encoded.range(index + 1, 4), coder::bigendian);
+            length = len.getValue();
             index += 5;
         }
         else {
-            CK::ByteArray enc16(2);
+            coder::ByteArray enc16(2);
             enc16[0] = encoded[index];
             enc16[1] = encoded[index + 1];
             enc16[0] -= 192;
             enc16[1] += 192;
-            CK::Unsigned16 len(enc16, CK::Unsigned16::BIGENDIAN);
-            length = len.getUnsignedValue();
+            coder::Unsigned16 len(enc16, coder::bigendian);
+            length = len.getValue();
             index += 2;
         }
         subPackets.push_back(encoded.range(index, length));
@@ -82,7 +82,7 @@ void UserAttribute::decode(const CK::ByteArray& encoded) {
 void UserAttribute::encode() {
 
     encoded.append(encodeTag());
-    CK::ByteArray sub;
+    coder::ByteArray sub;
 
     for (SubConstIter it = subPackets.begin(); it != subPackets.end();
                                                     ++it) {
@@ -96,20 +96,20 @@ void UserAttribute::encode() {
 
 }
 
-CK::ByteArray UserAttribute::encodeLength(uint32_t len) const {
+coder::ByteArray UserAttribute::encodeLength(uint32_t len) const {
 
-    CK::ByteArray encoded;
+    coder::ByteArray encoded;
     if (len < 192) {
         encoded.append(len);
     }
     else if (len < 8384) {
-        CK::Unsigned16 len(len);
-        encoded.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned16 len(len);
+        encoded.append(len.getEncoded(coder::bigendian));
     }
     else {
         encoded.append(0xff);
-        CK::Unsigned32 len(len);
-        encoded.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned32 len(len);
+        encoded.append(len.getEncoded(coder::bigendian));
     }
 
     return encoded;

@@ -2,7 +2,6 @@
 #define CHANGECIPHERSPEC_H_INCLUDED
 
 #include "tls/RecordProtocol.h"
-#include "data/ByteArray.h"
 
 namespace CK {
     class Cipher;

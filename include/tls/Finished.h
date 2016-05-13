@@ -13,16 +13,16 @@ class Finished : public HandshakeBody {
         ~Finished();
 
     public:
-        bool authenticate(const CK::ByteArray& fin) const;
-        const CK::ByteArray& encode();
+        bool authenticate(const coder::ByteArray& fin) const;
+        const coder::ByteArray& encode();
         void initState() {}
-        void initState(const CK::ByteArray& finished);
+        void initState(const coder::ByteArray& finished);
 
     protected:
         void decode();
 
     private:
-        CK::ByteArray finished;
+        coder::ByteArray finished;
 
 };
 

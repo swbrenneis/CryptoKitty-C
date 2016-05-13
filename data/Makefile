@@ -5,8 +5,7 @@ CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
 CPPINCLUDES= -I../include -I$(DEV_HOME)/include
 CPPFLAGS= -Wall -g -MMD -fPIC -std=c++11 $(CPPDEFINES) $(CPPINCLUDES)
 
-CPP_SOURCES= BigInteger.cc ByteArray.cc Int16.cc Int32.cc Int64.cc \
-			 NanoTime.cc Unsigned16.cc Unsigned32.cc Unsigned64.cc
+CPP_SOURCES= BigInteger.cc NanoTime.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 

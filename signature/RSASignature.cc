@@ -50,7 +50,7 @@ void RSASignature<C,D>::initVerify(RSAPublicKey* pub) {
  * Sign the accumulated message.
  */
 template<class C, class D>
-ByteArray RSASignature<C,D>::sign() {
+coder::ByteArray RSASignature<C,D>::sign() {
 
     if (!signInit) {
         throw IllegalStateException("Signature Not Initialized");
@@ -74,7 +74,7 @@ void RSASignature<C,D>::update(unsigned char b) {
  * Update the message accumulator with a byte array.
  */
 template<class C, class D>
-void RSASignature<C,D>::update(const ByteArray& bytes) {
+void RSASignature<C,D>::update(const coder::ByteArray& bytes) {
 
     accumulator.append(bytes);
 
@@ -84,7 +84,7 @@ void RSASignature<C,D>::update(const ByteArray& bytes) {
  * Update the message accumulator with a byte array.
  */
 template<class C, class D>
-void RSASignature<C,D>::update(const ByteArray& bytes,
+void RSASignature<C,D>::update(const coder::ByteArray& bytes,
                 int offset, int length) {
 
     accumulator.append(bytes, offset, length);
@@ -95,7 +95,7 @@ void RSASignature<C,D>::update(const ByteArray& bytes,
  * Verify the accumulated message.
  */
 template<class C, class D>
-bool RSASignature<C,D>::verify(const ByteArray& sig) {
+bool RSASignature<C,D>::verify(const coder::ByteArray& sig) {
 
     if (!verifyInit) {
         throw IllegalStateException("Signature Not Initialized");

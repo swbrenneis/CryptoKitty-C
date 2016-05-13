@@ -1,6 +1,8 @@
+DEV_HOME= $(HOME)/dev
+
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
-CPPINCLUDES= -I../include
+CPPINCLUDES= -I../include -I$(DEV_HOME)/include
 CPPFLAGS= -Wall -g -MMD -std=c++11 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
 CPP_SOURCES= AES.cc PKCS1rsassa.cc PSSmgf1.cc PSSrsassa.cc RSA.cc

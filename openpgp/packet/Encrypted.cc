@@ -6,7 +6,7 @@ Encrypted::Encrypted()
 : Packet(ENCRYPTED) {
 }
 
-Encrypted::Encrypted(const CK::ByteArray& encoded)
+Encrypted::Encrypted(const coder::ByteArray& encoded)
 : Packet(ENCRYPTED) {
 
     decode(encoded);
@@ -29,7 +29,7 @@ Encrypted& Encrypted::operator= (const Encrypted& other) {
 Encrypted::~Encrypted() {
 }
 
-void Encrypted::decode(const CK::ByteArray& encoded) {
+void Encrypted::decode(const coder::ByteArray& encoded) {
 
     ciphertext.clear();
     ciphertext.append(encoded);
@@ -45,13 +45,13 @@ void Encrypted::encode() {
 
 }
 
-const CK::ByteArray& Encrypted::getCiphertext() const {
+const coder::ByteArray& Encrypted::getCiphertext() const {
 
     return ciphertext;
 
 }
 
-void Encrypted::setCiphertext(const CK::ByteArray& c) {
+void Encrypted::setCiphertext(const coder::ByteArray& c) {
 
     ciphertext = c;
 

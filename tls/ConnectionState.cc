@@ -64,16 +64,16 @@ void ConnectionState::copyWriteToRead() {
 /*
  * Generate the master secret and the client and server write keys.
  */
-void ConnectionState::generateKeys(const CK::ByteArray& premasterSecret) {
+void ConnectionState::generateKeys(const coder::ByteArray& premasterSecret) {
 
     masterSecret.clear();
     CK::HMAC prf(new CK::SHA256);
     prf.setKey(premasterSecret);
-    CK::ByteArray seed("master secret");
+    coder::ByteArray seed("master secret");
     seed.append(clientRandom);
     seed.append(serverRandom);
     prf.setMessage(seed);
-    CK::ByteArray phash(prf.getHMAC());
+    coder::ByteArray phash(prf.getHMAC());
     masterSecret.append(phash);
     while (masterSecret.getLength() < 48) {
         prf.setMessage(phash);
@@ -91,7 +91,7 @@ void ConnectionState::generateKeys(const CK::ByteArray& premasterSecret) {
     seed.append(clientRandom);
     prf.setMessage(seed);
     phash = prf.getHMAC();
-    CK::ByteArray keyBytes(phash);
+    coder::ByteArray keyBytes(phash);
     while (keyBytes.getLength() < keyLength) {
         prf.setMessage(phash);
         phash = prf.getHMAC();
@@ -121,7 +121,7 @@ CipherType ConnectionState::getCipherType() const {
 
 }
 
-const CK::ByteArray& ConnectionState::getClientRandom() const {
+const coder::ByteArray& ConnectionState::getClientRandom() const {
 
     return clientRandom;
 
@@ -147,7 +147,7 @@ ConnectionState *ConnectionState::getCurrentWrite() {
 
 }
 
-const CK::ByteArray& ConnectionState::getEncryptionKey() const {
+const coder::ByteArray& ConnectionState::getEncryptionKey() const {
 
     return entity == server ? clientWriteKey : serverWriteKey;
 
@@ -159,13 +159,13 @@ uint32_t ConnectionState::getEncryptionKeyLength() const {
 
 }
 
-const CK::ByteArray& ConnectionState::getIV() const {
+const coder::ByteArray& ConnectionState::getIV() const {
 
     return entity == server ? clientWriteIV : serverWriteIV;
 
 }
 
-const CK::ByteArray& ConnectionState::getMacKey() const {
+const coder::ByteArray& ConnectionState::getMacKey() const {
 
     return entity == server ? clientWriteMACKey : serverWriteMACKey;
 
@@ -192,7 +192,7 @@ uint32_t ConnectionState::getMacKeyLength() const {
 
 }
 
-const CK::ByteArray& ConnectionState::getMasterSecret() const {
+const coder::ByteArray& ConnectionState::getMasterSecret() const {
 
     return masterSecret;
 
@@ -227,7 +227,7 @@ int64_t ConnectionState::getSequenceNumber() const {
 
 }
 
-const CK::ByteArray& ConnectionState::getServerRandom() const {
+const coder::ByteArray& ConnectionState::getServerRandom() const {
 
     return serverRandom;
 
@@ -316,7 +316,7 @@ void ConnectionState::setCipherType(CipherType type) {
 
 }
 
-void ConnectionState::setClientRandom(const CK::ByteArray& rnd) {
+void ConnectionState::setClientRandom(const coder::ByteArray& rnd) {
 
     clientRandom = rnd;
 
@@ -373,7 +373,7 @@ void ConnectionState::setInitialized() {
 
 }
 
-void ConnectionState::setServerRandom(const CK::ByteArray& rnd) {
+void ConnectionState::setServerRandom(const coder::ByteArray& rnd) {
 
     serverRandom = rnd;
 

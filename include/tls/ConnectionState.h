@@ -2,8 +2,7 @@
 #define CONNECTIONSTATE_H_INCLUDED
 
 #include "tls/Constants.h"
-#include "data/ByteArray.h"
-#include <cstdint>
+#include "coder/ByteArray.h"
 
 namespace CKTLS {
 
@@ -20,21 +19,21 @@ class ConnectionState {
         // read state.
         void copyWriteToRead();
         // Generate the cyptography variables.
-        void generateKeys(const CK::ByteArray& premasterSecret);
+        void generateKeys(const coder::ByteArray& premasterSecret);
         // Get the block cipher algorithm.
         BulkCipherAlgorithm getCipherAlgorithm() const;
         // Get the block cipher mode.
         CipherType getCipherType() const;
         // Get the client random bytes for signatures.
-        const CK::ByteArray& getClientRandom() const;
+        const coder::ByteArray& getClientRandom() const;
         // Get the key for block encryption.
-        const CK::ByteArray& getEncryptionKey() const;
+        const coder::ByteArray& getEncryptionKey() const;
         // gets the length of the block encryption key.
         uint32_t getEncryptionKeyLength() const;
         // Get the key for HMAC authentication.
-        const CK::ByteArray& getMacKey() const;
+        const coder::ByteArray& getMacKey() const;
         // Get the IV for block encryption.
-        const CK::ByteArray& getIV() const;
+        const coder::ByteArray& getIV() const;
         // Gets the connection end entity.
         ConnectionEnd getEntity() const;
         // Returns the HMAC algorithm.
@@ -44,13 +43,13 @@ class ConnectionState {
         // Get the HMAC key length.
         uint32_t getMacKeyLength() const;
         // Get the master secret.
-        const CK::ByteArray& getMasterSecret() const;
+        const coder::ByteArray& getMasterSecret() const;
         // Returns the pseudorandom algorithm.
         PRFAlgorithm getPRF() const;
         // Returns the current sequence number and then increments it.
         int64_t getSequenceNumber() const;
         // Get the server random bytes for signatures.
-        const CK::ByteArray& getServerRandom() const;
+        const coder::ByteArray& getServerRandom() const;
         // Create the master secret and generate the write keys.
         // Get current and pending state instances.
         static ConnectionState *getCurrentRead();
@@ -70,7 +69,7 @@ class ConnectionState {
         // Sets the cipher mode.
         void setCipherType(CipherType type);
         // Sets the client random value for signatures.
-        void setClientRandom(const CK::ByteArray& rnd);
+        void setClientRandom(const coder::ByteArray& rnd);
         // Sets the encryption key length.
         void setEncryptionKeyLength(uint32_t length);
         // Sets the connection end entity.
@@ -80,7 +79,7 @@ class ConnectionState {
         // Indicate the the state is initialized.
         void setInitialized();
         // Sets the server random value for signatures.
-        void setServerRandom(const CK::ByteArray& rnd);
+        void setServerRandom(const coder::ByteArray& rnd);
 
     private:
         bool initialized;
@@ -97,17 +96,17 @@ class ConnectionState {
         uint32_t macLength;
         uint32_t macKeyLength;
         // uint8_t master_secret[48];
-        CK::ByteArray masterSecret;
+        coder::ByteArray masterSecret;
         // uint8_t client_random[32];
-        CK::ByteArray clientRandom;
+        coder::ByteArray clientRandom;
         // uint8_t server_random[32];
-        CK::ByteArray serverRandom;
-        CK::ByteArray clientWriteMACKey; 
-        CK::ByteArray serverWriteMACKey; 
-        CK::ByteArray clientWriteKey; 
-        CK::ByteArray serverWriteKey; 
-        CK::ByteArray clientWriteIV; 
-        CK::ByteArray serverWriteIV; 
+        coder::ByteArray serverRandom;
+        coder::ByteArray clientWriteMACKey; 
+        coder::ByteArray serverWriteMACKey; 
+        coder::ByteArray clientWriteKey; 
+        coder::ByteArray serverWriteKey; 
+        coder::ByteArray clientWriteIV; 
+        coder::ByteArray serverWriteIV; 
         int64_t sequenceNumber;
 
 

@@ -2,7 +2,6 @@
 #define PGPCFB_H_INCLUDE
 
 #include "ciphermodes/CipherMode.h"
-#include "data/ByteArray.h"
 
 namespace CK {
     class Cipher;
@@ -21,21 +20,21 @@ class PGPCFM : public CK::CipherMode {
         PGPCFM& operator= (const PGPCFM& other);
 
     public:
-        CK::ByteArray decrypt(const CK::ByteArray& ciphertext,
-                                            const CK::ByteArray& key);
-        CK::ByteArray encrypt(const CK::ByteArray& plaintext,
-                                            const CK::ByteArray& key);
+        coder::ByteArray decrypt(const coder::ByteArray& ciphertext,
+                                            const coder::ByteArray& key);
+        coder::ByteArray encrypt(const coder::ByteArray& plaintext,
+                                            const coder::ByteArray& key);
 
     private:
-        bool decryptPrefix(const CK::ByteArray& ciphertext,
-                                            const CK::ByteArray& key);
-        CK::ByteArray encryptPrefix(const CK::ByteArray& key);
+        bool decryptPrefix(const coder::ByteArray& ciphertext,
+                                            const coder::ByteArray& key);
+        coder::ByteArray encryptPrefix(const coder::ByteArray& key);
 
     private:
         CK::Cipher *cipher;
         unsigned blockSize;
-        CK::ByteArray FR;
-        CK::ByteArray FRE;
+        coder::ByteArray FR;
+        coder::ByteArray FRE;
 
 };
 

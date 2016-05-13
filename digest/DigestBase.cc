@@ -1,4 +1,4 @@
-#include "../include/digest/DigestBase.h"
+#include "digest/DigestBase.h"
 
 namespace CK {
 
@@ -16,9 +16,9 @@ DigestBase::~DigestBase() {
 /*
  * Complete a finalized digest.
  */
-ByteArray DigestBase::digest() {
+coder::ByteArray DigestBase::digest() {
 
-    ByteArray result = finalize(accumulator);
+    coder::ByteArray result = finalize(accumulator);
     reset();
     return result;
 
@@ -27,9 +27,9 @@ ByteArray DigestBase::digest() {
 /*
  * One step hash. Accumulated updates are lost.
  */
-ByteArray DigestBase::digest(const ByteArray& bytes) {
+coder::ByteArray DigestBase::digest(const coder::ByteArray& bytes) {
 
-    ByteArray result = finalize(bytes);
+    coder::ByteArray result = finalize(bytes);
     reset();
     return result;
 
@@ -47,7 +47,7 @@ void DigestBase::reset() {
 /*
  * Update the digest context with a byte array.
  */
-void DigestBase::update(const ByteArray& bytes) {
+void DigestBase::update(const coder::ByteArray& bytes) {
 
     accumulator.append(bytes);
 
@@ -65,7 +65,7 @@ void DigestBase::update(unsigned char byte) {
 /*
  * Update the digest with a subrange of a message.
  */
-void DigestBase::update(const ByteArray& bytes, unsigned offset, unsigned length) {
+void DigestBase::update(const coder::ByteArray& bytes, unsigned offset, unsigned length) {
 
     accumulator.append(bytes.range(offset, length));
 

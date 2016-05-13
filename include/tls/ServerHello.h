@@ -4,7 +4,6 @@
 #include "tls/HandshakeBody.h"
 #include "tls/CipherSuiteManager.h"
 #include "tls/ExtensionManager.h"
-#include "data/Unsigned16.h"
 #include <iostream>
 
 namespace CKTLS {
@@ -21,9 +20,9 @@ class ServerHello : public HandshakeBody {
 #ifdef _DEBUG
         void debugOut(std::ostream& out);
 #endif
-        const CK::ByteArray& encode();
+        const coder::ByteArray& encode();
         CipherSuite getCipherSuite() const;
-        const CK::ByteArray& getRandom() const;
+        const coder::ByteArray& getRandom() const;
         void initState();
         void initState(const ClientHello& hello);
 
@@ -32,11 +31,11 @@ class ServerHello : public HandshakeBody {
 
     private:
         uint32_t gmt;
-        CK::ByteArray random;
-        CK::ByteArray sessionID;
+        coder::ByteArray random;
+        coder::ByteArray sessionID;
         uint8_t majorVersion;
         uint8_t minorVersion;
-        CK::ByteArray compressionMethods;
+        coder::ByteArray compressionMethods;
 
         CipherSuiteManager suites;
         ExtensionManager extensions;

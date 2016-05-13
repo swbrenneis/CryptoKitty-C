@@ -2,8 +2,7 @@
 #define RECORDPROTOCOL_H_INCLUDED
 
 #include "tls/Constants.h"
-#include "data/ByteArray.h"
-#include <cstdint>
+#include "coder/ByteArray.h"
 
 namespace CKTLS {
 
@@ -22,14 +21,14 @@ class RecordProtocol {
 
     public:
         virtual void decodeRecord();
-        virtual ContentType decodePreamble(const CK::ByteArray& pre);
-        virtual const CK::ByteArray& encodeRecord();
-        const CK::ByteArray& getFragment() const;
+        virtual ContentType decodePreamble(const coder::ByteArray& pre);
+        virtual const coder::ByteArray& encodeRecord();
+        const coder::ByteArray& getFragment() const;
         uint16_t getFragmentLength() const;
         uint8_t getRecordMajorVersion() const;
         uint8_t getRecordMinorVersion() const;
         ContentType getRecordType() const;
-        void setFragment(const CK::ByteArray& frag);
+        void setFragment(const coder::ByteArray& frag);
 
     protected:
         virtual void decode()=0;
@@ -40,8 +39,8 @@ class RecordProtocol {
         uint8_t recordMajorVersion;
         uint8_t recordMinorVersion;
         uint16_t fragLength;
-        CK::ByteArray fragment;
-        CK::ByteArray encoded;
+        coder::ByteArray fragment;
+        coder::ByteArray encoded;
 
         static const uint8_t MAJOR;
         static const uint8_t MINOR;

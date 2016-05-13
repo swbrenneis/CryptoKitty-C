@@ -1,7 +1,7 @@
 #ifndef STRING2KEY_H_INCLUDED
 #define STRING2KEY_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 
 namespace CKPGP {
 
@@ -11,9 +11,9 @@ class String2Key {
         // Simple.
         String2Key(uint8_t alg);
         // Salted.
-        String2Key(uint8_t alg, const CK::ByteArray& salt);
+        String2Key(uint8_t alg, const coder::ByteArray& salt);
         // Salted and iterated.
-        String2Key(uint8_t alg, const CK::ByteArray& salt, uint8_t count);
+        String2Key(uint8_t alg, const coder::ByteArray& salt, uint8_t count);
         ~String2Key();
 
     private:
@@ -36,13 +36,13 @@ class String2Key {
         static const uint8_t SHA224;
 
     public:
-        CK::ByteArray generateKey(const std::string& passphrase, unsigned bitsize) const;
-        CK::ByteArray getSpecifier() const;
+        coder::ByteArray generateKey(const std::string& passphrase, unsigned bitsize) const;
+        coder::ByteArray getSpecifier() const;
 
     private:
         uint8_t type;
         uint8_t algorithm;
-        CK::ByteArray salt;
+        coder::ByteArray salt;
         uint8_t c;
         uint8_t count;
 

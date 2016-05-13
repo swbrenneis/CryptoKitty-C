@@ -6,7 +6,7 @@ PublicSubkey::PublicSubkey()
 : PublicKey(PUBLICSUBKEY) {
 }
 
-PublicSubkey::PublicSubkey(const CK::ByteArray& encoded)
+PublicSubkey::PublicSubkey(const coder::ByteArray& encoded)
 : PublicKey(encoded) {
 }
 

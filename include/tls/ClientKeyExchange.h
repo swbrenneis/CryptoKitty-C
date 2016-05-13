@@ -23,13 +23,13 @@ class ClientKeyExchange : public HandshakeBody {
         ClientKeyExchange& operator= (const ClientKeyExchange& other);
 
     public:
-        const CK::ByteArray& encode();
+        const coder::ByteArray& encode();
         const CK::BigInteger& getDHPublicKey() const;
-        const CK::ByteArray& getECPublicKey() const;
+        const coder::ByteArray& getECPublicKey() const;
         void initState() {}
-        void initState(NamedCurve curve, const CK::ByteArray& pk);
+        void initState(NamedCurve curve, const coder::ByteArray& pk);
         void initState(const CK::ECDHKeyExchange::CurveParams& p,
-                                                const CK::ByteArray& pk);
+                                                const coder::ByteArray& pk);
         void initState(const CK::BigInteger& pk);
         static void setAlgorithm(KeyExchangeAlgorithm alg);
 
@@ -37,10 +37,10 @@ class ClientKeyExchange : public HandshakeBody {
         void decode();
 
     private:
-        void decodeDH(const CK::ByteArray& encoded);
-        void decodeECDH(const CK::ByteArray& encoded);
-        CK::ByteArray encodeDH() const;
-        CK::ByteArray encodeECDH() const;
+        void decodeDH(const coder::ByteArray& encoded);
+        void decodeECDH(const coder::ByteArray& encoded);
+        coder::ByteArray encodeDH() const;
+        coder::ByteArray encodeECDH() const;
 
     private:
         static KeyExchangeAlgorithm algorithm;
@@ -63,17 +63,17 @@ class ClientKeyExchange : public HandshakeBody {
         uint16_t m;
         ECBasisType ebType;
         // EC trinomial
-        CK::ByteArray k;
+        coder::ByteArray k;
         // EC Pentanomial
-        CK::ByteArray k1;
-        CK::ByteArray k2;
-        CK::ByteArray k3;
+        coder::ByteArray k1;
+        coder::ByteArray k2;
+        coder::ByteArray k3;
 
         // Named curves
         NamedCurve named;
         
         // Key exchange
-        CK::ByteArray ecPublicKey;
+        coder::ByteArray ecPublicKey;
 
 };
 

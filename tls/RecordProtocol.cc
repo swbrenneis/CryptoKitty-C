@@ -1,6 +1,6 @@
 #include "tls/RecordProtocol.h"
 #include "tls/HandshakeRecord.h"
-#include "data/Unsigned16.h"
+#include "coder/Unsigned16.h"
 #include "exceptions/tls/RecordException.h"
 
 namespace CKTLS {
@@ -16,7 +16,7 @@ RecordProtocol::RecordProtocol(ContentType c)
 RecordProtocol::~RecordProtocol() {
 }
 
-ContentType RecordProtocol::decodePreamble(const CK::ByteArray& encoded) {
+ContentType RecordProtocol::decodePreamble(const coder::ByteArray& encoded) {
 
     if (encoded.getLength() != 5) {
         throw RecordException("Invalid record preamble");
@@ -35,8 +35,8 @@ ContentType RecordProtocol::decodePreamble(const CK::ByteArray& encoded) {
             throw RecordException("Invalid plaintext content type");
     }
 
-    CK::Unsigned16 fLen(encoded.range(3, 2), CK::Unsigned16::BIGENDIAN);
-    fragLength = fLen.getUnsignedValue();
+    coder::Unsigned16 fLen(encoded.range(3, 2), coder::bigendian);
+    fragLength = fLen.getValue();
 
     return content;
 
@@ -51,15 +51,15 @@ void RecordProtocol::decodeRecord() {
 
 }
 
-/*CK::ByteArray HandshakeRecord::encodePreamble() const {
+/*coder::ByteArray HandshakeRecord::encodePreamble() const {
 
-    CK::ByteArray preamble;
+    coder::ByteArray preamble;
 
     preamble.append(content);
     preamble.append(recordMajorVersion);
     preamble.append(recordMinorVersion);
-    CK::Unsigned16 fl(fragLength);
-    preamble.append(fl.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::Unsigned16 fl(fragLength);
+    preamble.append(fl.getEncoded(coder::bigendian));
 
     return preamble;
     
@@ -69,7 +69,7 @@ void RecordProtocol::decodeRecord() {
  * Encode the record. Return a reference to the byte array with the
  * encoding.
  */
-const CK::ByteArray& RecordProtocol::encodeRecord() {
+const coder::ByteArray& RecordProtocol::encodeRecord() {
 
     encoded.clear();
     encoded.append(content);
@@ -77,14 +77,14 @@ const CK::ByteArray& RecordProtocol::encodeRecord() {
     encoded.append(recordMinorVersion);
     // Type specific encoding. Encodes to fragment.
     encode();
-    CK::Unsigned16 len(fragment.getLength());
-    encoded.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::Unsigned16 len(fragment.getLength());
+    encoded.append(len.getEncoded(coder::bigendian));
     encoded.append(fragment);
     return encoded;
 
 }
 
-const CK::ByteArray& RecordProtocol::getFragment() const {
+const coder::ByteArray& RecordProtocol::getFragment() const {
 
     return fragment;
 
@@ -114,7 +114,7 @@ ContentType RecordProtocol::getRecordType() const {
 
 }
 
-void RecordProtocol::setFragment(const CK::ByteArray& frag) {
+void RecordProtocol::setFragment(const coder::ByteArray& frag) {
 
     fragment = frag;
 

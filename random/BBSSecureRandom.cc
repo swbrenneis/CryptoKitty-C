@@ -1,8 +1,9 @@
 #include "random/BBSSecureRandom.h"
 #include "random/CMWCRandom.h"
 #include "data/NanoTime.h"
-#include "data/Unsigned64.h"
-#include "data/Unsigned32.h"
+#include "coder/ByteArray.h"
+#include "coder/Unsigned64.h"
+#include "coder/Unsigned32.h"
 #include <cstdlib>
 #ifdef VMRANDOM
 #include <fstream>
@@ -34,7 +35,7 @@ BBSSecureRandom::~BBSSecureRandom() {
 /*
  * Collect entropy from getrandom or directly from /dev/random.
  */
-void BBSSecureRandom::getEntropy(ByteArray bytes) const {
+void BBSSecureRandom::getEntropy(coder::ByteArray bytes) const {
 
     char seedbytes[8];
 
@@ -44,7 +45,7 @@ void BBSSecureRandom::getEntropy(ByteArray bytes) const {
         CMWCRandom rnd;
         NanoTime nt;
         rnd.setSeed(nt.getFullTime());
-        ByteArray seed(10);
+        coder::ByteArray seed(10);
         rnd.nextBytes(seed);
         std::ofstream out("/dev/random");
         out << seed;
@@ -83,25 +84,27 @@ void BBSSecureRandom::initialize() {
     // Compute the modulus
     M = p * q;
     // Compute the initial seed.
-    ByteArray seedbytes(8);
+    coder::ByteArray seedbytes(8);
     getEntropy(seedbytes);
-    setState(Unsigned64::decode(seedbytes));
+    coder::Unsigned64 u64(seedbytes);
+    setState(u64.getValue());
 
 }
 
 /*
  * Get the next series of random bytes.
  */
-void BBSSecureRandom::nextBytes(ByteArray& bytes) {
+void BBSSecureRandom::nextBytes(coder::ByteArray& bytes) {
 
     if (!initialized) {
         initialize();
     }
 
     if (reseed + bytes.getLength() > RESEED) {
-        ByteArray seedbytes(8);
+        coder::ByteArray seedbytes(8);
         getEntropy(seedbytes);
-        setState(Unsigned64::decode(seedbytes));
+        coder::Unsigned64 u64(seedbytes);
+        setState(u64.getValue());
         reseed = 0;
     }
     reseed += bytes.getLength();
@@ -145,9 +148,10 @@ void BBSSecureRandom::nextBytes(ByteArray& bytes) {
  */
 uint32_t BBSSecureRandom::nextInt() {
 
-    ByteArray bytes(4);
+    coder::ByteArray bytes(4);
     nextBytes(bytes);
-    return Unsigned32::decode(bytes);
+    coder::Unsigned32 u32(bytes);
+    return u32.getValue();
 
 }
 
@@ -156,9 +160,10 @@ uint32_t BBSSecureRandom::nextInt() {
  */
 uint64_t BBSSecureRandom::nextLong() {
 
-    ByteArray bytes(8);
+    coder::ByteArray bytes(8);
     nextBytes(bytes);
-    return Unsigned64::decode(bytes);
+    coder::Unsigned64 u64(bytes);
+    return u64.getValue();
 
 }
 

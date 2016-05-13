@@ -20,19 +20,19 @@ class PKCS1rsassa : public RSA {
         PKCS1rsassa& operator= (const PKCS1rsassa& other);
 
     public:
-        ByteArray decrypt(const RSAPrivateKey& K, const ByteArray& C);
-        ByteArray encrypt(const RSAPublicKey& K,
-                                const ByteArray& C);
-        ByteArray sign(const RSAPrivateKey& K, const ByteArray& M);
-        bool verify(const RSAPublicKey& K, const ByteArray& M,
-                                const ByteArray& S);
+        coder::ByteArray decrypt(const RSAPrivateKey& K, const coder::ByteArray& C);
+        coder::ByteArray encrypt(const RSAPublicKey& K,
+                                const coder::ByteArray& C);
+        coder::ByteArray sign(const RSAPrivateKey& K, const coder::ByteArray& M);
+        bool verify(const RSAPublicKey& K, const coder::ByteArray& M,
+                                const coder::ByteArray& S);
 
     private:
-        ByteArray emsaPKCS1Encode(const ByteArray&  M, int emLen);
+        coder::ByteArray emsaPKCS1Encode(const coder::ByteArray&  M, int emLen);
 
     private:
         Digest *digest;
-        ByteArray algorithmOID;
+        coder::ByteArray algorithmOID;
 
 };
 

@@ -1,7 +1,7 @@
 #ifndef PSSMGF1_H_INCLUDED
 #define PSSMGF1_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 
 namespace CK {
 
@@ -21,7 +21,7 @@ class PSSmgf1 {
         PSSmgf1& operator= (const PSSmgf1& other);
 
     public:
-        ByteArray generateMask(const ByteArray& mgfSeed, int maskLen);
+        coder::ByteArray generateMask(const coder::ByteArray& mgfSeed, int maskLen);
 
     private:
         // This class does not own this pointer.

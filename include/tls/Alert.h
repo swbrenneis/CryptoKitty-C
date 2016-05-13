@@ -2,7 +2,6 @@
 #define ALERT_H_INCLUDED
 
 #include "tls/RecordProtocol.h"
-#include "data/ByteArray.h"
 
 namespace CKTLS {
 

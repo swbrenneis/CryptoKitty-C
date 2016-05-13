@@ -2,9 +2,9 @@
 #include "exceptions/OutOfRangeException.h"
 #include "cipher/AES.h"
 #include "digest/SHA256.h"
-#include "data/Int32.h"
-#include "data/Unsigned32.h"
-#include "data/Unsigned64.h"
+#include "coder/Int32.h"
+#include "coder/Unsigned32.h"
+#include "coder/Unsigned64.h"
 #include "data/NanoTime.h"
 #include "cthread/Lock.h"
 #include <fstream>
@@ -30,13 +30,13 @@ void FortunaGenerator::end() {
 
 }
 
-ByteArray FortunaGenerator::generateBlocks(uint16_t k) {
+coder::ByteArray FortunaGenerator::generateBlocks(uint16_t k) {
 
-    ByteArray r;
+    coder::ByteArray r;
 
     for (unsigned i = 0; i < k; ++i) {
-        ByteArray c(counter.getEncoded(BigInteger::LITTLEENDIAN));
-        ByteArray pad(16 - c.getLength(), 0);
+        coder::ByteArray c(counter.getEncoded(BigInteger::LITTLEENDIAN));
+        coder::ByteArray pad(16 - c.getLength(), 0);
         c.append(pad);
         r.append(cipher->encrypt(c, key));
         counter++;
@@ -48,20 +48,20 @@ ByteArray FortunaGenerator::generateBlocks(uint16_t k) {
 
 }
 
-void FortunaGenerator::generateRandomData(ByteArray& bytes, uint32_t length) {
+void FortunaGenerator::generateRandomData(coder::ByteArray& bytes, uint32_t length) {
 
     if (length > 0x100000) {    // 2**20
         throw OutOfRangeException("Requested byte count out of range");
     }
 
     double n = length;
-    ByteArray blocks(generateBlocks(ceil(n / 16)));
+    coder::ByteArray blocks(generateBlocks(ceil(n / 16)));
     bytes.append(blocks.range(0, length));
     key = generateBlocks(2);
 
 }
 
-void FortunaGenerator::reseed(const ByteArray& seed) {
+void FortunaGenerator::reseed(const coder::ByteArray& seed) {
 
     SHA256 sha;
     key.append(seed);
@@ -86,7 +86,7 @@ void FortunaGenerator::start() {
     if (!run) {
         // Initialize pools
         for (int n = 0; n < 32; ++n) {
-            ByteArray pool(1,0);
+            coder::ByteArray pool(1,0);
             pools.push_back(pool);
         }
 
@@ -103,7 +103,7 @@ void FortunaGenerator::start() {
             seedstr.get(entr, 32);
             seedstr.close();
         }
-        ByteArray seed(ubuf, 32);
+        coder::ByteArray seed(ubuf, 32);
         reseed(seed);
 
         // Start the accumulator.
@@ -122,28 +122,28 @@ void *FortunaGenerator::threadFunction() {
     uint64_t reseedCounter = 0;
 
     while (run) {
-        ByteArray rd;
+        coder::ByteArray rd;
         generateRandomData(rd, 4);
-        Int32 nsec(rd, Unsigned32::LITTLEENDIAN);
-        delay.tv_nsec = abs(nsec.getIntValue());
+        coder::Int32 nsec(rd, coder::littleendian);
+        delay.tv_nsec = abs(nsec.getValue());
         nanosleep(&delay, 0);
 
         // Add some timed entropy
         NanoTime tm;
-        Unsigned32 timed(tm.getNanoseconds());
-        ByteArray nano(timed.getEncoded(Unsigned32::LITTLEENDIAN));
+        coder::Unsigned32 timed(tm.getNanoseconds());
+        coder::ByteArray nano(timed.getEncoded(coder::littleendian));
         for (int i = 1; i < 8; ++i) {
-            timed.setValue((timed.getUnsignedValue() * 2) + i);
-            nano.append(timed.getEncoded(Unsigned32::LITTLEENDIAN));
+            timed.setValue((timed.getValue() * 2) + i);
+            nano.append(timed.getEncoded(coder::littleendian));
         }
         for (int i = 0; i < 32; ++i) {
             pools[i].append(nano[i]);
         }
 
         // Hash the time value and distribute
-        Unsigned64 htimed(tm.getFullTime());
+        coder::Unsigned64 htimed(tm.getFullTime());
         SHA256 sha;
-        ByteArray hashed(sha.digest(htimed.getEncoded(Unsigned64::LITTLEENDIAN)));
+        coder::ByteArray hashed(sha.digest(htimed.getEncoded(coder::littleendian)));
         for (int i = 0; i < 32; ++i) {
             pools[i].append(hashed[0]);
         }
@@ -156,7 +156,7 @@ void *FortunaGenerator::threadFunction() {
         }
 
         // Hash the system entropy and distribute
-        ByteArray hrnd(ubuf, 32);
+        coder::ByteArray hrnd(ubuf, 32);
         sha.reset();
         hashed = sha.digest(hrnd);
         for (int i = 0; i < 32; ++i) {
@@ -180,7 +180,7 @@ void *FortunaGenerator::threadFunction() {
                 reseedCounter = 1;
             }
             uint32_t modulus = 2;
-            ByteArray seed(pools[0]);
+            coder::ByteArray seed(pools[0]);
             pools[0].clear();
             for (int i = 1; i < 32; ++i) {
                 if (reseedCounter % modulus == 0) {

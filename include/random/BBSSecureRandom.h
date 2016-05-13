@@ -3,7 +3,10 @@
 
 #include "SecureRandom.h"
 #include "data/BigInteger.h"
-#include "data/ByteArray.h"
+
+namespace coder {
+    class ByteArray;
+}
 
 namespace CK {
 
@@ -17,13 +20,13 @@ class BBSSecureRandom : public SecureRandom {
         ~BBSSecureRandom();
 
     public:
-        virtual void nextBytes(ByteArray& bytes);
+        virtual void nextBytes(coder::ByteArray& bytes);
         virtual uint32_t nextInt();
         virtual uint64_t nextLong();
 
     private:
         // Get 8 bytes of entropy
-        void getEntropy(ByteArray bytes) const;
+        void getEntropy(coder::ByteArray bytes) const;
         void initialize();
         void setState(uint64_t seed);
 

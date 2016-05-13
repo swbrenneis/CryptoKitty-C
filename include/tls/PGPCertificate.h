@@ -1,7 +1,6 @@
 #ifndef PGPCERTIFICATE_H_INCLUDED
 #define PGPCERTIFICATE_H_INCLUDED
 
-#include "data/ByteArray.h"
 #include "openpgp/packet/PublicKey.h"
 #include "openpgp/packet/PublicSubkey.h"
 #include "openpgp/packet/Signature.h"
@@ -18,7 +17,7 @@ class PGPCertificate {
 
     public:
         PGPCertificate();
-        PGPCertificate(const CK::ByteArray& encoded);
+        PGPCertificate(const coder::ByteArray& encoded);
         PGPCertificate(std::istream& in);
         ~PGPCertificate();
 
@@ -28,15 +27,15 @@ class PGPCertificate {
 
     public:
         void addUserID(const CKPGP::UserID& uid, const CKPGP::Signature& sig);
-        CK::ByteArray encode();
+        coder::ByteArray encode();
         void encode(std::ostream& out);
         CKPGP::PublicKey *getPublicKey();
         void setPublicKey(CKPGP::PublicKey *pk);
 
     private:
-        void decode(const CK::ByteArray& encoded);
+        void decode(const coder::ByteArray& encoded);
         void decode(std::istream& in);
-        uint32_t decodePGPLength(std::istream& in, CK::ByteArray& lBytes) const;
+        uint32_t decodePGPLength(std::istream& in, coder::ByteArray& lBytes) const;
 
     private:
         CKPGP::PublicKey *publicKey;

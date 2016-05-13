@@ -3,8 +3,8 @@
 #include "tls/ServerCertificate.h"
 #include "cipher/PKCS1rsassa.h"
 #include "keys/RSAPrivateKey.h"
-#include "data/Unsigned16.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned16.h"
+#include "coder/Unsigned32.h"
 #include "digest/SHA256.h"
 #include "digest/SHA384.h"
 #include "digest/SHA512.h"
@@ -44,34 +44,34 @@ void ServerKeyExchange::decode() {
 
 void ServerKeyExchange::decodeDH() {
 
-    CK::ByteArray serverDHParams;
+    coder::ByteArray serverDHParams;
 
     uint32_t index = 0;
     serverDHParams.append(encoded.range(index, 2));
-    CK::Unsigned16 len(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 len(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    uint16_t length = len.getUnsignedValue();
+    uint16_t length = len.getValue();
     serverDHParams.append(encoded.range(index, length));
     dP.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
     index += length;
 
     serverDHParams.append(encoded.range(index, 2));
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    length = len.getUnsignedValue();
+    length = len.getValue();
     serverDHParams.append(encoded.range(index, length));
     dG.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
     index += length;
 
     serverDHParams.append(encoded.range(index, 2));
-    len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    len.decode(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    length = len.getUnsignedValue();
+    length = len.getValue();
     serverDHParams.append(encoded.range(index, length));
     dYs.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
     index += length;
 
-    CK::ByteArray hash(clientRandom);
+    coder::ByteArray hash(clientRandom);
     hash.append(serverRandom);
     hash.append(serverDHParams);
 
@@ -92,9 +92,9 @@ void ServerKeyExchange::decodeDH() {
     }
 
     SignatureAlgorithm sa = static_cast<SignatureAlgorithm>(encoded[index++]);
-    CK::Unsigned16 siglen(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 siglen(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    CK::ByteArray sig(encoded.range(index, siglen.getUnsignedValue()));
+    coder::ByteArray sig(encoded.range(index, siglen.getValue()));
 
     switch (sa) {
         case rsa:
@@ -157,8 +157,8 @@ void ServerKeyExchange::decodeECDH() {
             if (length != 4) {
                 throw EncodingException("Invalid cofactor length");
             }
-            CK::Unsigned32 co(encoded.range(index, 4), CK::Unsigned32::BIGENDIAN);
-            cofactor = co.getUnsignedValue();
+            coder::Unsigned32 co(encoded.range(index, 4), coder::bigendian);
+            cofactor = co.getValue();
             }
             break;
         case named_curve:
@@ -168,9 +168,9 @@ void ServerKeyExchange::decodeECDH() {
             if (length != 2) {
                 throw EncodingException("Invalid named curve length");
             }
-            CK::Unsigned16 nc(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+            coder::Unsigned16 nc(encoded.range(index, 2), coder::bigendian);
             index += 2;
-            named = static_cast<NamedCurve>(nc.getUnsignedValue());
+            named = static_cast<NamedCurve>(nc.getValue());
             switch (named) {
                 case secp256r1:
                     order = CK::ECDHKeyExchange::SECP256R1.n;
@@ -212,11 +212,11 @@ void ServerKeyExchange::decodeECDH() {
     ecPublicKey.clear();
     ecPublicKey.append(encoded.range(index, length));
     index += length;
-    CK::ByteArray serverECDH(encoded.range(0, paramsLength));
+    coder::ByteArray serverECDH(encoded.range(0, paramsLength));
     serverECDH.append(length);
     serverECDH.append(ecPublicKey);
 
-    CK::ByteArray hash(clientRandom);
+    coder::ByteArray hash(clientRandom);
     hash.append(serverRandom);
     hash.append(serverECDH);
 
@@ -237,9 +237,9 @@ void ServerKeyExchange::decodeECDH() {
     }
 
     SignatureAlgorithm sa = static_cast<SignatureAlgorithm>(encoded[index++]);
-    CK::Unsigned16 siglen(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 siglen(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    CK::ByteArray sig(encoded.range(index, siglen.getUnsignedValue()));
+    coder::ByteArray sig(encoded.range(index, siglen.getValue()));
 
     switch (sa) {
         case rsa:
@@ -258,7 +258,7 @@ void ServerKeyExchange::decodeECDH() {
 
 }
 
-const CK::ByteArray& ServerKeyExchange::encode() {
+const coder::ByteArray& ServerKeyExchange::encode() {
 
     switch (algorithm) {
         case dhe_rsa:
@@ -277,100 +277,100 @@ const CK::ByteArray& ServerKeyExchange::encode() {
 
 void ServerKeyExchange::encodeDH() {
 
-    CK::ByteArray serverDHParams;
-    CK::ByteArray p(dP.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::Unsigned16 len(p.getLength());
-    serverDHParams.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::ByteArray serverDHParams;
+    coder::ByteArray p(dP.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::Unsigned16 len(p.getLength());
+    serverDHParams.append(len.getEncoded(coder::bigendian));
     serverDHParams.append(p);
-    CK::ByteArray g(dG.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray g(dG.getEncoded(CK::BigInteger::BIGENDIAN));
     len.setValue(g.getLength());
-    serverDHParams.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    serverDHParams.append(len.getEncoded(coder::bigendian));
     serverDHParams.append(g);
-    CK::ByteArray pk(dYs.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray pk(dYs.getEncoded(CK::BigInteger::BIGENDIAN));
     len.setValue(pk.getLength());
-    serverDHParams.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    serverDHParams.append(len.getEncoded(coder::bigendian));
     serverDHParams.append(pk);
     encoded.append(serverDHParams);
 
-    CK::ByteArray hash(clientRandom);
+    coder::ByteArray hash(clientRandom);
     hash.append(serverRandom);
     hash.append(serverDHParams);
 
     CK::PKCS1rsassa sign(new CK::SHA256);
-    CK::ByteArray sig(sign.sign(*rsaKey, hash));
+    coder::ByteArray sig(sign.sign(*rsaKey, hash));
 
 
-    CK::Unsigned16 siglen(sig.getLength());
+    coder::Unsigned16 siglen(sig.getLength());
     encoded.append(sha256);
     encoded.append(rsa);
-    encoded.append(siglen.getEncoded(CK::Unsigned16::BIGENDIAN));
+    encoded.append(siglen.getEncoded(coder::bigendian));
     encoded.append(sig);
 
 }
 
 void ServerKeyExchange::encodeECDH() {
 
-    CK::ByteArray params;   // ECParameters
+    coder::ByteArray params;   // ECParameters
     params.append(curveType);
     switch (curveType) {
         case explicit_prime:
             {
             // Prime
-            CK::ByteArray p(primeP.getEncoded(CK::BigInteger::BIGENDIAN));
+            coder::ByteArray p(primeP.getEncoded(CK::BigInteger::BIGENDIAN));
             params.append(p.getLength());
             params.append(p);
             // ECCurve
-            CK::ByteArray a(curve.a.getEncoded(CK::BigInteger::BIGENDIAN));
+            coder::ByteArray a(curve.a.getEncoded(CK::BigInteger::BIGENDIAN));
             params.append(a.getLength());
             params.append(a);
-            CK::ByteArray b(curve.b.getEncoded(CK::BigInteger::BIGENDIAN));
+            coder::ByteArray b(curve.b.getEncoded(CK::BigInteger::BIGENDIAN));
             params.append(b.getLength());
             params.append(b);
             // Base
-            CK::ByteArray point(1, 0x04);
+            coder::ByteArray point(1, 0x04);
             point.append(baseX.getEncoded(CK::BigInteger::BIGENDIAN));
             point.append(baseY.getEncoded(CK::BigInteger::BIGENDIAN));
             params.append(point.getLength());
             params.append(point);
             // Order
-            CK::ByteArray o(order.getEncoded(CK::BigInteger::BIGENDIAN));
+            coder::ByteArray o(order.getEncoded(CK::BigInteger::BIGENDIAN));
             params.append(o.getLength());
             params.append(o);
             // Cofactor
-            CK::Unsigned32 co(cofactor);
+            coder::Unsigned32 co(cofactor);
             params.append(4);
-            params.append(co.getEncoded(CK::Unsigned32::BIGENDIAN));
+            params.append(co.getEncoded(coder::bigendian));
             }
             break;
         case named_curve:
             {
             params.append(2);
-            CK::Unsigned16 nc(named);
-            params.append(nc.getEncoded(CK::Unsigned16::BIGENDIAN));
+            coder::Unsigned16 nc(named);
+            params.append(nc.getEncoded(coder::bigendian));
             }
             break;
         default:
             throw RecordException("Invalid curve type");
     }
 
-    CK::ByteArray pk(ecPublicKey);
-    CK::ByteArray serverECDH(params);
+    coder::ByteArray pk(ecPublicKey);
+    coder::ByteArray serverECDH(params);
     serverECDH.append(pk.getLength());
     serverECDH.append(pk);
     encoded.append(serverECDH);
 
-    CK::ByteArray hash(clientRandom);
+    coder::ByteArray hash(clientRandom);
     hash.append(serverRandom);
     hash.append(serverECDH);
 
     CK::PKCS1rsassa sign(new CK::SHA256);
-    CK::ByteArray sig(sign.sign(*rsaKey, hash));
+    coder::ByteArray sig(sign.sign(*rsaKey, hash));
 
 
-    CK::Unsigned16 siglen(sig.getLength());
+    coder::Unsigned16 siglen(sig.getLength());
     encoded.append(sha256);
     encoded.append(rsa);
-    encoded.append(siglen.getEncoded(CK::Unsigned16::BIGENDIAN));
+    encoded.append(siglen.getEncoded(coder::bigendian));
     encoded.append(sig);
 
 }
@@ -409,7 +409,7 @@ const CK::BigInteger& ServerKeyExchange::getDHPublicKey() const {
 
 }
 
-const CK::ByteArray& ServerKeyExchange::getECPublicKey() const {
+const coder::ByteArray& ServerKeyExchange::getECPublicKey() const {
 
     return ecPublicKey;
 
@@ -424,7 +424,7 @@ void ServerKeyExchange::initState(const CK::BigInteger& g, const CK::BigInteger&
 
 }
 
-void ServerKeyExchange::initState(NamedCurve curve, const CK::ByteArray& pk) {
+void ServerKeyExchange::initState(NamedCurve curve, const coder::ByteArray& pk) {
 
     algorithm = ec_diffie_hellman;
     curveType = named_curve;
@@ -434,7 +434,7 @@ void ServerKeyExchange::initState(NamedCurve curve, const CK::ByteArray& pk) {
 }
 
 void ServerKeyExchange::initState(const CK::ECDHKeyExchange::CurveParams& params,
-                                                    const CK::ByteArray& pk) {
+                                                    const coder::ByteArray& pk) {
 
     algorithm = ec_diffie_hellman;
     curveType = explicit_prime;

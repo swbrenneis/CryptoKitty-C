@@ -3,7 +3,6 @@
 
 #include "openpgp/packet/PublicKey.h"
 #include "data/BigInteger.h"
-#include "data/Unsigned16.h"
 
 namespace CK {
     class RSAPrivateKey;
@@ -21,7 +20,7 @@ class SecretKey : public Packet {
         SecretKey(const CK::BigInteger& x, const PublicKey& pk);         // DSA or Elgamal
                                                                         // Alogirthm of the public
                                                                         // key determines.
-        SecretKey(const CK::ByteArray& encoded);
+        SecretKey(const coder::ByteArray& encoded);
         ~SecretKey();
 
     protected:
@@ -39,16 +38,16 @@ class SecretKey : public Packet {
         void encode();
 
     private:
-        void decode(const CK::ByteArray& encoded);
-        void decodeRSAIntegers(const CK::ByteArray& encoded);
-        CK::ByteArray encodeRSAIntegers();
+        void decode(const coder::ByteArray& encoded);
+        void decodeRSAIntegers(const coder::ByteArray& encoded);
+        coder::ByteArray encodeRSAIntegers();
 
     private:
         PublicKey *publicKey;
         uint8_t s2kUsage;
         uint8_t algorithm;  // Symmetric cipher
-        CK::ByteArray s2kSpecifier;
-        CK::ByteArray iv;
+        coder::ByteArray s2kSpecifier;
+        coder::ByteArray iv;
         CK::BigInteger rsaExponent;
         CK::BigInteger rsap;
         CK::BigInteger rsaq;

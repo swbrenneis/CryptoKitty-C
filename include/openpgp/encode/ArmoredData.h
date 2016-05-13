@@ -1,7 +1,7 @@
 #ifndef ARMOREDDATA_H_INCLUDED
 #define ARMOREDDATA_H_INCLUDED
 
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 #include <cstdint>
 #include <iostream>
 
@@ -19,7 +19,7 @@ class ArmoredData {
 
     public:
         ArmoredData();
-        ArmoredData(const CK::ByteArray& data);
+        ArmoredData(const coder::ByteArray& data);
         ~ArmoredData();
 
     private:
@@ -29,14 +29,14 @@ class ArmoredData {
     public:
         void decode(std::istream& in);
         void encode(std::ostream& out);
-        CK::ByteArray getData();
+        const coder::ByteArray& getData() const;
 
     private:
         uint32_t crc();
         uint8_t getTag();
 
     private:
-        CK::ByteArray data;
+        coder::ByteArray data;
 
     /*
      * CRC initialization values

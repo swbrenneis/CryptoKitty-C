@@ -1,7 +1,6 @@
 #ifndef HANDSHAKERECORD_H_INCLUDED
 #define HANDSHAKERECORD_H_INCLUDED
 
-#include "data/ByteArray.h"
 #include "tls/RecordProtocol.h"
 #include "tls/Constants.h"
 
@@ -30,7 +29,7 @@ class HandshakeRecord : public RecordProtocol {
     private:
         HandshakeBody *body;
         HandshakeType type;
-        CK::ByteArray encoded;
+        coder::ByteArray encoded;
 
 };
 

@@ -1,6 +1,6 @@
 #include "tls/ClientHello.h"
 #include "tls/ExtensionManager.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned32.h"
 #include "random/SecureRandom.h"
 #include "exceptions/OutOfRangeException.h"
 #include "exceptions/tls/RecordException.h"
@@ -56,8 +56,8 @@ void ClientHello::decode() {
     majorVersion = encoded[index++];
     minorVersion = encoded[index++];
     // Random
-    CK::Unsigned32 g(encoded.range(index, 4), CK::Unsigned32::BIGENDIAN);
-    gmt = g.getUnsignedValue();
+    coder::Unsigned32 g(encoded.range(index, 4), coder::bigendian);
+    gmt = g.getValue();
     index += 4;
     random = encoded.range(index, 28);
     index += 28;
@@ -68,8 +68,8 @@ void ClientHello::decode() {
         index += sidLen;
     }
     // Cipher suites
-    CK::Unsigned16 csl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
-    uint16_t csLen = csl.getUnsignedValue();
+    coder::Unsigned16 csl(encoded.range(index, 2), coder::bigendian);
+    uint16_t csLen = csl.getValue();
     suites.decode(encoded.range(index+2, csLen));
     index += csLen + 2;
     // Compression methods
@@ -82,8 +82,8 @@ void ClientHello::decode() {
     // check to validate lengths.
     try {
         if (index < encoded.getLength() - 1) {
-            CK::Unsigned16 exl(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
-            uint16_t exLength = exl.getUnsignedValue();
+            coder::Unsigned16 exl(encoded.range(index, 2), coder::bigendian);
+            uint16_t exLength = exl.getValue();
             index += 2;
             extensions.decode(encoded.range(index, exLength));
             index += exLength;
@@ -100,13 +100,13 @@ void ClientHello::decode() {
 
 }
 
-const CK::ByteArray& ClientHello::encode() {
+const coder::ByteArray& ClientHello::encode() {
 
     encoded.append(majorVersion);
     encoded.append(minorVersion);
 
-    CK::Unsigned32 g(gmt);
-    encoded.append(g.getEncoded(CK::Unsigned32::BIGENDIAN));
+    coder::Unsigned32 g(gmt);
+    encoded.append(g.getEncoded(coder::bigendian));
     encoded.append(random);
 
     uint8_t slen = sessionID.getLength();
@@ -115,9 +115,9 @@ const CK::ByteArray& ClientHello::encode() {
         encoded.append(sessionID);
     }
 
-    CK::ByteArray s(suites.encode());
-    CK::Unsigned16 suiteLen(s.getLength());
-    encoded.append(suiteLen.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::ByteArray s(suites.encode());
+    coder::Unsigned16 suiteLen(s.getLength());
+    encoded.append(suiteLen.getEncoded(coder::bigendian));
     encoded.append(s);
 
     encoded.append(compressionMethods.getLength());
@@ -134,7 +134,7 @@ const CK::ByteArray& ClientHello::encode() {
 bool ClientHello::getExtension(uint16_t eType, Extension& ext) const {
 
     ext = extensions.getExtension(eType);
-    return ext.type.getUnsignedValue() == eType;
+    return ext.type.getValue() == eType;
 
 }
 
@@ -156,7 +156,7 @@ CipherSuite ClientHello::getPreferred() const {
 
 }
 
-const CK::ByteArray& ClientHello::getRandom() const {
+const coder::ByteArray& ClientHello::getRandom() const {
 
     return random;
 

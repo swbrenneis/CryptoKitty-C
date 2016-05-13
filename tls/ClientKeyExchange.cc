@@ -1,5 +1,5 @@
 #include "tls/ClientKeyExchange.h"
-#include "data/Unsigned16.h"
+#include "coder/Unsigned16.h"
 #include "exceptions/tls/RecordException.h"
 #include "exceptions/tls/EncodingException.h"
 
@@ -29,17 +29,17 @@ void ClientKeyExchange::decode() {
 
 }
 
-void ClientKeyExchange::decodeDH(const CK::ByteArray& encoded) {
+void ClientKeyExchange::decodeDH(const coder::ByteArray& encoded) {
 
-        CK::Unsigned16 len(encoded.range(0, 2), CK::Unsigned16::BIGENDIAN);
-        dYc.decode(encoded.range(2, len.getUnsignedValue()), CK::BigInteger::BIGENDIAN);
+        coder::Unsigned16 len(encoded.range(0, 2), coder::bigendian);
+        dYc.decode(encoded.range(2, len.getValue()), CK::BigInteger::BIGENDIAN);
 
 }
 
-void ClientKeyExchange::decodeECDH(const CK::ByteArray& encoded) {
+void ClientKeyExchange::decodeECDH(const coder::ByteArray& encoded) {
 }
 
-const CK::ByteArray& ClientKeyExchange::encode() {
+const coder::ByteArray& ClientKeyExchange::encode() {
 
     switch (algorithm) {
         case dhe_rsa:
@@ -56,22 +56,22 @@ const CK::ByteArray& ClientKeyExchange::encode() {
 
 }
 
-CK::ByteArray ClientKeyExchange::encodeDH() const {
+coder::ByteArray ClientKeyExchange::encodeDH() const {
 
-    CK::ByteArray encoded;
+    coder::ByteArray encoded;
 
-    CK::ByteArray pk(dYc.getEncoded(CK::BigInteger::BIGENDIAN));
-    CK::Unsigned16 len(pk.getLength());
-    encoded.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::ByteArray pk(dYc.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::Unsigned16 len(pk.getLength());
+    encoded.append(len.getEncoded(coder::bigendian));
     encoded.append(pk);
 
     return encoded;
 
 }
 
-CK::ByteArray ClientKeyExchange::encodeECDH() const {
+coder::ByteArray ClientKeyExchange::encodeECDH() const {
 
-    CK::ByteArray encoded;
+    coder::ByteArray encoded;
 
     return encoded;
 
@@ -83,7 +83,7 @@ const CK::BigInteger& ClientKeyExchange::getDHPublicKey() const {
 
 }
 
-const CK::ByteArray& ClientKeyExchange::getECPublicKey() const {
+const coder::ByteArray& ClientKeyExchange::getECPublicKey() const {
 
     return ecPublicKey;
 
@@ -95,7 +95,7 @@ void ClientKeyExchange::initState(const CK::BigInteger& pk) {
 
 }
 
-void ClientKeyExchange::initState(NamedCurve curve, const CK::ByteArray& pk) {
+void ClientKeyExchange::initState(NamedCurve curve, const coder::ByteArray& pk) {
 
     algorithm = ec_diffie_hellman;
     curveType = named_curve;
@@ -105,7 +105,7 @@ void ClientKeyExchange::initState(NamedCurve curve, const CK::ByteArray& pk) {
 }
 
 void ClientKeyExchange::initState(const CK::ECDHKeyExchange::CurveParams& params,
-                                                    const CK::ByteArray& pk) {
+                                                    const coder::ByteArray& pk) {
 
     algorithm = ec_diffie_hellman;
     curveType = explicit_prime;

@@ -3,8 +3,8 @@
 #include "openpgp/packet/Signature.h"
 #include "openpgp/packet/UserAttribute.h"
 #include "openpgp/packet/UserID.h"
-#include "data/Unsigned16.h"
-#include "data/Unsigned32.h"
+#include "coder/Unsigned16.h"
+#include "coder/Unsigned32.h"
 #include "cipher/PKCS1rsassa.h"
 #include "digest/SHA256.h"
 #include "digest/SHA384.h"
@@ -57,7 +57,7 @@ Signature::Signature(uint8_t t, uint8_t pk, uint8_t hash)
   message(0) {
 }
 
-Signature::Signature(const CK::ByteArray& encoded)
+Signature::Signature(const coder::ByteArray& encoded)
 : Packet(SIGNATURE) {
 
     decode(encoded);
@@ -162,14 +162,14 @@ void Signature::createMessage() {
     message.append(type);
     message.append(pkAlgorithm);
     message.append(hashAlgorithm);
-    CK::ByteArray hashed(encodeHashedSubpackets());
-    CK::Unsigned16 len(hashed.getLength());
-    message.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::ByteArray hashed(encodeHashedSubpackets());
+    coder::Unsigned16 len(hashed.getLength());
+    message.append(len.getEncoded(coder::bigendian));
     message.append(hashed);
 
 }
 
-void Signature::decode(const CK::ByteArray& encoded) {
+void Signature::decode(const coder::ByteArray& encoded) {
 
     version = encoded[0];
     type = encoded[1];
@@ -177,41 +177,41 @@ void Signature::decode(const CK::ByteArray& encoded) {
     hashAlgorithm = encoded[3];
 
     unsigned index = 4;
-    CK::Unsigned16 hc(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 hc(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    unsigned count = hc.getUnsignedValue();
+    unsigned count = hc.getValue();
     decodeHashedSubpackets(encoded.range(index, count));
     index += count;
-    CK::Unsigned16 uc(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+    coder::Unsigned16 uc(encoded.range(index, 2), coder::bigendian);
     index += 2;
-    count = uc.getUnsignedValue();
+    count = uc.getValue();
     decodeUnhashedSubpackets(encoded.range(index, count));
     index += count;
 
     hashFragment[0] = encoded[index++];
     hashFragment[1] = encoded[index++];
 
-    CK::Unsigned16 len;
+    coder::Unsigned16 len;
     double dlen;
     switch (pkAlgorithm) {
         case RSASIGN:
         case RSAANY:
-            len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+            len.decode(encoded.range(index, 2), coder::bigendian);
             index += 2;
-            dlen = len.getUnsignedValue();
+            dlen = len.getValue();
             RSASig.decode(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
             break;
         case DSA:
-            len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+            len.decode(encoded.range(index, 2), coder::bigendian);
             index += 2;
-            dlen = len.getUnsignedValue();
+            dlen = len.getValue();
             DSAr.decode(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
-            index += len.getUnsignedValue();
-            len.decode(encoded.range(index, 2), CK::Unsigned16::BIGENDIAN);
+            index += len.getValue();
+            len.decode(encoded.range(index, 2), coder::bigendian);
             index += 2;
-            dlen = len.getUnsignedValue();
+            dlen = len.getValue();
             DSAs.decode(encoded.range(index, ceil(dlen / 8)),
                                                 CK::BigInteger::BIGENDIAN);
             break;
@@ -219,7 +219,7 @@ void Signature::decode(const CK::ByteArray& encoded) {
 
 }
 
-void Signature::decodeHashedSubpackets(const CK::ByteArray& encoded) {
+void Signature::decodeHashedSubpackets(const coder::ByteArray& encoded) {
 
     unsigned index = 0;
     unsigned length;
@@ -229,16 +229,16 @@ void Signature::decodeHashedSubpackets(const CK::ByteArray& encoded) {
             index++;
         }
         else if (encoded[index] == 0xff) {
-            CK::Unsigned32 len(encoded.range(index + 1, 4),
-                                            CK::Unsigned32::BIGENDIAN);
+            coder::Unsigned32 len(encoded.range(index + 1, 4),
+                                            coder::bigendian);
             index += 5;
-            length = len.getUnsignedValue();
+            length = len.getValue();
         }
         else {
-            CK::Unsigned16 len(encoded.range(index, 2),
-                                            CK::Unsigned16::BIGENDIAN);
+            coder::Unsigned16 len(encoded.range(index, 2),
+                                            coder::bigendian);
             index += 2;
-            length = len.getUnsignedValue();
+            length = len.getValue();
         }
         hashedSubpackets.push_back(encoded.range(index, length));
         index += length;
@@ -246,7 +246,7 @@ void Signature::decodeHashedSubpackets(const CK::ByteArray& encoded) {
 
 }
 
-void Signature::decodeUnhashedSubpackets(const CK::ByteArray& encoded) {
+void Signature::decodeUnhashedSubpackets(const coder::ByteArray& encoded) {
 
     unsigned index = 0;
     unsigned length;
@@ -256,17 +256,17 @@ void Signature::decodeUnhashedSubpackets(const CK::ByteArray& encoded) {
             index++;
         }
         else if (encoded[index] == 0xff) {
-            CK::Unsigned32 len(encoded.range(index + 1, 4),
-                                            CK::Unsigned32::BIGENDIAN);
+            coder::Unsigned32 len(encoded.range(index + 1, 4),
+                                            coder::bigendian);
             index += 5;
-            length = len.getUnsignedValue();
+            length = len.getValue();
         }
         else {
-            CK::ByteArray enc16(2);
+            coder::ByteArray enc16(2);
             enc16[0] = encoded[index] - 192;
             enc16[1] = encoded[index + 1] + 192;
-            CK::Unsigned16 len(enc16, CK::Unsigned16::BIGENDIAN);
-            length = len.getUnsignedValue();
+            coder::Unsigned16 len(enc16, coder::bigendian);
+            length = len.getValue();
             index += 2;
         }
         unhashedSubpackets.push_back(encoded.range(index, length));
@@ -278,7 +278,7 @@ void Signature::decodeUnhashedSubpackets(const CK::ByteArray& encoded) {
 void Signature::encode() {
 
     encoded.append(encodeTag());
-    CK::ByteArray sig;
+    coder::ByteArray sig;
 
     sig.append(version);
     sig.append(type);
@@ -286,32 +286,32 @@ void Signature::encode() {
     sig.append(hashAlgorithm);
 
 
-    CK::ByteArray sub(encodeHashedSubpackets());
-    CK::Unsigned16 sublen(sub.getLength());
-    sig.append(sublen.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::ByteArray sub(encodeHashedSubpackets());
+    coder::Unsigned16 sublen(sub.getLength());
+    sig.append(sublen.getEncoded(coder::bigendian));
     sig.append(sub);
 
     sub = encodeUnhashedSubpackets();
     sublen.setValue(sub.getLength());
-    sig.append(sublen.getEncoded(CK::Unsigned16::BIGENDIAN));
+    sig.append(sublen.getEncoded(coder::bigendian));
     sig.append(sub);
 
     sig.append(hashFragment, 2);
 
-    CK::Unsigned16 siglen;
+    coder::Unsigned16 siglen;
     switch (pkAlgorithm) {
         case RSASIGN:
         case RSAANY:
             siglen.setValue(RSASig.bitLength());
-            sig.append(siglen.getEncoded(CK::Unsigned16::BIGENDIAN));
+            sig.append(siglen.getEncoded(coder::bigendian));
             sig.append(RSASig.getEncoded(CK::BigInteger::BIGENDIAN));
             break;
         case DSA:
             siglen.setValue(DSAr.bitLength());
-            sig.append(siglen.getEncoded(CK::Unsigned16::BIGENDIAN));
+            sig.append(siglen.getEncoded(coder::bigendian));
             sig.append(DSAr.getEncoded(CK::BigInteger::BIGENDIAN));
             siglen.setValue(DSAs.bitLength());
-            sig.append(siglen.getEncoded(CK::Unsigned16::BIGENDIAN));
+            sig.append(siglen.getEncoded(coder::bigendian));
             sig.append(DSAs.getEncoded(CK::BigInteger::BIGENDIAN));
             break;
     }
@@ -322,9 +322,9 @@ void Signature::encode() {
 
 }
 
-CK::ByteArray Signature::encodeHashedSubpackets() const {
+coder::ByteArray Signature::encodeHashedSubpackets() const {
 
-    CK::ByteArray sub;
+    coder::ByteArray sub;
     for (SubConstIter it = hashedSubpackets.begin();
                     it != hashedSubpackets.end(); it++) {
         sub.append(encodeLength(it->getLength()));
@@ -335,31 +335,31 @@ CK::ByteArray Signature::encodeHashedSubpackets() const {
 
 }
 
-CK::ByteArray Signature::encodeLength(uint32_t len) const {
+coder::ByteArray Signature::encodeLength(uint32_t len) const {
 
-    CK::ByteArray encoded;
+    coder::ByteArray encoded;
     if (len < 192) {
         encoded.append(len);
     }
     else if (len < 8384) {
-        CK::Unsigned16 len(len);
-        CK::ByteArray enc16(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned16 len(len);
+        coder::ByteArray enc16(len.getEncoded(coder::bigendian));
         encoded.append(enc16[0] + 192);
         encoded.append(enc16[1] - 192);
     }
     else {
         encoded.append(0xff);
-        CK::Unsigned32 len(len);
-        encoded.append(len.getEncoded(CK::Unsigned16::BIGENDIAN));
+        coder::Unsigned32 len(len);
+        encoded.append(len.getEncoded(coder::bigendian));
     }
 
     return encoded;
     
 }
 
-CK::ByteArray Signature::encodeUnhashedSubpackets() const {
+coder::ByteArray Signature::encodeUnhashedSubpackets() const {
 
-    CK::ByteArray sub;
+    coder::ByteArray sub;
     for (SubConstIter it = unhashedSubpackets.begin();
                     it != unhashedSubpackets.end(); it++) {
         sub.append(encodeLength(it->getLength()));
@@ -372,7 +372,7 @@ CK::ByteArray Signature::encodeUnhashedSubpackets() const {
 
 void Signature::setKeyMaterial(PublicKey& pk) {
 
-    CK::ByteArray key(pk.getEncoded());
+    coder::ByteArray key(pk.getEncoded());
 
     // Strip the header.
     uint16_t strip = 1;     // Type octet
@@ -388,15 +388,15 @@ void Signature::setKeyMaterial(PublicKey& pk) {
 
     keyMaterial.clear();
     keyMaterial.append(0x99);
-    CK::Unsigned16 length(key.getLength());
-    keyMaterial.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::Unsigned16 length(key.getLength());
+    keyMaterial.append(length.getEncoded(coder::bigendian));
     keyMaterial.append(key);
 
 }
 
 void Signature::setSignatureMaterial(Signature& s) {
 
-    CK::ByteArray sig(s.getEncoded());
+    coder::ByteArray sig(s.getEncoded());
 
     // Strip the header.
     uint16_t strip = 1;     // Type octet
@@ -412,15 +412,15 @@ void Signature::setSignatureMaterial(Signature& s) {
 
     sigMaterial.clear();
     sigMaterial.append(0x88);
-    CK::Unsigned16 length(sig.getLength());
-    sigMaterial.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::Unsigned16 length(sig.getLength());
+    sigMaterial.append(length.getEncoded(coder::bigendian));
     sigMaterial.append(sig);
 
 }
 
 void Signature::setUserAttrMaterial(UserAttribute& u) {
 
-    CK::ByteArray attr(u.getEncoded());
+    coder::ByteArray attr(u.getEncoded());
 
     // Strip the header.
     uint16_t strip = 1;     // Type octet
@@ -436,15 +436,15 @@ void Signature::setUserAttrMaterial(UserAttribute& u) {
 
     attrMaterial.clear();
     attrMaterial.append(0xd1);
-    CK::Unsigned16 length(attr.getLength());
-    attrMaterial.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::Unsigned16 length(attr.getLength());
+    attrMaterial.append(length.getEncoded(coder::bigendian));
     attrMaterial.append(attr);
 
 }
 
 void Signature::setUserIDMaterial(UserID& u) {
 
-    CK::ByteArray uid(u.getEncoded());
+    coder::ByteArray uid(u.getEncoded());
 
     // Strip the header.
     uint16_t strip = 1;     // Type octet
@@ -460,8 +460,8 @@ void Signature::setUserIDMaterial(UserID& u) {
 
     uidMaterial.clear();
     uidMaterial.append(0xb4);
-    CK::Unsigned16 length(uid.getLength());
-    uidMaterial.append(length.getEncoded(CK::Unsigned16::BIGENDIAN));
+    coder::Unsigned16 length(uid.getLength());
+    uidMaterial.append(length.getEncoded(coder::bigendian));
     uidMaterial.append(uid);
 
 }
@@ -484,7 +484,7 @@ void Signature::sign(const CK::RSAPrivateKey& pk) {
     }
 
     createMessage();
-    CK::ByteArray hash(digest->digest(message));
+    coder::ByteArray hash(digest->digest(message));
     hashFragment[0] = hash[hash.getLength() - 2];
     hashFragment[1] = hash[hash.getLength() - 1];
 
@@ -494,7 +494,7 @@ void Signature::sign(const CK::RSAPrivateKey& pk) {
             {
             // Cipher owns digest pointer.
             CK::PKCS1rsassa rsa(digest);
-            CK::ByteArray sig(rsa.sign(pk, hash));
+            coder::ByteArray sig(rsa.sign(pk, hash));
             RSASig.decode(sig, CK::BigInteger::BIGENDIAN);
             }
             break;
@@ -522,7 +522,7 @@ bool Signature::verify(const CK::RSAPublicKey& pk) {
     }
 
     createMessage();
-    CK::ByteArray hash(digest->digest(message));
+    coder::ByteArray hash(digest->digest(message));
     if ( hashFragment[0] != hash[hash.getLength() - 2]
                     || hashFragment[1] != hash[hash.getLength() - 1]) {
         return false;
@@ -534,7 +534,7 @@ bool Signature::verify(const CK::RSAPublicKey& pk) {
         case RSAANY:
             {
             CK::PKCS1rsassa rsa(digest);
-            CK::ByteArray sig(RSASig.getEncoded(CK::BigInteger::BIGENDIAN));
+            coder::ByteArray sig(RSASig.getEncoded(CK::BigInteger::BIGENDIAN));
             verified = rsa.verify(pk, hash, sig);
             }
             break;

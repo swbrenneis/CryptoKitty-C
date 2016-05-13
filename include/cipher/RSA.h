@@ -20,20 +20,19 @@ class RSA {
         static const BigInteger MASK;
 
     public:
-        virtual ByteArray
-                decrypt(const RSAPrivateKey& K, const ByteArray& C)=0;
-        virtual ByteArray
-                encrypt(const RSAPublicKey& K, const ByteArray& C)=0;
-        virtual ByteArray sign(const RSAPrivateKey& K, const ByteArray& M)=0;
+        virtual coder::ByteArray
+                decrypt(const RSAPrivateKey& K, const coder::ByteArray& C)=0;
+        virtual coder::ByteArray
+                encrypt(const RSAPublicKey& K, const coder::ByteArray& C)=0;
+        virtual coder::ByteArray sign(const RSAPrivateKey& K, const coder::ByteArray& M)=0;
         virtual bool
-                verify(const RSAPublicKey& K, const ByteArray& M,
-                                    const ByteArray& S)=0;
+                verify(const RSAPublicKey& K, const coder::ByteArray& M,
+                                    const coder::ByteArray& S)=0;
 
     protected:
-        ByteArray i2osp(const BigInteger& X, unsigned xLen);
-        BigInteger os2ip(const ByteArray& X);
+        coder::ByteArray i2osp(const BigInteger& X, unsigned xLen);
+        BigInteger os2ip(const coder::ByteArray& X);
         BigInteger rsavp1(const RSAPublicKey& K, const BigInteger& s); 
-        //ByteArray rsaXor(const ByteArray& a, const ByteArray& b) const;
 
 };
 
