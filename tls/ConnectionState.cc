@@ -3,15 +3,19 @@
 #include "mac/HMAC.h"
 #include "exceptions/tls/StateException.h"
 #include "exceptions/BadParameterException.h"
+#include "cthread/ThreadLocal.h"
 #include <iostream>
 
 namespace CKTLS {
 
 // Static initialization.
-ConnectionState *ConnectionState::currentRead = 0;
-ConnectionState *ConnectionState::currentWrite = 0;
-ConnectionState *ConnectionState::pendingRead = 0;
-ConnectionState *ConnectionState::pendingWrite = 0;
+static bool tlInitialize = true;
+ThreadLocal *ConnectionState::currentRead = 0;
+ThreadLocal *ConnectionState::currentWrite = 0;
+ThreadLocal *ConnectionState::pendingRead = 0;
+ThreadLocal *ConnectionState::pendingWrite = 0;
+
+typedef TypedThreadLocal<ConnectionState> LocalConnectionState;
 
 ConnectionState::ConnectionState()
 : initialized(false),
@@ -54,10 +58,11 @@ ConnectionState::ConnectionState(const ConnectionState& other)
  */
 void ConnectionState::copyWriteToRead() {
 
-    ConnectionEnd end = pendingRead->entity;
+    ConnectionEnd end = getPendingRead()->entity;
     delete pendingRead;
-    pendingRead = new ConnectionState(*pendingWrite);
-    pendingRead->entity = end;
+    pendingRead =
+        new LocalConnectionState(new ConnectionState(*(getPendingWrite())), false);
+    getPendingRead()->entity = end;
 
 }
 
@@ -130,20 +135,20 @@ const coder::ByteArray& ConnectionState::getClientRandom() const {
 ConnectionState *ConnectionState::getCurrentRead() {
 
     if (currentRead == 0) {
-        throw StateException("Current state not valid");
+        throw StateException("Current read state not valid");
     }
 
-    return currentRead;
+    return dynamic_cast<LocalConnectionState*>(currentRead)->getLocal();
 
 }
 
 ConnectionState *ConnectionState::getCurrentWrite() {
 
     if (currentWrite == 0) {
-        throw StateException("Current state not valid");
+        throw StateException("Current write state not valid");
     }
 
-    return currentWrite;
+    return dynamic_cast<LocalConnectionState*>(currentWrite)->getLocal();
 
 }
 
@@ -201,20 +206,22 @@ const coder::ByteArray& ConnectionState::getMasterSecret() const {
 ConnectionState *ConnectionState::getPendingRead() {
 
     if (pendingRead == 0) {
-        pendingRead = new ConnectionState;
+        pendingRead = new LocalConnectionState(new ConnectionState, tlInitialize);
+        tlInitialize = false;
     }
 
-    return pendingRead;
+    return dynamic_cast<LocalConnectionState*>(pendingRead)->getLocal();
 
 }
 
 ConnectionState *ConnectionState::getPendingWrite() {
 
     if (pendingWrite == 0) {
-        pendingWrite = new ConnectionState;
+        pendingWrite = new LocalConnectionState(new ConnectionState, tlInitialize);
+        tlInitialize = false;
     }
 
-    return pendingWrite;
+    return dynamic_cast<LocalConnectionState*>(pendingWrite)->getLocal();
 
 }
 
@@ -248,12 +255,12 @@ void ConnectionState::incrementSequence() {
  */
 void ConnectionState::promoteRead() {
 
-    if (pendingRead == 0 || !pendingRead->initialized) {
+    if (pendingRead == 0 || !getPendingRead()->initialized) {
         throw StateException("Pending read state not initialized.");
     }
 
     delete currentRead;
-    currentRead = new ConnectionState(*pendingRead);
+    currentRead = new LocalConnectionState(new ConnectionState(*getPendingRead()), false);
 
 }
 
@@ -263,12 +270,12 @@ void ConnectionState::promoteRead() {
  */
 void ConnectionState::promoteWrite() {
 
-    if (pendingWrite == 0 || !pendingWrite->initialized) {
+    if (pendingWrite == 0 || !getPendingWrite()->initialized) {
         throw StateException("Pending write state not initialized.");
     }
 
     delete currentWrite;
-    currentWrite = new ConnectionState(*pendingWrite);
+    currentWrite = new LocalConnectionState(new ConnectionState(*getPendingWrite()), false);
 
 }
 

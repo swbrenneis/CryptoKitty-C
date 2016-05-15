@@ -30,11 +30,10 @@ const BigInteger& DHKeyExchange::generatePublicKey() {
             p = BigInteger(bitsize, false, *rnd);
         }
         g = BigInteger(bitsize/2, false, *rnd);
-        g = g % p;
     }
 
     if (a == BigInteger::ZERO) {
-        a = BigInteger(512, false, *rnd);
+        a = BigInteger(bitsize/4, false, *rnd);
     }
 
     publicKey = g.modPow(a, p);
@@ -81,7 +80,7 @@ const BigInteger& DHKeyExchange::getSecret(const BigInteger& fpk) {
 
     if (a == BigInteger::ZERO) {
         SecureRandom *rnd = SecureRandom::getSecureRandom("Fortuna");
-        a = BigInteger(512, false, *rnd);
+        a = BigInteger(bitsize/4, false, *rnd);
     }
 
     s = fpk.modPow(a, p);

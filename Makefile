@@ -74,17 +74,23 @@ TLS_HEADER= include/tls/Alert.h include/tls/ChangeCipherSpec.h include/tls/Ciphe
 			include/tls/ServerKeyExchange.h
 TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
-LDOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
-		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(OPENPGP_OBJECT) \
-		  $(RANDOM_OBJECT) $(SIGNATURE_OBJECT) $(TLS_OBJECT)
+CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
+		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
+		  $(SIGNATURE_OBJECT)
 
-LIBRARY= libcryptokitty.so
+TLSOBJECT= $(TLS_OBJECT)
+
+PGPOBJECT= $(OPENPGP_OBJECT)
+
+CKLIBRARY= libcryptokitty.so
+TLSLIBRARY= libcktls.so
+PGPLIBRARY= libckpgp.so
 
 .SUFFIXES:
 
 .PHONY: clean install
 
-all: $(LIBRARY)
+all: $(CKLIBRARY) $(PGPLIBRARY) $(TLSLIBRARY)
 
 $(CIPHER_OBJECT): $(CIPHER_SOURCE) $(CIPHER_HEADER)
 	$(MAKE) -C cipher
@@ -116,11 +122,19 @@ $(TLS_OBJECT): $(TLS_SOURCE) $(TLS_HEADER)
 $(OPENPGP_OBJECT): $(OPENPGP_SOURCE) $(OPENPGP_HEADER)
 	$(MAKE) -C openpgp
 
-$(LIBRARY): $(LDOBJECT)
-	    $(LD) -o $@ $(LDOBJECT) $(LDFLAGS)
+$(CKLIBRARY): $(CKOBJECT)
+	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS)
+
+$(TLSLIBRARY): $(TLSOBJECT)
+	    $(LD) -o $@ $(TLSOBJECT) $(LDFLAGS)
+
+$(PGPLIBRARY): $(PGPOBJECT)
+	    $(LD) -o $@ $(PGPOBJECT) $(LDFLAGS)
 
 install: $(LIBRRY)
-	cp $(LIBRARY) $(DEV_HOME)/lib
+	cp $(CKLIBRARY) $(DEV_HOME)/lib
+	cp $(TLSLIBRARY) $(DEV_HOME)/lib
+	cp $(PGPLIBRARY) $(DEV_HOME)/lib
 	cp -af include/cipher $(DEV_HOME)/include/CryptoKitty
 	cp -af include/ciphermodes $(DEV_HOME)/include/CryptoKitty
 	cp -af include/data $(DEV_HOME)/include/CryptoKitty
@@ -135,7 +149,7 @@ install: $(LIBRRY)
 	cp -af include/openpgp $(DEV_HOME)/include/CryptoKitty
 
 clean:
-	rm -f $(LIBRARY)
+	rm -f $(CKLIBRARY) $(TLSLIBRARY) $(PGPLIBRARY)
 	cd cipher && $(MAKE) clean
 	cd ciphermodes && $(MAKE) clean
 	cd data && $(MAKE) clean

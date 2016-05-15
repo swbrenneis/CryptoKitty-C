@@ -9,7 +9,7 @@ class Alert : public RecordProtocol {
 
     public:
         Alert();
-        Alert(AlertDescription d, bool fatal = true);
+        Alert(AlertDescription d, AlertLevel l = fatal);
         ~Alert();
         Alert(const Alert& other);
         Alert& operator=(const Alert& other);

@@ -4,6 +4,8 @@
 #include "tls/Constants.h"
 #include "coder/ByteArray.h"
 
+class ThreadLocal;
+
 namespace CKTLS {
 
 class ConnectionState {
@@ -119,10 +121,10 @@ class ConnectionState {
          * the client. Server read is used to send outgoing records
          * to the server
          */
-        static ConnectionState *currentRead;
-        static ConnectionState *currentWrite;
-        static ConnectionState *pendingRead;
-        static ConnectionState *pendingWrite;
+        static ThreadLocal *currentRead;
+        static ThreadLocal *currentWrite;
+        static ThreadLocal *pendingRead;
+        static ThreadLocal *pendingWrite;
 
 };
 

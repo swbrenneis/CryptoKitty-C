@@ -7,11 +7,10 @@ Alert::Alert()
 : RecordProtocol(alert) {
 }
 
-Alert::Alert(AlertDescription d, bool f)
+Alert::Alert(AlertDescription d, AlertLevel l)
 : RecordProtocol(alert),
-  desc(d) {
-
-    level = f ? fatal : warning;
+  desc(d),
+  level(l) {
 }
 
 Alert::~Alert() {
@@ -64,9 +63,9 @@ void Alert::decode() {
 
 void Alert::encode() {
 
-    //CK::ByteArray alert(2);
-    //alert[0] = level;
-    //alert[1] = desc;
+    fragment.clear();
+    fragment[0] = level;
+    fragment[1] = desc;
 
 }
 
