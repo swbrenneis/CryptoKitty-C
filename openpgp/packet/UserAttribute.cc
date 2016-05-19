@@ -103,13 +103,13 @@ coder::ByteArray UserAttribute::encodeLength(uint32_t len) const {
         encoded.append(len);
     }
     else if (len < 8384) {
-        coder::Unsigned16 len(len);
-        encoded.append(len.getEncoded(coder::bigendian));
+        coder::Unsigned16 length(len);
+        encoded.append(length.getEncoded(coder::bigendian));
     }
     else {
         encoded.append(0xff);
-        coder::Unsigned32 len(len);
-        encoded.append(len.getEncoded(coder::bigendian));
+        coder::Unsigned32 length(len);
+        encoded.append(length.getEncoded(coder::bigendian));
     }
 
     return encoded;

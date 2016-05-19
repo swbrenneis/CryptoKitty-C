@@ -22,7 +22,7 @@ CMWCRandom::CMWCRandom() {
 
 }
 
-CMWCRandom::CMWCRandom(unsigned long seedValue)
+CMWCRandom::CMWCRandom(uint64_t seedValue)
 : seed(seedValue){
 }
 
@@ -34,8 +34,8 @@ CMWCRandom::~CMWCRandom() {
  */
 long CMWCRandom::cmwc4096() {
 
-    unsigned long long t;
-    unsigned long x;
+    uint64_t t;
+    uint64_t x;
 
     i = (i + 1) & 4095;
     t = (A * q[i]) + c;
@@ -54,7 +54,7 @@ long CMWCRandom::cmwc4096() {
  * exceeds ULONG_MAX, the output will be truncated
  * silently.
  */
-unsigned long CMWCRandom::next(int bits) {
+uint64_t CMWCRandom::next(int bits) {
 
     if (q.size() == 0) {
         seedGenerator();
@@ -62,10 +62,10 @@ unsigned long CMWCRandom::next(int bits) {
 
     long rnd = cmwc4096();
 
-    int ulSize = sizeof(unsigned long) * 8;
+    int ulSize = sizeof(uint64_t) * 8;
     bits = std::min(ulSize, bits);
-    unsigned long result = 0;
-    unsigned long msb = (ULONG_MAX >> 1) ^ ULONG_MAX;
+    uint64_t result = 0;
+    uint64_t msb = (ULONG_MAX >> 1) ^ ULONG_MAX;
     for (int n = 0; n < ulSize; ++n) {
         if (n < bits) {
             if ((rnd & 1) != 0) {
@@ -88,7 +88,7 @@ void CMWCRandom::seedGenerator() {
     coder::ByteArray fill(4096);
     SHA256 digest;
     NanoTime nt;
-    unsigned long nonce = seed;
+    uint64_t nonce = seed;
     coder::ByteArray context;
     int filled = 0;
 
@@ -118,7 +118,7 @@ void CMWCRandom::seedGenerator() {
 
 }
 
-void CMWCRandom::setSeed(unsigned long seedValue) {
+void CMWCRandom::setSeed(uint64_t seedValue) {
 
     seed = seedValue;
     seedGenerator(); // Generate new Q

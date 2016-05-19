@@ -165,7 +165,7 @@ void SecretKey::decode(const coder::ByteArray& encoded) {
     // TODO: Encrypt key material
     coder::ByteArray keyMaterial(encoded.range(index, encoded.getLength() - index));
     if (s2kUsage == 0 || s2kUsage == 0xff) {
-        uint16_t cksum;
+        uint16_t cksum = 0;
         for (unsigned i = 0; i < keyMaterial.getLength() - 2; ++i) {
             cksum += keyMaterial[i];
         }

@@ -11,8 +11,8 @@
 
 namespace CK {
 
-static const uint64_t P_MAX = 549755813632; // 2^39 - 256.
-static const uint64_t A_MAX = 0xffffffffffffffff;
+//static const uint64_t P_MAX = 549755813632; // 2^39 - 256.
+//static const uint64_t A_MAX = 0xffffffffffffffff;
 uint8_t GCM::tagSize = 128;
 
 GCM::GCM(Cipher *c, const coder::ByteArray& iv)
@@ -319,9 +319,9 @@ void GCM::shiftBlock(coder::ByteArray& block) const {
 
 void GCM::setAuthData(const coder::ByteArray& ad) {
 
-    if (ad.getLength() * 8 > A_MAX) {
+    /*if (ad.getLength() * 8 > A_MAX) {
         throw BadParameterException("GCM setAuthData: Invalid authentication data");
-    }
+    }*/
 
     A = ad;
 
