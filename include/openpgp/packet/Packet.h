@@ -1,5 +1,5 @@
-#ifndef PACKET_H_INCLUDED
-#define PACKET_H_INCLUDED
+#ifndef CKPGPPACKET_H_INCLUDED
+#define CKPGPPACKET_H_INCLUDED
 
 #include "coder/ByteArray.h"
 
@@ -51,4 +51,4 @@ class Packet {
 
 }
 
-#endif  // PACKET_H_INCLUDED
+#endif  // CKPGPPACKET_H_INCLUDED

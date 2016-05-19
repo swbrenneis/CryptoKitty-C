@@ -8,9 +8,13 @@ namespace CK {
     class RSAPublicKey;
 }
 
+#ifndef CKPGPPACKET_H_INCLUDED
+#error CK::Packet not defined!
+#endif
+
 namespace CKPGP {
 
-class PublicKey : public Packet {
+class PublicKey : public CKPGP::Packet {
 
     public:
         PublicKey();
