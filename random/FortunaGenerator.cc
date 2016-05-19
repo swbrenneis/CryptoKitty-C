@@ -2,7 +2,6 @@
 #include "exceptions/OutOfRangeException.h"
 #include "cipher/AES.h"
 #include "digest/SHA256.h"
-#include "coder/Int32.h"
 #include "coder/Unsigned32.h"
 #include "coder/Unsigned64.h"
 #include "data/NanoTime.h"
@@ -43,6 +42,10 @@ coder::ByteArray FortunaGenerator::generateBlocks(uint16_t k) {
         if (counter >= limit) {
             counter = 1L;
         }
+    }
+    if (r.getLength() > k * 16) {
+       std::cout << "Fortuna block overrun." << std::endl;
+       r = r.range(0, k * 16);
     }
     return r;
 
@@ -124,8 +127,8 @@ void *FortunaGenerator::threadFunction() {
     while (run) {
         coder::ByteArray rd;
         generateRandomData(rd, 4);
-        coder::Int32 nsec(rd, coder::littleendian);
-        delay.tv_nsec = abs(nsec.getValue());
+        coder::Unsigned32 nsec(rd, coder::littleendian);
+        delay.tv_nsec = nsec.getValue();
         nanosleep(&delay, 0);
 
         // Add some timed entropy

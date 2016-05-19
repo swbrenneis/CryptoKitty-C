@@ -9,7 +9,6 @@
 namespace CKTLS {
 
 // Static initialization.
-static bool tlInitialize = true;
 ThreadLocal *ConnectionState::currentRead = 0;
 ThreadLocal *ConnectionState::currentWrite = 0;
 ThreadLocal *ConnectionState::pendingRead = 0;
@@ -59,9 +58,9 @@ ConnectionState::ConnectionState(const ConnectionState& other)
 void ConnectionState::copyWriteToRead() {
 
     ConnectionEnd end = getPendingRead()->entity;
-    delete pendingRead;
-    pendingRead =
-        new LocalConnectionState(new ConnectionState(*(getPendingWrite())), false);
+    LocalConnectionState *lcs = dynamic_cast<LocalConnectionState*>(pendingRead);
+    delete lcs->getLocal();
+    lcs->setLocal(new ConnectionState(*(getPendingWrite())));
     getPendingRead()->entity = end;
 
 }
@@ -206,22 +205,34 @@ const coder::ByteArray& ConnectionState::getMasterSecret() const {
 ConnectionState *ConnectionState::getPendingRead() {
 
     if (pendingRead == 0) {
-        pendingRead = new LocalConnectionState(new ConnectionState, tlInitialize);
-        tlInitialize = false;
+        pendingRead = new LocalConnectionState;
     }
 
-    return dynamic_cast<LocalConnectionState*>(pendingRead)->getLocal();
+    LocalConnectionState *lcs = dynamic_cast<LocalConnectionState*>(pendingRead);
+    ConnectionState *pr = lcs->getLocal();
+    if (pr == 0) {
+        pr = new ConnectionState;
+        lcs->setLocal(pr);
+    }
+
+    return pr;
 
 }
 
 ConnectionState *ConnectionState::getPendingWrite() {
 
     if (pendingWrite == 0) {
-        pendingWrite = new LocalConnectionState(new ConnectionState, tlInitialize);
-        tlInitialize = false;
+        pendingWrite = new LocalConnectionState;
     }
 
-    return dynamic_cast<LocalConnectionState*>(pendingWrite)->getLocal();
+    LocalConnectionState *lcs = dynamic_cast<LocalConnectionState*>(pendingWrite);
+    ConnectionState *pw = lcs->getLocal();
+    if (pw == 0) {
+        pw = new ConnectionState;
+        lcs->setLocal(pw);
+    }
+
+    return pw;
 
 }
 
@@ -259,8 +270,14 @@ void ConnectionState::promoteRead() {
         throw StateException("Pending read state not initialized.");
     }
 
-    delete currentRead;
-    currentRead = new LocalConnectionState(new ConnectionState(*getPendingRead()), false);
+    if (currentRead == 0) {
+        currentRead = new LocalConnectionState;
+    }
+
+    LocalConnectionState *lcs = dynamic_cast<LocalConnectionState*>(currentRead);
+    delete lcs->getLocal();
+    lcs->setLocal(new ConnectionState(*getPendingRead()));
+    getPendingRead()->initialized = false;
 
 }
 
@@ -274,8 +291,14 @@ void ConnectionState::promoteWrite() {
         throw StateException("Pending write state not initialized.");
     }
 
-    delete currentWrite;
-    currentWrite = new LocalConnectionState(new ConnectionState(*getPendingWrite()), false);
+    if (currentWrite == 0) {
+        currentWrite = new LocalConnectionState;
+    }
+
+    LocalConnectionState *lcs = dynamic_cast<LocalConnectionState*>(currentWrite);
+    delete lcs->getLocal();
+    lcs->setLocal(new ConnectionState(*getPendingWrite()));
+    getPendingWrite()->initialized = false;
 
 }
 

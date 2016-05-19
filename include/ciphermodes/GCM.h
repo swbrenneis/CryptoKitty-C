@@ -47,8 +47,7 @@ class GCM : public CipherMode {
         coder::ByteArray IV;   // Initial value;
         coder::ByteArray A;   // Authenticated data;
 
-        static uint8_t t; // Authentication tag size;:w
-
+        static uint8_t tagSize; // Authentication tag size;
 
 };
 

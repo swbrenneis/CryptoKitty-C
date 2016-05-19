@@ -131,17 +131,15 @@ void HandshakeRecord::decode() {
             throw RecordException("Invalid handshake type");
     }
 
-    encoded = fragment.range(4, length);
-    body->decode(encoded);
+    body->decode(fragment.range(4, length));
 
 }
 
 void HandshakeRecord::encode() {
 
     fragment.clear();
-    encoded.clear();
     fragment.append(type);
-    encoded = body->encode();
+    coder::ByteArray encoded(body->encode());
     coder::Unsigned32 bodyLen(encoded.getLength());
     coder::ByteArray bl(bodyLen.getEncoded(coder::bigendian));
     fragment.append(bl.range(1, 3));    // 24 bit length.

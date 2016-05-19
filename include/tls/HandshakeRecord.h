@@ -29,7 +29,6 @@ class HandshakeRecord : public RecordProtocol {
     private:
         HandshakeBody *body;
         HandshakeType type;
-        coder::ByteArray encoded;
 
 };
 

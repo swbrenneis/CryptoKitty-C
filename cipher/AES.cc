@@ -88,6 +88,8 @@ AES::AES(KeySize ks)
             Nk = 8;
             Nr = 14;
             break;
+        default:
+            throw BadParameterException("AES : Invalid key length");
     }
     keyScheduleSize = Nb * (Nr + 1);
 
@@ -155,7 +157,7 @@ void AES::AddRoundKey(const Word *roundKey) {
 void AES::Cipher(const coder::ByteArray& plaintext, const Word *keySchedule) {
 
     if (plaintext.getLength() != Nb * 4) {
-        throw BadParameterException("Cipher: Invalid block size.");
+        throw BadParameterException("AES Cipher: Invalid block size.");
     }
 
     // Load the state
@@ -200,11 +202,11 @@ void AES::Cipher(const coder::ByteArray& plaintext, const Word *keySchedule) {
 coder::ByteArray AES::decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key) {
 
     if (ciphertext.getLength() != Nb * 4) {
-        throw BadParameterException("decrypt: Illegal ciphertext size");
+        throw BadParameterException("AES decrypt: Illegal ciphertext size");
     }
 
     if (key.getLength() != keySize) {
-        throw BadParameterException("decrypt: Invalid key");
+        throw BadParameterException("AES decrypt: Invalid key");
     }
 
     Word *keySchedule = new Word[keyScheduleSize];
@@ -230,11 +232,11 @@ coder::ByteArray AES::decrypt(const coder::ByteArray& ciphertext, const coder::B
 coder::ByteArray AES::encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key) {
 
     if (plaintext.getLength() != Nb * 4) {
-        throw BadParameterException("encrypt: Illegal plaintext size");
+        throw BadParameterException("AES encrypt: Illegal plaintext size");
     }
 
     if (key.getLength() != keySize) {
-        throw BadParameterException("encrypt: Invalid key");
+        throw BadParameterException("AES encrypt: Invalid key");
     }
 
     Word *keySchedule = new Word[keyScheduleSize];
@@ -289,7 +291,7 @@ coder::ByteArray AES::encrypt(const coder::ByteArray& plaintext, const coder::By
 void AES::InvCipher(const coder::ByteArray& ciphertext, const Word *keySchedule) {
 
     if (ciphertext.getLength() != Nb * 4) {
-        throw BadParameterException("Cipher: Invalid block size.");
+        throw BadParameterException("AES InvCipher: Invalid block size.");
     }
 
     // Load the state
@@ -433,10 +435,9 @@ void AES::InvSubBytes() {
 void AES::KeyExpansion(const coder::ByteArray& key, Word *keySchedule) const {
 
     // Key consistency check.
-    //if (key.getLength() != keySize
-    //                || keySchedule.getLength() != keyScheduleSize) {
-    //        throw BadParameterException("ExpandKey: Invalid key sizes");
-    //}
+    if (key.getLength() != keySize) {
+            throw BadParameterException("AES ExpandKey: Invalid key size");
+    }
 
     Word temp;
 
