@@ -342,15 +342,15 @@ coder::ByteArray Signature::encodeLength(uint32_t len) const {
         encoded.append(len);
     }
     else if (len < 8384) {
-        coder::Unsigned16 len(len);
-        coder::ByteArray enc16(len.getEncoded(coder::bigendian));
+        coder::Unsigned16 length(len);
+        coder::ByteArray enc16(length.getEncoded(coder::bigendian));
         encoded.append(enc16[0] + 192);
         encoded.append(enc16[1] - 192);
     }
     else {
         encoded.append(0xff);
-        coder::Unsigned32 len(len);
-        encoded.append(len.getEncoded(coder::bigendian));
+        coder::Unsigned32 length(len);
+        encoded.append(length.getEncoded(coder::bigendian));
     }
 
     return encoded;

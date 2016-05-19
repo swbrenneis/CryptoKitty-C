@@ -10,7 +10,7 @@ const uint32_t ArmoredData::CRC24_INIT = 0xB704CEL;
 const uint32_t ArmoredData::CRC24_POLY = 0x1864CFBL;
 
 static const uint8_t ENCRYPTED = 9;
-static const uint8_t LITERALDATA = 11;
+//static const uint8_t LITERALDATA = 11;
 static const uint8_t ONEPASSSIG = 4;
 static const uint8_t PUBLICKEY = 6;
 static const uint8_t SECRETKEY = 5;

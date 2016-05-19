@@ -84,7 +84,7 @@ void FortunaGenerator::reseed(const coder::ByteArray& seed) {
 
 void FortunaGenerator::start() {
 
-    Lock lock();
+    Lock lock;
 
     if (!run) {
         // Initialize pools

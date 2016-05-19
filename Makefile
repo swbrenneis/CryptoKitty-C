@@ -2,7 +2,7 @@ DEV_HOME=$(HOME)/dev
 
 LD= g++
 LDPATHS= -L$(DEV_HOME)/lib
-LDLIBS=  -lrt -lntl -lgmp
+LDLIBS=  -lntl -lgmp -lcoder -lcthread
 LDFLAGS= -Wall -g -shared $(LDPATHS) $(LDLIBS)
 
 CIPHER_OBJECT= cipher/AES.o cipher/PKCS1rsassa.o cipher/PSSmgf1.o \
@@ -126,10 +126,10 @@ $(CKLIBRARY): $(CKOBJECT)
 	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS)
 
 $(TLSLIBRARY): $(TLSOBJECT)
-	    $(LD) -o $@ $(TLSOBJECT) $(LDFLAGS)
+	    $(LD) -o $@ $(TLSOBJECT) $(LDFLAGS) -L. -lcryptokitty -lckpgp
 
 $(PGPLIBRARY): $(PGPOBJECT)
-	    $(LD) -o $@ $(PGPOBJECT) $(LDFLAGS)
+	    $(LD) -o $@ $(PGPOBJECT) $(LDFLAGS) -L. -lcryptokitty
 
 install: $(LIBRRY)
 	cp $(CKLIBRARY) $(DEV_HOME)/lib

@@ -175,10 +175,10 @@ uint32_t PGPCertificate::decodePGPLength(std::istream& in, coder::ByteArray& lBy
     uint8_t *ubuf = reinterpret_cast<uint8_t*>(octets);
     in.get(octets[0]);
     lBytes.append(ubuf[0]);
-    if (octets[0] < 192) {
+    if (ubuf[0] < 192) {
         return ubuf[0];
     }
-    else if (octets[0] == 0xff) {
+    else if (ubuf[0] == 0xff) {
         in.get(octets, 4);
         lBytes.append(ubuf, 4);
         coder::Unsigned32 len(lBytes.range(1, 4), coder::bigendian);
