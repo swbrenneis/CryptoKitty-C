@@ -16,26 +16,26 @@ RecordProtocol::RecordProtocol(ContentType c)
 RecordProtocol::~RecordProtocol() {
 }
 
-ContentType RecordProtocol::decodePreamble(const coder::ByteArray& encoded) {
+ContentType RecordProtocol::decodePreamble(const coder::ByteArray& enc) {
 
-    if (encoded.getLength() != 5) {
+    if (enc.getLength() != 5) {
         throw RecordException("Invalid record preamble");
     }
 
-    content = static_cast<ContentType>(encoded[0]);
+    content = static_cast<ContentType>(enc[0]);
     switch (content) {
         case change_cipher_spec:
         case alert:
         case handshake:
         case application_data:
-            recordMajorVersion = encoded[1];
-            recordMinorVersion = encoded[2];
+            recordMajorVersion = enc[1];
+            recordMinorVersion = enc[2];
             break;
         default:
             throw RecordException("Invalid plaintext content type");
     }
 
-    coder::Unsigned16 fLen(encoded.range(3, 2), coder::bigendian);
+    coder::Unsigned16 fLen(enc.range(3, 2), coder::bigendian);
     fragLength = fLen.getValue();
 
     return content;
@@ -71,16 +71,16 @@ void RecordProtocol::decodeRecord() {
  */
 const coder::ByteArray& RecordProtocol::encodeRecord() {
 
-    encoded.clear();
-    encoded.append(content);
-    encoded.append(recordMajorVersion);
-    encoded.append(recordMinorVersion);
+    encodedRec.clear();
+    encodedRec.append(content);
+    encodedRec.append(recordMajorVersion);
+    encodedRec.append(recordMinorVersion);
     // Type specific encoding. Encodes to fragment.
     encode();
     coder::Unsigned16 len(fragment.getLength());
-    encoded.append(len.getEncoded(coder::bigendian));
-    encoded.append(fragment);
-    return encoded;
+    encodedRec.append(len.getEncoded(coder::bigendian));
+    encodedRec.append(fragment);
+    return encodedRec;
 
 }
 

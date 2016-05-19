@@ -135,6 +135,7 @@ uint8_t Packet::encodeTag() const {
 
 const coder::ByteArray& Packet::getEncoded() {
 
+    encoded.clear();
     encode();
     return encoded;
 

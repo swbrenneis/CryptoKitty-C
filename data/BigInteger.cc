@@ -285,7 +285,11 @@ BigInteger BigInteger::gcd(const BigInteger& a) const {
 coder::ByteArray BigInteger::getEncoded(int endian) const {
 
     NTL::ZZ work(NTL::abs(*number));
-    int index = bitLength() / 8 + (bitLength() % 8 != 0 ? 1 : 0);
+    double bl = bitLength();
+    int index = ceil(bl / 8);
+    if (index == 0) {
+        return coder::ByteArray(1,0);
+    }
     coder::ByteArray result;
     while (index > 0) {
         long byte = work % 256;

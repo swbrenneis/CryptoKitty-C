@@ -92,7 +92,7 @@ void ChangeCipherSpec::encode() {
             ad.append(MINORVERSION);   // Minor version.
             ad.append(1);   // Data length.
             gcm.setAuthData(ad);
-            //std::cout << "Decode ad = " << ad << std::endl;
+            //std::cout << "Encode ad = " << ad << std::endl;
             coder::ByteArray ciphertext(gcm.encrypt(plaintext, key));
             if (ciphertext.getLength() != 1) {
                 throw RecordException("Invalid ciphertext");

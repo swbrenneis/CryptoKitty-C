@@ -40,7 +40,7 @@ class RecordProtocol {
         uint8_t recordMinorVersion;
         uint16_t fragLength;
         coder::ByteArray fragment;
-        coder::ByteArray encoded;
+        coder::ByteArray encodedRec;
 
         static const uint8_t MAJOR;
         static const uint8_t MINOR;

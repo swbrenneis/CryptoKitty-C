@@ -18,10 +18,20 @@ CipherText::~CipherText() {
 
 void CipherText::decode() {
 
+    ConnectionState *state = ConnectionState::getCurrentWrite();
+
     uint8_t ivLength = fragment[0];
     iv = fragment.range(1, ivLength);
+    coder::ByteArray stateIV(state->getIV());
+    if (iv != stateIV) {
+        throw RecordException("CipherText decode: IV not matched.");
+    }
+    sequence = state->getSequenceNumber();
 
     CK::Cipher *cipher;
+    algorithm = state->getCipherAlgorithm();
+    keyLength = state->getEncryptionKeyLength() / 8;
+    key = state->getEncryptionKey();
     switch (algorithm) {
         case aes:
             cipher = new CK::AES(static_cast<CK::AES::KeySize>(keyLength));
@@ -30,42 +40,16 @@ void CipherText::decode() {
             throw RecordException("Invalid cipher algorithm");
     }
 
+    type = state->getCipherType();
     switch (type) {
         case aead:
             {
-            uint32_t ctLength = fragment.getLength() - ivLength - 1 - keyLength;
-            coder::ByteArray ciphertext(fragment.range(ivLength, ctLength));
-            // Auth tag is the same size as the key.
-            coder::ByteArray
-                tag(fragment.range(fragment.getLength() - keyLength, keyLength));
+            uint32_t ctLength = fragment.getLength() - ivLength - 1 - 16;
+            coder::ByteArray ciphertext(fragment.range(ivLength + 1, ctLength));
+            // Auth tag is always 16 bytes.
+            coder::ByteArray tag(fragment.range(fragment.getLength() - 16, 16));
             decryptGCM(ciphertext, cipher, tag);
             }
-            break;
-        default:
-            throw RecordException("Invalid cipher mode");
-    }
-
-}
-
-void CipherText::encode() {
-
-    fragment.clear();
-
-    fragment.append(iv.getLength());
-    fragment.append(iv);
-
-    CK::Cipher *cipher;
-    switch (algorithm) {
-        case aes:
-            cipher = new CK::AES(static_cast<CK::AES::KeySize>(keyLength));
-            break;
-        default:
-            throw RecordException("Invalid cipher algorithm");
-    }
-
-    switch (type) {
-        case aead:
-            encryptGCM(cipher);
             break;
         default:
             throw RecordException("Invalid cipher mode");
@@ -83,12 +67,49 @@ void CipherText::decryptGCM(const coder::ByteArray& ciphertext,CK::Cipher *ciphe
     ad.append(CKTLS::application_data);
     ad.append(3);
     ad.append(3);
-    // Full fragment size. Palintext + tag size + iv size + 1.
+    // Full fragment size. Plaintext + tag size + iv size + 1.
     coder::Unsigned16 u16(fragment.getLength());
     ad.append(u16.getEncoded(coder::bigendian));
+    //std::cout << "Decrypt AD = " << ad << std::endl;
     gcm.setAuthData(ad);
+    //std::cout << "Decrypt tag = " << tag << std::endl;
     gcm.setAuthTag(tag);
+    //std::cout << "Decrypt key = " << key << std::endl;
     plaintext = gcm.decrypt(ciphertext, key);
+
+}
+
+void CipherText::encode() {
+
+    ConnectionState *state = ConnectionState::getCurrentRead();
+
+    fragment.clear();
+
+    iv = state->getIV();
+    fragment.append(iv.getLength());
+    fragment.append(iv);
+    sequence = state->getSequenceNumber();
+
+    CK::Cipher *cipher;
+    algorithm = state->getCipherAlgorithm();
+    keyLength = state->getEncryptionKeyLength() / 8;
+    key = state->getEncryptionKey();
+    switch (algorithm) {
+        case aes:
+            cipher = new CK::AES(static_cast<CK::AES::KeySize>(keyLength));
+            break;
+        default:
+            throw RecordException("Invalid cipher algorithm");
+    }
+
+    type = state->getCipherType();
+    switch (type) {
+        case aead:
+            encryptGCM(cipher);
+            break;
+        default:
+            throw RecordException("Invalid cipher mode");
+    }
 
 }
 
@@ -101,12 +122,15 @@ void CipherText::encryptGCM(CK::Cipher *cipher) {
     ad.append(CKTLS::application_data);
     ad.append(3);
     ad.append(3);
-    // Full fragment size. Palintext + tag size + iv size + 1.
-    coder::Unsigned16 u16(plaintext.getLength() + keyLength + iv.getLength() + 1);
+    // Full fragment size. Plaintext + tag size + iv size + 1.
+    coder::Unsigned16 u16(plaintext.getLength() + 16 + iv.getLength() + 1);
     ad.append(u16.getEncoded(coder::bigendian));
+    //std::cout << "Encrypt AD = " << ad << std::endl;
     gcm.setAuthData(ad);
+    //std::cout << "Encrypt key = " << key << std::endl;
     fragment.append(gcm.encrypt(plaintext, key));
     fragment.append(gcm.getAuthTag());
+    //std::cout << "Encrypt tag = " << gcm.getAuthTag() << std::endl;
 
 }
 

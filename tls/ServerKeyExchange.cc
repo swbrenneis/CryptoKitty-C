@@ -18,8 +18,6 @@ KeyExchangeAlgorithm ServerKeyExchange::algorithm;
 
 ServerKeyExchange::ServerKeyExchange() {
 
-    clientRandom = ConnectionState::getPendingRead()->getClientRandom();
-    serverRandom = ConnectionState::getPendingRead()->getServerRandom();
     rsaKey = ServerCertificate::getRSAPrivateKey();
 
 }
@@ -28,6 +26,9 @@ ServerKeyExchange::~ServerKeyExchange() {
 }
 
 void ServerKeyExchange::decode() {
+
+    clientRandom = ConnectionState::getPendingWrite()->getClientRandom();
+    serverRandom = ConnectionState::getPendingWrite()->getServerRandom();
 
     switch (algorithm) {
         case dhe_rsa:
@@ -53,6 +54,7 @@ void ServerKeyExchange::decodeDH() {
     uint16_t length = len.getValue();
     serverDHParams.append(encoded.range(index, length));
     dP.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
+    //std::cout << "dP = " << dP << std::endl;
     index += length;
 
     serverDHParams.append(encoded.range(index, 2));
@@ -61,6 +63,7 @@ void ServerKeyExchange::decodeDH() {
     length = len.getValue();
     serverDHParams.append(encoded.range(index, length));
     dG.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
+    //std::cout << "dG = " << dG << std::endl;
     index += length;
 
     serverDHParams.append(encoded.range(index, 2));
@@ -69,10 +72,14 @@ void ServerKeyExchange::decodeDH() {
     length = len.getValue();
     serverDHParams.append(encoded.range(index, length));
     dYs.decode(encoded.range(index, length), CK::BigInteger::BIGENDIAN);
+    //std::cout << "dYs = " << dYs << std::endl;
     index += length;
 
+    //std::cout << "clientRandom = " << clientRandom << std::endl;
     coder::ByteArray hash(clientRandom);
+    //std::cout << "serverRandom = " << serverRandom << std::endl;
     hash.append(serverRandom);
+    //std::cout << "serverDHParams = " << serverDHParams << std::endl;
     hash.append(serverDHParams);
 
     HashAlgorithm ha = static_cast<HashAlgorithm>(encoded[index++]);
@@ -88,7 +95,8 @@ void ServerKeyExchange::decodeDH() {
             digest = new CK::SHA512;
             break;
         default:
-            throw EncodingException("Unsupported signature hash algorithm");
+            throw EncodingException(std::string("ServerKeyExchange decodeDH: ")
+                            + std::string("Unsupported signature hash algorithm"));
     }
 
     SignatureAlgorithm sa = static_cast<SignatureAlgorithm>(encoded[index++]);
@@ -103,12 +111,12 @@ void ServerKeyExchange::decodeDH() {
             CK::RSAPublicKey *pubKey = ServerCertificate::getRSAPublicKey();
             if (!sign.verify(*pubKey, hash, sig)) {
                 dYs = CK::BigInteger::ZERO;
-                throw EncodingException("Key not verified");
+                throw EncodingException("ServerKeyExchange decodeDH: Key not verified");
             }
             }
             break;
         default:
-            throw EncodingException("Unsupported signature algorithm");
+            throw EncodingException("ServerKeyExchange decodeDH: Unsupported signature algorithm");
     }
 
 }
@@ -248,17 +256,20 @@ void ServerKeyExchange::decodeECDH() {
             CK::RSAPublicKey *pubKey = ServerCertificate::getRSAPublicKey();
             if (!sign.verify(*pubKey, hash, sig)) {
                 ecPublicKey.clear();
-                throw EncodingException("Key not verified");
+                throw EncodingException("ServerKeyExchange decodeECDH: Key not verified");
             }
             }
             break;
         default:
-            throw EncodingException("Unsupported signature algorithm");
+            throw EncodingException("ServerKeyExchange decodeECDH: Unsupported signature algorithm");
     }
 
 }
 
 const coder::ByteArray& ServerKeyExchange::encode() {
+
+    clientRandom = ConnectionState::getPendingRead()->getClientRandom();
+    serverRandom = ConnectionState::getPendingRead()->getServerRandom();
 
     switch (algorithm) {
         case dhe_rsa:
@@ -268,7 +279,7 @@ const coder::ByteArray& ServerKeyExchange::encode() {
             encodeECDH();
             break;
         default:
-            throw RecordException("Invalid key exchange algorithm");
+            throw RecordException("ServerKeyExchange encode: Invalid key exchange algorithm");
     }
 
     return encoded;
@@ -278,22 +289,28 @@ const coder::ByteArray& ServerKeyExchange::encode() {
 void ServerKeyExchange::encodeDH() {
 
     coder::ByteArray serverDHParams;
+    //std::cout << "dP = " << dP << std::endl;
     coder::ByteArray p(dP.getEncoded(CK::BigInteger::BIGENDIAN));
     coder::Unsigned16 len(p.getLength());
     serverDHParams.append(len.getEncoded(coder::bigendian));
     serverDHParams.append(p);
+    //std::cout << "dG = " << dG << std::endl;
     coder::ByteArray g(dG.getEncoded(CK::BigInteger::BIGENDIAN));
     len.setValue(g.getLength());
     serverDHParams.append(len.getEncoded(coder::bigendian));
     serverDHParams.append(g);
+    //std::cout << "dYs = " << dYs << std::endl;
     coder::ByteArray pk(dYs.getEncoded(CK::BigInteger::BIGENDIAN));
     len.setValue(pk.getLength());
     serverDHParams.append(len.getEncoded(coder::bigendian));
     serverDHParams.append(pk);
     encoded.append(serverDHParams);
 
+    //std::cout << "clientRandom = " << clientRandom << std::endl;
     coder::ByteArray hash(clientRandom);
+    //std::cout << "serverRandom = " << serverRandom << std::endl;
     hash.append(serverRandom);
+    //std::cout << "serverDHParams = " << serverDHParams << std::endl;
     hash.append(serverDHParams);
 
     CK::PKCS1rsassa sign(new CK::SHA256);
