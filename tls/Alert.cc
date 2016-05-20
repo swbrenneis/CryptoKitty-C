@@ -21,7 +21,7 @@ void Alert::decode() {
     switch (fragment[0]) {
         case fatal:
         case warning:
-            level = static_cast<AlertLevel>(fragment[1]);
+            level = static_cast<AlertLevel>(fragment[0]);
             break;
         default:
             throw RecordException("Invalid alert level");
