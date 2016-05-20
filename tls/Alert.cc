@@ -63,7 +63,7 @@ void Alert::decode() {
 
 void Alert::encode() {
 
-    fragment.clear();
+    fragment.setLength(2);
     fragment[0] = level;
     fragment[1] = desc;
 
