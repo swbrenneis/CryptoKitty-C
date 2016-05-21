@@ -119,7 +119,7 @@ void FortunaGenerator::start() {
 
 void *FortunaGenerator::threadFunction() {
 
-    timespec delay = { 0, 0 };
+    timespec delay = { 2, 0 };
     char ebuf[32];
     uint8_t *ubuf = reinterpret_cast<uint8_t*>(ebuf);
     uint64_t reseedCounter = 0;
