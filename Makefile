@@ -5,11 +5,11 @@ LDPATHS= -L$(DEV_HOME)/lib
 LDLIBS=  -lntl -lgmp -lcoder -lcthread
 LDFLAGS= -Wall -g -shared $(LDPATHS) $(LDLIBS)
 
-CIPHER_OBJECT= cipher/AES.o cipher/PKCS1rsassa.o cipher/PSSmgf1.o \
-			   cipher/PSSrsassa.o cipher/RSA.o
-CIPHER_HEADER= include/cipher/AES.h include/cipher/PKCS1rsassa.h \
-			   include/cipher/PSSmgf1.h include/cipher/PSSrsassa.h \
-			   include/cipher/RSA.h
+CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
+			   cipher/PSSmgf1.o cipher/PSSrsassa.o cipher/RSA.o
+CIPHER_HEADER= include/cipher/AES.h include/cipher/OAEPrsaes.h include/cipher/PKCS1rsaes.h \
+			   include/cipher/PKCS1rsassa.h include/cipher/PSSmgf1.h \
+			   include/cipher/PSSrsassa.h include/cipher/RSA.h
 CIPHER_SOURCE= $(CIPHER_OBJECT:.o=.cc)
 CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/CTR.o ciphermodes/GCM.o \
 					ciphermodes/MtE.o

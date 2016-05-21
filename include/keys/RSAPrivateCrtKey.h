@@ -29,6 +29,8 @@ class RSAPrivateCrtKey : public RSAPrivateKey {
         const BigInteger& getModulus() const;
 
     protected:
+        // Decryption primitive.
+        BigInteger rsadp(const BigInteger& c) const;
         // Signature generation primitive.
         BigInteger rsasp1(const BigInteger& m) const;
 

@@ -27,6 +27,9 @@ class RSAPrivateKey : public PrivateKey {
     protected:
         friend class PKCS1rsassa;
         friend class PSSrsassa;
+        friend class OAEPrsaes;
+        // Decryption primitive.
+        virtual BigInteger rsadp(const BigInteger& c) const=0;
         // Signature generation primitive.
         virtual BigInteger rsasp1(const BigInteger& m) const=0;
 

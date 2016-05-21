@@ -57,9 +57,29 @@ BigInteger RSA::os2ip(const coder::ByteArray& X) {
 }
 
 /*
+ * Encryption primitive.
+ *
+ * K is the public key. p is the plaintext representative.
+ *
+ * returns the ciphertext representative.
+ */
+BigInteger RSA::rsaep(const RSAPublicKey& K, const BigInteger& p) {
+
+    // 1. If the message representative m is not between 0 and n - 1, output
+    //  "message representative out of range" and stop.
+    if (p < BigInteger::ZERO || p < K.getModulus() - BigInteger::ONE) {
+        throw new BadParameterException("Message representative out of range");
+    }
+
+    // 2. Let c = m^e mod n.
+    return p.modPow(K.getPublicExponent(), K.getModulus());
+
+}
+
+/*
  * Signature verification primitive.
  * 
- * K is the ublic key. s is the signature representative.
+ * K is the public key. s is the signature representative.
  * 
  * Returns the message representative.
  * 

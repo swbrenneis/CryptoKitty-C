@@ -23,7 +23,7 @@ class RSA {
         virtual coder::ByteArray
                 decrypt(const RSAPrivateKey& K, const coder::ByteArray& C)=0;
         virtual coder::ByteArray
-                encrypt(const RSAPublicKey& K, const coder::ByteArray& C)=0;
+                encrypt(const RSAPublicKey& K, const coder::ByteArray& P)=0;
         virtual coder::ByteArray sign(const RSAPrivateKey& K, const coder::ByteArray& M)=0;
         virtual bool
                 verify(const RSAPublicKey& K, const coder::ByteArray& M,
@@ -32,6 +32,7 @@ class RSA {
     protected:
         coder::ByteArray i2osp(const BigInteger& X, unsigned xLen);
         BigInteger os2ip(const coder::ByteArray& X);
+        BigInteger rsaep(const RSAPublicKey& K, const BigInteger& p);
         BigInteger rsavp1(const RSAPublicKey& K, const BigInteger& s); 
 
 };

@@ -17,6 +17,21 @@ RSAPrivateModKey::~RSAPrivateModKey() {
 }
 
 /*
+ * Modulus method RSA decryption primitive
+ */
+BigInteger RSAPrivateModKey::rsadp(const BigInteger& c) const {
+
+    //   1. If the message representative c is not between 0 and n - 1,
+    //      output "message representative out of range" and stop.
+    if (c < BigInteger::ZERO || c >= mod) {
+        throw BadParameterException("Message representative out of range");
+    }
+
+    return c.modPow(prvExp, mod);
+
+}
+
+/*
  * Modulus method RSA signature primitive.
  */
 BigInteger RSAPrivateModKey::rsasp1(const BigInteger& m) const {
