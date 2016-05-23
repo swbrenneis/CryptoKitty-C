@@ -9,12 +9,12 @@
 namespace CKTLS {
 
 // Static initialization.
-ThreadLocal *ConnectionState::currentRead = 0;
-ThreadLocal *ConnectionState::currentWrite = 0;
-ThreadLocal *ConnectionState::pendingRead = 0;
-ThreadLocal *ConnectionState::pendingWrite = 0;
+cthread::ThreadLocal *ConnectionState::currentRead = 0;
+cthread::ThreadLocal *ConnectionState::currentWrite = 0;
+cthread::ThreadLocal *ConnectionState::pendingRead = 0;
+cthread::ThreadLocal *ConnectionState::pendingWrite = 0;
 
-typedef TypedThreadLocal<ConnectionState> LocalConnectionState;
+typedef cthread::TypedThreadLocal<ConnectionState> LocalConnectionState;
 
 ConnectionState::ConnectionState()
 : initialized(false),
@@ -51,19 +51,6 @@ ConnectionState::ConnectionState(const ConnectionState& other)
   serverWriteIV(other.serverWriteIV),
   sequenceNumber(0) {
   }
-
-/*
- * Copies the pending write state to the pending read state.
- */
-void ConnectionState::copyWriteToRead() {
-
-    ConnectionEnd end = getPendingRead()->entity;
-    LocalConnectionState *lcs = dynamic_cast<LocalConnectionState*>(pendingRead);
-    delete lcs->getLocal();
-    lcs->setLocal(new ConnectionState(*(getPendingWrite())));
-    getPendingRead()->entity = end;
-
-}
 
 /*
  * Generate the master secret and the client and server write keys.

@@ -84,7 +84,7 @@ void FortunaGenerator::reseed(const coder::ByteArray& seed) {
 
 void FortunaGenerator::start() {
 
-    Lock lock;
+    cthread::Lock lock;
 
     if (!run) {
         // Initialize pools
@@ -110,7 +110,7 @@ void FortunaGenerator::start() {
         reseed(seed);
 
         // Start the accumulator.
-        thread = new Thread(this);
+        thread = new cthread::Thread(this);
         thread->start();
         run = true;
     }

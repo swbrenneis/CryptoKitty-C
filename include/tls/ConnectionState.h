@@ -4,7 +4,9 @@
 #include "tls/Constants.h"
 #include "coder/ByteArray.h"
 
-class ThreadLocal;
+namespace cthread {
+    class ThreadLocal;
+}
 
 namespace CKTLS {
 
@@ -17,9 +19,6 @@ class ConnectionState {
         ~ConnectionState();
 
     public:
-        // Convenience routine. Copies the pending write state to the pending
-        // read state.
-        void copyWriteToRead();
         // Generate the cyptography variables.
         void generateKeys(const coder::ByteArray& premasterSecret);
         // Get the block cipher algorithm.
@@ -121,10 +120,10 @@ class ConnectionState {
          * the client. Server read is used to send outgoing records
          * to the server
          */
-        static ThreadLocal *currentRead;
-        static ThreadLocal *currentWrite;
-        static ThreadLocal *pendingRead;
-        static ThreadLocal *pendingWrite;
+        static cthread::ThreadLocal *currentRead;
+        static cthread::ThreadLocal *currentWrite;
+        static cthread::ThreadLocal *pendingRead;
+        static cthread::ThreadLocal *pendingWrite;
 
 };
 

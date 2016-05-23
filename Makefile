@@ -52,7 +52,7 @@ OPENPGP_HEADER= include/openpgp/encode/ArmoredData.h include/openpgp/encode/Radi
 				include/openpgp/packet/UserID.h
 OPENPGP_SOURCE= $(OPENPGP_OBJECT:.o=.cc)
 RANDOM_OBJECT= random/BBSSecureRandom.o random/CMWCRandom.o random/FortunaSecureRandom.o \
-			   random/FortunaGenerator.o random/Random.o random/SecureRandom.o
+			   random/FortunaGenerator.o random/Random.o
 RANDOM_HEADER= include/random/BBSSecureRandom.h include/random/CMWCRandom.h \
 			   include/random/FortunaSecureRandom.h include/random/FortunaGenerator.h \
 			   include/random/Random.h include/random/SecureRandom.h

@@ -10,7 +10,7 @@ namespace CK {
 
 class AES;
 
-class FortunaGenerator : public Thread::Callback {
+class FortunaGenerator : public cthread::Thread::Callback {
 
     public:
         FortunaGenerator();
@@ -32,7 +32,7 @@ class FortunaGenerator : public Thread::Callback {
 
     private:
         bool run;
-        Thread *thread;
+        cthread::Thread *thread;
         typedef std::deque<coder::ByteArray> EntropyPools;
         EntropyPools pools;
         uint32_t poolCounter;
