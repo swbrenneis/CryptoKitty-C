@@ -1,6 +1,7 @@
 #include "keys/RSAKeyPairGenerator.h"
 #include "keys/RSAPublicKey.h"
 #include "keys/RSAPrivateCrtKey.h"
+#include "keys/RSAPrivateModKey.h"
 #include "random/SecureRandom.h"
 
 namespace CK {
@@ -13,14 +14,10 @@ const BigInteger RSAKeyPairGenerator::THREE(3);
  * a BBSRandom secure PRNG.
  */
 RSAKeyPairGenerator::RSAKeyPairGenerator()
-: keySize(1024),
-  random(SecureRandom::getSecureRandom("BBS")) {
+: keySize(1024) {
 }
 
 RSAKeyPairGenerator::~RSAKeyPairGenerator() {
-
-    delete random;
-
 }
 
 /*
@@ -32,17 +29,14 @@ void RSAKeyPairGenerator::initialize(int bits,
                                 SecureRandom *secure) {
 
     keySize = bits;
-    if (secure != 0) {
-        delete random;
-        random = secure;
-    }
+    random = secure;
 
 }
 
 /*
  * Generate the key pair.
  */
-KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair() {
+KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool crt) {
 
     // Create SG primes.
     BigInteger p(keySize / 2, false, *random);
@@ -77,10 +71,18 @@ KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair() {
     // Create the public key.
     RSAPublicKey *pub = new RSAPublicKey(n, e);
     // Create the private key.
-    // PrivateKey prv = new RSAPrivateKey(n, d);
-    // We're going to create a Chinese Remainder Theorem key.
-    // Leaving the line creating a simple key here for reference.
-    RSAPrivateKey *prv = new RSAPrivateCrtKey(p, q, d, e);
+    RSAPrivateKey *prv;
+    if (crt) {
+        BigInteger pp(p - BigInteger::ONE);
+        BigInteger qq(q - BigInteger::ONE);
+        BigInteger dP = e.modInverse(pp);
+        BigInteger dQ = e.modInverse(qq);
+        BigInteger qInv = q.modInverse(p);
+        prv = new RSAPrivateCrtKey(p, q, dP, dQ, qInv);
+    }
+    else {
+        prv = new RSAPrivateModKey(n, d);
+    }
 
     return new KeyPair<RSAPublicKey, RSAPrivateKey>(pub, prv);
 

@@ -1,6 +1,6 @@
 #include "openpgp/mode/PGPCFM.h"
 #include "cipher/Cipher.h"
-#include "random/SecureRandom.h"
+#include "random/FortunaSecureRandom.h"
 #include <cmath>
 
 namespace CKPGP {
@@ -124,10 +124,9 @@ coder::ByteArray PGPCFM::encrypt(const coder::ByteArray& plaintext,
  */
 coder::ByteArray PGPCFM::encryptPrefix(const coder::ByteArray& key) {
 
-    CK::SecureRandom *rnd = CK::SecureRandom::getSecureRandom("Fortuna");
+    CK::FortunaSecureRandom rnd;
     coder::ByteArray prefix(blockSize);
-    rnd->nextBytes(prefix);
-    delete rnd;
+    rnd.nextBytes(prefix);
     prefix.append(prefix[prefix.getLength() - 2]);
     prefix.append(prefix[prefix.getLength() - 2]);
 

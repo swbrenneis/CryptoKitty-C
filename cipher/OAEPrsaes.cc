@@ -2,10 +2,10 @@
 #include "cipher/PSSmgf1.h"
 #include "keys/RSAPrivateKey.h"
 #include "keys/RSAPublicKey.h"
+#include "digest/SHA1.h"
 #include "digest/SHA256.h"
 #include "digest/SHA384.h"
 #include "digest/SHA512.h"
-#include "random/SecureRandom.h"
 #include "exceptions/IllegalOperationException.h"
 #include "exceptions/DecryptionException.h"
 #include "exceptions/BadParameterException.h"
@@ -13,11 +13,15 @@
 
 namespace CK {
 
-OAEPrsaes::OAEPrsaes(HashAlgorithm ha, const coder::ByteArray& l)
+OAEPrsaes::OAEPrsaes(HashAlgorithm ha)
 : algorithm(ha),
-  label(l) {
+  label(0),
+  seed(0) {
 
       switch (algorithm) {
+          case sha1:
+              digest = new SHA1;
+              break;
           case sha256:
               digest = new SHA256;
               break;
@@ -133,7 +137,7 @@ coder::ByteArray OAEPrsaes::emeOAEPDecode(uint32_t k, const coder::ByteArray& EM
     if (found < 0) {
         throw DecryptionException();				
     }
-    coder::ByteArray PS(DB.range(hLen, (found - hLen) + 1));
+    coder::ByteArray PS(DB.range(hLen, found - hLen));
     for (uint32_t i = 0; i < PS.getLength(); ++i) {
         if (PS[i] != 0) {
             throw DecryptionException();
@@ -168,9 +172,11 @@ coder::ByteArray OAEPrsaes::emeOAEPEncode(uint32_t k, const coder::ByteArray&  M
     DB.append(M);
 
     // d. Generate a random octet string seed of length hLen.
-    coder::ByteArray seed(hLen);
-    std::unique_ptr<SecureRandom> rnd(SecureRandom::getSecureRandom("Fortuna"));
-    rnd->nextBytes(seed);
+    // The seed is provided to the constructor.
+    if (seed.getLength() != digest->getDigestLength()) {
+        throw BadParameterException("Invalid seed length");
+    }
+
 
     // e. Let dbMask = MGF(seed, k - hLen - 1).
     PSSmgf1 dmgf(digest);
@@ -225,7 +231,18 @@ coder::ByteArray OAEPrsaes::encrypt(const RSAPublicKey& K, const coder::ByteArra
     // Do encryption primitive
     BigInteger c = rsaep(K, os2ip(EM));
     // Return octet string.
+    coder::ByteArray cb(c.getEncoded(CK::BigInteger::BIGENDIAN));
+    //std::cout << "cb = " << cb.toString() << std::endl;
     return i2osp(c, k);
+
+}
+
+void OAEPrsaes::setSeed(const coder::ByteArray& s) {
+
+    if (s.getLength() != digest->getDigestLength()) {
+        throw BadParameterException("Invalid seed length");
+    }
+    seed = s;
 
 }
 

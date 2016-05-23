@@ -9,13 +9,10 @@ namespace CK {
 class SecureRandom : public Random {
 
     protected:
-        SecureRandom();
+        SecureRandom() {}
 
     public:
-        virtual ~SecureRandom();
-
-    public:
-        static SecureRandom* getSecureRandom(const std::string& name);
+        virtual ~SecureRandom() {}
 
 };
 

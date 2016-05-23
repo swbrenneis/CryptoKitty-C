@@ -13,6 +13,7 @@ class CipherTest {
 
     public:
         bool AESTest();
+        bool RSAOAEPTest();
 
 };
 

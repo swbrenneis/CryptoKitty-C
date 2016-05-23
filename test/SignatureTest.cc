@@ -5,7 +5,7 @@
 #include "digest/SHA256.h"
 #include "cipher/PKCS1rsassa.h"
 #include "cipher/PSSrsassa.h"
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 #include "exceptions/Exception.h"
 #include <iostream>
 
@@ -19,7 +19,7 @@ bool SignatureTest::RSAPKCS1test(int keysize) {
 
     std::string msg("the quick brown fox jumped over the lazy dog");
     std::cout << "Message - " << msg << std::endl;
-    CK::ByteArray m(msg);
+    coder::ByteArray m(msg);
 
     CK::SecureRandom *rng = CK::SecureRandom::getSecureRandom("BBS");
     std::cout << keysize << " bit RSA Key pair." << std::endl;
@@ -34,7 +34,7 @@ bool SignatureTest::RSAPKCS1test(int keysize) {
         sign.initSign(pair->privateKey());
         sign.update(m);
         std::cout << "Signing..." << std::endl;
-        CK::ByteArray sig(sign.sign());
+        coder::ByteArray sig(sign.sign());
 
         std::cout << "Verify signature." << std::endl;
         // Salt length of 10 bytes
@@ -64,7 +64,7 @@ bool SignatureTest::RSAPSStest(int keysize) {
 
     std::string msg("the quick brown fox jumped over the lazy dog");
     std::cout << "Message - " << msg << std::endl;
-    CK::ByteArray m(msg);
+    coder::ByteArray m(msg);
 
     CK::SecureRandom *rng = CK::SecureRandom::getSecureRandom("BBS");
     std::cout << keysize << " bit RSA Key pair." << std::endl;
@@ -78,7 +78,7 @@ bool SignatureTest::RSAPSStest(int keysize) {
         sign.initSign(pair->privateKey());
         sign.update(m);
         std::cout << "Signing..." << std::endl;
-        CK::ByteArray sig(sign.sign());
+        coder::ByteArray sig(sign.sign());
 
         std::cout << "Verify signature." << std::endl;
         CK::RSASignature<CK::PSSrsassa, CK::SHA256> verify;

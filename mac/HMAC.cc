@@ -1,7 +1,7 @@
 #include "mac/HMAC.h"
 #include "exceptions/IllegalStateException.h"
 #include "exceptions/BadParameterException.h"
-#include "random/SecureRandom.h"
+#include "random/FortunaSecureRandom.h"
 #include "digest/Digest.h"
 
 namespace CK {
@@ -38,9 +38,9 @@ coder::ByteArray HMAC::generateKey(unsigned bitsize) {
         throw BadParameterException("Invalid key size");
     }
 
-    SecureRandom* secure = SecureRandom::getSecureRandom("Fortuna");
+    FortunaSecureRandom secure;
     K.setLength(bitsize / 8);
-    secure->nextBytes(K);
+    secure.nextBytes(K);
     return K;
 
 }

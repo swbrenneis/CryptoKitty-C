@@ -1,7 +1,7 @@
 #include "RandomTest.h"
 #include "random/SecureRandom.h"
 #include "random/CMWCRandom.h"
-#include "data/ByteArray.h"
+#include "coder/ByteArray.h"
 #include <iostream>
 #include <deque>
 
@@ -20,7 +20,7 @@ bool RandomTest::BBSTest() {
     std::cout << firstRnd << std::endl;
     // 900 KBytes is the reseed period
     std::cout << "Getting 900 KBytes" << std::flush;
-    CK::ByteArray bytes(1024);
+    coder::ByteArray bytes(1024);
     for (int n = 0; n < 899; ++n) {
         bbs->nextBytes(bytes);
         if (n % 50 == 0) {

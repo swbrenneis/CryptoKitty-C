@@ -22,7 +22,7 @@ class RSAKeyPairGenerator {
                 operator= (const RSAKeyPairGenerator& other);
 
     public:
-        KeyPair<RSAPublicKey, RSAPrivateKey> *generateKeyPair();
+        KeyPair<RSAPublicKey, RSAPrivateKey> *generateKeyPair(bool crt = true);
         void initialize(int bits, SecureRandom* secure);
 
     private:

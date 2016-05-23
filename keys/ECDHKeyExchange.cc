@@ -1,7 +1,7 @@
 #include "keys/ECDHKeyExchange.h"
 #include "exceptions/IllegalStateException.h"
 #include "exceptions/BadParameterException.h"
-#include "random/SecureRandom.h"
+#include "random/FortunaSecureRandom.h"
 #include <cmath>
 
 namespace CK {
@@ -186,13 +186,12 @@ coder::ByteArray ECDHKeyExchange::getPublicKey() {
     }
 
     if (H.x == BigInteger::ZERO) {
-        SecureRandom *rnd = SecureRandom::getSecureRandom("Fortuna");
+        FortunaSecureRandom rnd;
         BigInteger n1 = n - BigInteger::ONE;
-        d = BigInteger(n.bitLength(), true, *rnd);
+        d = BigInteger(n.bitLength(), true, rnd);
         while (d >= n1) {
-            d = BigInteger(n.bitLength(), true, *rnd);
+            d = BigInteger(n.bitLength(), true, rnd);
         }
-        delete rnd;
         H = scalarMultiply(d, G);
     }
 

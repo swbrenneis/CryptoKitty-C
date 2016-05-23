@@ -18,12 +18,12 @@ bool MACTest::HMACTest() {
     std::cout << "HMAC-SHA256 test with 256 bit key." << std::endl << std::endl;
 
     std::cout << "Generating key." << std::endl;
-    CK::ByteArray key = hmac_sha256_sign.generateKey(256);
+    coder::ByteArray key = hmac_sha256_sign.generateKey(256);
     std::string message("the quick brown fox jumped over the lazy dog");
     std::cout << "Setting message - " << message << std::endl;
-    hmac_sha256_sign.setMessage(CK::ByteArray(message));
+    hmac_sha256_sign.setMessage(coder::ByteArray(message));
     std::cout << "Getting HMAC." << std::endl;
-    CK::ByteArray hmac = hmac_sha256_sign.getHMAC();
+    coder::ByteArray hmac = hmac_sha256_sign.getHMAC();
 
     std::cout << "Authorizing..." << std::endl;
     CK::HMAC hmac_sha256_auth(new CK::SHA256);

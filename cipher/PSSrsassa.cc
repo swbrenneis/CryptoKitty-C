@@ -1,7 +1,7 @@
 #include "cipher/PSSrsassa.h"
 #include "cipher/PSSmgf1.h"
 #include "digest/Digest.h"
-#include "random/SecureRandom.h"
+#include "random/FortunaSecureRandom.h"
 #include "keys/RSAPrivateKey.h"
 #include "keys/RSAPublicKey.h"
 #include "exceptions/IllegalOperationException.h"
@@ -62,18 +62,9 @@ coder::ByteArray PSSrsassa::emsaPSSEncode(const coder::ByteArray& M, int emBits)
     // 4.  Generate a random octet string salt of length sLen; if sLen = 0,
     //     then salt is the empty string.
     coder::ByteArray salt(saltLength);
-    SecureRandom *rnd;
     if (salt.getLength() > 0) {
-        try {
-            rnd = SecureRandom::getSecureRandom("BBS");
-            rnd->nextBytes(salt);
-            delete rnd;
-        }
-        catch (NoSuchAlgorithmException& e) {
-            // Shouldn't happen, but...
-            delete rnd;
-            throw EncodingException(e);
-        }
+        FortunaSecureRandom rnd;
+        rnd.nextBytes(salt);
     }
 
     //std::cout << "emsaPSSEncode salt = " << salt << std::endl << std::endl;

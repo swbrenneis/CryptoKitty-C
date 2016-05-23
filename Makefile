@@ -19,9 +19,9 @@ CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
 DATA_OBJECT= data/BigInteger.o data/NanoTime.o
 DATA_HEADER= include/data/BigInteger.h include/data/NanoTime.h
 DATA_SOURCE= $(DATA_OBJECT:.o=.cc)
-DIGEST_OBJECT= digest/SHA256.o digest/SHA384.o digest/SHA512.o digest/DigestBase.o
-DIGEST_HEADER= include/digest/SHA256.h include/digest/SHA384.h include/digest/SHA512.h \
-				include/digest/DigestBase.h
+DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o digest/DigestBase.o
+DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
+			   include/digest/SHA512.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
 KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
 			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \

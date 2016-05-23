@@ -3,7 +3,7 @@
 #include "tls/Constants.h"
 #include "tls/ServerKeyExchange.h"
 #include "coder/Unsigned32.h"
-#include "random/SecureRandom.h"
+#include "random/FortunaSecureRandom.h"
 #include "exceptions/OutOfRangeException.h"
 #include "exceptions/tls/RecordException.h"
 #include "exceptions/tls/StateException.h"
@@ -143,10 +143,8 @@ void ServerHello::initState() {
 void ServerHello::initState(const ClientHello& hello) {
 
     gmt = time(0);
-    CK::SecureRandom *rnd =
-            CK::SecureRandom::getSecureRandom("Fortuna");
-    rnd->nextBytes(random);
-    delete rnd;
+    CK::FortunaSecureRandom rnd;
+    rnd.nextBytes(random);
 
     CipherSuite c = hello.getPreferred();
     suites.setPreferred(c);

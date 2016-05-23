@@ -7,8 +7,6 @@ namespace CK {
 RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
                                     const BigInteger& d, const BigInteger& e)
 : RSAPrivateKey("RSA CRT"),
-  d(d),
-  e(e),
   p(p),
   q(q) {
 
@@ -17,6 +15,21 @@ RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
     dP = e.modInverse(pp);
     dQ = e.modInverse(qq);
     qInv = q.modInverse(p);
+    n = p * q;
+    bitLength = n.bitLength();
+
+}
+
+RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
+                                    const BigInteger& dp, const BigInteger& dq,
+                                    const BigInteger& qi)
+: RSAPrivateKey("RSA CRT"),
+  p(p),
+  q(q),
+  dP(dp),
+  dQ(dq),
+  qInv(qi) {
+
     n = p * q;
     bitLength = n.bitLength();
 
@@ -43,23 +56,14 @@ const BigInteger& RSAPrivateCrtKey::getPrimeQ() const {
 
 }
 
-const BigInteger& RSAPrivateCrtKey::getPrivateExponent() const {
-
-    return d;
-
-}
-
 /*
  * RSA decryption primitive, CRT method.
  */
 BigInteger RSAPrivateCrtKey::rsadp(const BigInteger& c) const {
 
-    // We have to compute the modulus for the range check
-    BigInteger n = p * q;
-
     //   1. If the ciphertext representative c is not between 0 and n - 1,
     //      output "ciphertext representative out of range" and stop.
-    if (c < BigInteger::ZERO || c > n - BigInteger::ONE) {
+    if (c < BigInteger::ZERO || c >= n) {
         throw DecryptionException();
     }
 
@@ -68,10 +72,10 @@ BigInteger RSAPrivateCrtKey::rsadp(const BigInteger& c) const {
     BigInteger m_2 = c.modPow(dQ, q);
 
     // iii.  Let h = (m_1 - m_2) * qInv mod p.
-    BigInteger h = (m_1 - m_2) * qInv.mod(p);
+    BigInteger h = (m_1 - m_2) * qInv % p;
 
     // iv.   Let m = m_2 + q * h.
-    return  (q * h) + m_2;
+    return  m_2 + q * h;
 
 }
 

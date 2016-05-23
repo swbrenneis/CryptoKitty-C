@@ -1,6 +1,6 @@
 #include "keys/DHKeyExchange.h"
 #include "data/BigInteger.h"
-#include "random/SecureRandom.h"
+#include "random/FortunaSecureRandom.h"
 
 namespace CK {
 
@@ -22,23 +22,22 @@ DHKeyExchange::~DHKeyExchange() {
 
 const BigInteger& DHKeyExchange::generatePublicKey() {
 
-    SecureRandom *rnd = SecureRandom::getSecureRandom("Fortuna");
+    FortunaSecureRandom rnd;
 
     if (p == BigInteger::ZERO) {
-        p = BigInteger(bitsize, false, *rnd);
+        p = BigInteger(bitsize, false, rnd);
         while (p.bitLength() < bitsize) {
-            p = BigInteger(bitsize, false, *rnd);
+            p = BigInteger(bitsize, false, rnd);
         }
-        g = BigInteger(bitsize/2, false, *rnd);
+        g = BigInteger(bitsize/2, false, rnd);
     }
 
     if (a == BigInteger::ZERO) {
-        a = BigInteger(bitsize/4, false, *rnd);
+        a = BigInteger(bitsize/4, false, rnd);
     }
 
     publicKey = g.modPow(a, p);
 
-    delete rnd;
     return publicKey;
 
 }
@@ -79,8 +78,8 @@ const BigInteger& DHKeyExchange::getPublicKey() const {
 const BigInteger& DHKeyExchange::getSecret(const BigInteger& fpk) {
 
     if (a == BigInteger::ZERO) {
-        SecureRandom *rnd = SecureRandom::getSecureRandom("Fortuna");
-        a = BigInteger(bitsize/4, false, *rnd);
+        FortunaSecureRandom rnd;
+        a = BigInteger(bitsize/4, false, rnd);
     }
 
     s = fpk.modPow(a, p);

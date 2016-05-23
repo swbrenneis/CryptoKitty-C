@@ -12,6 +12,7 @@ class DigestTest {
         DigestTest& operator= (const DigestTest&);
 
     public:
+        bool sha1Test();
         bool sha256Test();
         bool sha384Test();
         bool sha512Test();

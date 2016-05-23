@@ -27,22 +27,26 @@ coder::ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
     // to have to configure the memory size kernel parameters,
     // I'll leave it in. Any reasonable sized key won't even come
     // close to violating this.
-    if (x > (BigInteger(256).pow(xLen))) {
+    /*if (x > (BigInteger(256).pow(xLen))) {
+        coder::ByteArray xb(x.getEncoded(BigInteger::BIGENDIAN));
+        std::cout << "limit = " << (BigInteger(256).pow(xLen)) << std::endl;
+        std::cout << "x = " << x << std::endl;
+        std::cout << "xLen = " << xLen << std::endl;
+        std::cout << "xb = " << xb.toString() << std::endl;
+        std::cout << "xb length = " << xb.getLength() << std::endl;
         throw BadParameterException("Integer too large");
-    }
+    }*/
 
     //std::cout << "i2sop x = " << x << std::endl;
     coder::ByteArray work(x.getEncoded(BigInteger::BIGENDIAN));
-    while (work.getLength() != xLen) {
-        work.push(0);
+    if (work.getLength() > xLen) {
+        throw BadParameterException("Invalid specified length");
     }
+    coder::ByteArray pad(xLen - work.getLength());
+    pad.append(work);
 
-    if (work.getLength() != xLen) {
-        throw BadParameterException("Encoding size mismatch");
-    }
-    //BigInteger worked(work, BigInteger::BIGENDIAN);
     //std::cout << "worked = " << worked << std::endl;
-    return work;
+    return pad;
 
 }
 
@@ -67,7 +71,7 @@ BigInteger RSA::rsaep(const RSAPublicKey& K, const BigInteger& p) {
 
     // 1. If the message representative m is not between 0 and n - 1, output
     //  "message representative out of range" and stop.
-    if (p < BigInteger::ZERO || p < K.getModulus() - BigInteger::ONE) {
+    if (p < BigInteger::ZERO || p >= K.getModulus()) {
         throw new BadParameterException("Message representative out of range");
     }
 

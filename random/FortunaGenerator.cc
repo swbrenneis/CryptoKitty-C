@@ -98,7 +98,7 @@ void FortunaGenerator::start() {
         uint8_t *ubuf = reinterpret_cast<uint8_t*>(entr);
         std::ifstream seedstr("fgseed", std::ios::binary);
         if (!seedstr.good()) {                  // Seed file doesn't exist
-            std::ifstream rnd("/dev/random");    // Get some entropy from /dev/random
+            std::ifstream rnd("/dev/urandom");    // Get some entropy from /dev/urandom
             rnd.get(entr, 32);
             rnd.close();
         }

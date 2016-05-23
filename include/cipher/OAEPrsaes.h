@@ -14,7 +14,7 @@ class OAEPrsaes : public RSA {
         enum HashAlgorithm { sha1, sha256, sha384, sha512 };
 
     public:
-        OAEPrsaes(HashAlgorithm ha, const coder::ByteArray& l);
+        OAEPrsaes(HashAlgorithm ha);
         ~OAEPrsaes();
 
     private:
@@ -26,6 +26,8 @@ class OAEPrsaes : public RSA {
                 decrypt(const RSAPrivateKey& K, const coder::ByteArray& C);
         coder::ByteArray
                 encrypt(const RSAPublicKey& K, const coder::ByteArray& P);
+        void setLabel(const coder::ByteArray& l) { label = l; }
+        void setSeed(const coder::ByteArray& s);
         coder::ByteArray sign(const RSAPrivateKey& K, const coder::ByteArray& M);
         bool verify(const RSAPublicKey& K, const coder::ByteArray& M,
                                                     const coder::ByteArray& S);
@@ -37,6 +39,7 @@ class OAEPrsaes : public RSA {
     private:
         HashAlgorithm algorithm;
         coder::ByteArray label;
+        coder::ByteArray seed;
         Digest *digest;
 
 };

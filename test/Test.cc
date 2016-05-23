@@ -18,6 +18,13 @@ int main(int argc, char** argv) {
     if (tests == "digest" || tests == "all") {
         DigestTest digest;
         try {
+            std::cout << "SHA1 test" << std::endl << std::endl;
+            if (!digest.sha1Test()) {
+                std::cout << std::endl << "SHA1 test failed." << std::endl;
+                return -1;
+            }
+            std::cout << std::endl << "SHA1 test passed." << std::endl << std::endl;
+
             std::cout << "SHA-256 test" << std::endl << std::endl;
             if (!digest.sha256Test()) {
                 std::cout << std::endl << "SHA-256 test failed." << std::endl;
@@ -140,6 +147,20 @@ int main(int argc, char** argv) {
                 return -1;
             }
             std::cout << std::endl << "AES test passed." << std::endl;
+        }
+        catch (CK::Exception& e) {
+            std::cout << "Exception caught: " << e.what() << std::endl;
+        }
+
+        try {
+            std::cout << "RSA OAEP encoding test." << std::endl << std::endl;
+
+            CipherTest cipher;
+            if (!cipher.RSAOAEPTest()) {
+                std::cout << std::endl << "RSA OAEP encoding test failed." << std::endl;
+                return -1;
+            }
+            std::cout << std::endl << "RSA OAEP encoding test passed." << std::endl;
         }
         catch (CK::Exception& e) {
             std::cout << "Exception caught: " << e.what() << std::endl;

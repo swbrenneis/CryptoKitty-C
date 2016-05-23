@@ -213,12 +213,21 @@ BigInteger BigInteger::And(const BigInteger& logical) const {
 }
 
 /*
- * Returns the position of the most significant bit that is
- * different than the sign bit.
+ * Returns the number of bits in the binary representation of this integer.
  */
 int BigInteger::bitLength() const {
 
     return NTL::NumBits(*number);
+
+}
+
+/*
+ * Returns the number of bit in the encoded representation of this integer.
+ */
+int BigInteger::bitSize() const {
+
+    coder::ByteArray enc(getEncoded(BIGENDIAN));
+    return enc.getLength() * 8;
 
 }
 
@@ -379,7 +388,7 @@ BigInteger BigInteger::modInverse(const BigInteger& n) const {
 
     // Inverse modulus 1 is always 0. 
     if (n == ONE) {
-        return BigInteger(ZERO);;
+        return BigInteger(ZERO);
     }
 
     while (a > ONE) {
