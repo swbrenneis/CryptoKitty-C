@@ -1,9 +1,15 @@
 DEV_HOME=$(HOME)/dev
+UNAME= $(shell uname)
 
 LD= g++
 LDPATHS= -L$(DEV_HOME)/lib
 LDLIBS=  -lntl -lgmp -lcoder -lcthread
+ifeq ($(UNAME), Darwin)
+LDFLAGS= -Wall -g -dynamiclib $(LDPATHS) $(LDLIBS)
+endif
+ifeq ($(UNAME), Linux)
 LDFLAGS= -Wall -g -shared $(LDPATHS) $(LDLIBS)
+endif
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
 			   cipher/PSSmgf1.o cipher/PSSrsassa.o cipher/RSA.o
@@ -82,9 +88,16 @@ TLSOBJECT= $(TLS_OBJECT)
 
 PGPOBJECT= $(OPENPGP_OBJECT)
 
+ifeq ($(UNAME), Darwin)
+CKLIBRARY= libcryptokitty.dynlib
+TLSLIBRARY= libcktls.dynlib
+PGPLIBRARY= libckpgp.dynlib
+endif
+ifeq ($(UNAME), Linux)
 CKLIBRARY= libcryptokitty.so
 TLSLIBRARY= libcktls.so
 PGPLIBRARY= libckpgp.so
+endif
 
 .SUFFIXES:
 
