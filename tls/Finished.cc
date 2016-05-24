@@ -48,6 +48,7 @@ bool Finished::authenticate(const coder::ByteArray& fin) const {
     CK::HMAC hmac(digest);
     uint32_t keyLength = state->getMacKeyLength();
     coder::ByteArray key(state->getMasterSecret());
+    hmac.setMessage(seed);
     hmac.setKey(key.range(0, keyLength));
 
     return hmac.authenticate(finished);
@@ -61,6 +62,8 @@ void Finished::decode() {
 }
 
 const coder::ByteArray& Finished::encode() {
+
+    encoded.clear();
 
     ConnectionState *state = ConnectionState::getCurrentWrite();
     MACAlgorithm mac = state->getHMAC();
@@ -95,6 +98,7 @@ const coder::ByteArray& Finished::encode() {
     uint32_t keyLength = state->getMacKeyLength();
     coder::ByteArray key(state->getMasterSecret());
     hmac.setKey(key.range(0, keyLength));
+    hmac.setMessage(seed);
     encoded.append(hmac.getHMAC());
 
     return encoded;

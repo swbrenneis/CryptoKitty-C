@@ -71,9 +71,8 @@ coder::ByteArray HMAC::getHMAC() {
     else {
         k = K;
     }
-    while (k.getLength() < B) {
-        k.append(0);
-    }
+    coder::ByteArray pad(B - k.getLength());
+    k.append(pad);
     hash->reset();
 
     // First mask.
