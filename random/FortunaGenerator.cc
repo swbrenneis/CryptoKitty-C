@@ -152,7 +152,7 @@ void *FortunaGenerator::threadFunction() {
         }
 
         // Add some system entropy
-        std::ifstream rnd("/dev/random");
+        std::ifstream rnd("/dev/urandom");
         rnd.read(ebuf, 32);
         for (int i = 0; i < 32; ++i) {
             pools[i].append(ubuf[i]);

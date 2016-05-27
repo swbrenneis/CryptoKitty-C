@@ -68,13 +68,13 @@ uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count)
 
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (fd < 0) {
-        throw SecureRandomException("Unable to open stream");
+        throw SecureRandomException("Fortuna: Unable to open stream");
     }
 
     int res = connect(fd,reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
     if (res < 0) {
         close(fd);
-        throw SecureRandomException("Unable to open stream");
+        throw SecureRandomException("Fortuna: Unable to open stream");
     }
 
     coder::Unsigned32 u32(count);
@@ -82,7 +82,7 @@ uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count)
     res = send(fd, wbuf.get(), 4, 0);
     if (res != 4) {
         close(fd);
-        throw SecureRandomException("Unable to send stream");
+        throw SecureRandomException("Fortuna: Unable to send stream");
     }
 
     std::unique_ptr<uint8_t> rbuf(new uint8_t[count]);
@@ -91,7 +91,7 @@ uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count)
         res = recv(fd, rbuf.get(), count, 0);
         if (res < 0) {
             close(fd);
-            throw SecureRandomException("Unable to read stream");
+            throw SecureRandomException("Fortuna: Unable to read stream");
         }
         if (res == 0) {     // Best effort.
             bytes.append(rbuf.get(), read);
