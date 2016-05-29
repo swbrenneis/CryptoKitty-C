@@ -1,19 +1,16 @@
-DEV_HOME=$(HOME)/dev
-CK_INCLUDE= $(DEV_HOM)/linclude/CryptoKitty
 UNAME= $(shell uname)
+DEV_HOME=$(HOME)/dev
+CK_INCLUDE= $(DEV_HOME)/include/CryptoKitty-C
+CK_LIB= $(DEV_HOME)/lib
 
 LD= g++
-CK_LDPATHS= -L$(DEV_HOME)/lib
-PGP_LDPATHS= -L.
-TLS_LDPATHS= -L.
-CK_LDLIBS=  -lntl -lgmp -lcoder -lcthread
-PGP_LDLIBS=  -lcoder -lcryptokitty
-TLS_LDLIBS=  -lcoder -lcryptokitty -lckpgp
+LDPATHS= -L$(DEV_HOME)/lib
+LDLIBS=  -lntl -lgmp -lcoder -lcthread
 ifeq ($(UNAME), Darwin)
 LDFLAGS= -Wall -g -dynamiclib
 endif
 ifeq ($(UNAME), Linux)
-LDFLAGS= -Wall -g -shared
+LDFLAGS= -Wall -g -shared -Wl,--no-undefined
 endif
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
@@ -47,21 +44,6 @@ KEYS_SOURCE= $(KEYS_OBJECT:.o=.cc)
 MAC_OBJECT= mac/HMAC.o
 MAC_HEADER= include/mac/HMAC.h
 MAC_SOURCE= $(MAC_OBJECT:.o=.cc)
-OPENPGP_OBJECT= openpgp/encode/ArmoredData.o openpgp/encode/Radix64.o \
-				openpgp/key/String2Key.o openpgp/mode/PGPCFM.o \
-				openpgp/packet/Encrypted.o openpgp/packet/Packet.o \
-				openpgp/packet/PKESessionKey.o openpgp/packet/PublicKey.o \
-				openpgp/packet/PublicSubkey.o openpgp/packet/SecretKey.o \
-				openpgp/packet/Signature.o openpgp/packet/UserAttribute.o \
-				openpgp/packet/UserID.o
-OPENPGP_HEADER= include/openpgp/encode/ArmoredData.h include/openpgp/encode/Radix64.h \
-				include/openpgp/key/String2Key.h include/openpgp/mode/PGPCFM.h \
-				include/openpgp/packet/Encrypted.h include/openpgp/packet/Packet.h \
-				include/openpgp/packet/PKESessionKey.h include/openpgp/packet/PublicKey.h \
-				include/openpgp/packet/PublicSubkey.h include/openpgp/packet/SecretKey.h \
-				include/openpgp/packet/Signature.h include/openpgp/packet/UserAttribute.h \
-				include/openpgp/packet/UserID.h
-OPENPGP_SOURCE= $(OPENPGP_OBJECT:.o=.cc)
 RANDOM_OBJECT= random/BBSSecureRandom.o random/CMWCRandom.o random/FortunaSecureRandom.o \
 			   random/FortunaGenerator.o random/Random.o
 RANDOM_HEADER= include/random/BBSSecureRandom.h include/random/CMWCRandom.h \
@@ -71,44 +53,23 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
-TLS_OBJECT= tls/Alert.o tls/ChangeCipherSpec.o tls/CipherSuiteManager.o tls/CipherText.o \
-			tls/ClientHello.o tls/ClientKeyExchange.o tls/ConnectionState.o \
-			tls/ExtensionManager.o tls/Finished.o tls/HandshakeBody.o tls/HandshakeRecord.o \
-			tls/PGPCertificate.o tls/RecordProtocol.o tls/Plaintext.o \
-			tls/ServerCertificate.o tls/ServerHello.o tls/ServerKeyExchange.o
-TLS_HEADER= include/tls/Alert.h include/tls/ChangeCipherSpec.h include/tls/CipherSuiteManager.h \
-			include/tls/CipherText.h include/tls/ClientHello.h include/tls/ClientKeyExchange.h \
-			include/tls/ConnectionState.h include/tls/ExtensionManager.h include/tls/Finished.h \
-			include/tls/HandshakeBody.h include/tls/HandshakeRecord.h \
-			include/tls/PGPCertificate.h include/tls/Plaintext.h include/tls/RecordProtocol.h \
-			include/tls/ServerCertificate.h include/tls/ServerHello.h \
-			include/tls/ServerKeyExchange.h
-TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
 		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
 		  $(SIGNATURE_OBJECT)
 
-TLSOBJECT= $(TLS_OBJECT)
-
-PGPOBJECT= $(OPENPGP_OBJECT)
-
 ifeq ($(UNAME), Darwin)
 CKLIBRARY= libcryptokitty.dylib
-TLSLIBRARY= libcktls.dylib
-PGPLIBRARY= libckpgp.dylib
 endif
 ifeq ($(UNAME), Linux)
 CKLIBRARY= libcryptokitty.so
-TLSLIBRARY= libcktls.so
-PGPLIBRARY= libckpgp.so
 endif
 
 .SUFFIXES:
 
 .PHONY: clean install
 
-all: $(CKLIBRARY) $(PGPLIBRARY) $(TLSLIBRARY)
+all: $(CKLIBRARY)
 
 $(CIPHER_OBJECT): $(CIPHER_SOURCE) $(CIPHER_HEADER)
 	$(MAKE) -C cipher
@@ -134,41 +95,17 @@ $(RANDOM_OBJECT): $(RANDOM_SOURCE) $(RANDOM_HEADER)
 $(SIGNATURE_OBJECT): $(SIGNATURE_SOURCE) $(SIGNATURE_HEADER)
 	$(MAKE) -C signature
 
-$(TLS_OBJECT): $(TLS_SOURCE) $(TLS_HEADER)
-	$(MAKE) -C tls
-
-$(OPENPGP_OBJECT): $(OPENPGP_SOURCE) $(OPENPGP_HEADER)
-	$(MAKE) -C openpgp
-
 $(CKLIBRARY): $(CKOBJECT)
-	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS) $(CK_LDPATHS) $(CK_LDLIBS)
-
-$(TLSLIBRARY): $(TLSOBJECT)
-	    $(LD) -o $@ $(TLSOBJECT) $(LDFLAGS) $(TLS_LDPATHS) $(TLS_LDLIBS)
-
-$(PGPLIBRARY): $(PGPOBJECT)
-	    $(LD) -o $@ $(PGPOBJECT) $(LDFLAGS) $(PGP_LDPATHS) $(PGP_LDLIBS)
+	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS) $(LDPATHS) $(LDLIBS)
 
 install: $(LIBRRY)
 	rm -rf $(CK_INCLUDE)
+	mkdir -p $(CK_INCLUDE)
 	cp $(CKLIBRARY) $(DEV_HOME)/lib
-	cp $(TLSLIBRARY) $(DEV_HOME)/lib
-	cp $(PGPLIBRARY) $(DEV_HOME)/lib
-	cp -af include/cipher $(CK_INCLUDE)
-	cp -af include/ciphermodes $(CK_INCLUDE)
-	cp -af include/data $(CK_INCLUDE)
-	cp -af include/digest $(CK_INCLUDE)
-	cp -af include/exceptions $(CK_INCLUDE)
-	cp -af include/cipher $(CK_INCLUDE)
-	cp -af include/keys $(CK_INCLUDE)
-	cp -af include/mac $(CK_INCLUDE)
-	cp -af include/random $(CK_INCLUDE)
-	cp -af include/signature $(CK_INCLUDE)
-	cp -af include/tls $(CK_INCLUDE)
-	cp -af include/openpgp $(CK_INCLUDE)
+	cp -af include/* $(CK_INCLUDE)
 
 clean:
-	rm -f $(CKLIBRARY) $(TLSLIBRARY) $(PGPLIBRARY)
+	rm -f $(CKLIBRARY)
 	cd cipher && $(MAKE) clean
 	cd ciphermodes && $(MAKE) clean
 	cd data && $(MAKE) clean
@@ -177,6 +114,4 @@ clean:
 	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
-	cd tls && $(MAKE) clean
-	cd openpgp && $(MAKE) clean
 
