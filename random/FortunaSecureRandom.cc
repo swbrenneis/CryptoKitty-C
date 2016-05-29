@@ -1,4 +1,5 @@
 #include "random/FortunaSecureRandom.h"
+#include "random/FortunaGenerator.h"
 #include "coder/Unsigned64.h"
 #include "coder/Unsigned32.h"
 #include "exceptions/SecureRandomException.h"
@@ -13,10 +14,23 @@ namespace CK {
 
 static std::string socketPath("/var/fortuna/rnd");
 
-FortunaSecureRandom::FortunaSecureRandom() {
+FortunaSecureRandom::FortunaSecureRandom(bool s)
+: standalone(s) {
+
+    if (standalone) {
+        gen = 0;
+    }
+    else {
+        gen = new FortunaGenerator;
+        gen->start();
+    }
+
 }
 
 FortunaSecureRandom::~FortunaSecureRandom() {
+
+    delete gen;
+
 }
 
 void FortunaSecureRandom::nextBytes(coder::ByteArray& bytes) {
@@ -24,10 +38,18 @@ void FortunaSecureRandom::nextBytes(coder::ByteArray& bytes) {
     uint32_t length = bytes.getLength();
     uint32_t offset = 0;
     uint32_t limit = 0x100000;    // Length limited to 2**20 by generator
+    coder::ByteArray rbytes;
     while (length > 0) {
+        rbytes.clear();
         uint32_t count = std::min(length, limit);
-        coder::ByteArray rbytes;
-        uint32_t read = readBytes(rbytes, count);
+        uint32_t read;
+        if (standalone) {
+            read = readBytes(rbytes, count);
+        }
+        else {
+            gen->generateRandomData(rbytes, count);
+            read = rbytes.getLength();
+        }
         bytes.copy(offset, rbytes, 0, read);
         length -= read;
         offset += read;
