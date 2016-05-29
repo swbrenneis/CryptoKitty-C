@@ -39,10 +39,12 @@ bool Finished::authenticate(const coder::ByteArray& fin) const {
             throw RecordException("Invalid HMAC algorithm");
     }
 
+    //std::cout << "fin = " << fin << std::endl;
     ConnectionEnd end = state->getEntity();
     coder::ByteArray seed(end == server ? "server finished" : "client finished");
     coder::ByteArray hash(digest->digest(fin));
     seed.append(hash);
+    //std::cout << "seed = " << seed << std::endl;
 
     digest->reset();
     CK::HMAC hmac(digest);
@@ -51,6 +53,7 @@ bool Finished::authenticate(const coder::ByteArray& fin) const {
     hmac.setMessage(seed);
     hmac.setKey(key.range(0, keyLength));
 
+    //std::cout << "finished = " << finished << std::endl;
     return hmac.authenticate(finished);
 
 }
