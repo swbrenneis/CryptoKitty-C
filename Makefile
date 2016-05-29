@@ -1,14 +1,19 @@
 DEV_HOME=$(HOME)/dev
+CK_INCLUDE= $(DEV_HOM)/linclude/CryptoKitty
 UNAME= $(shell uname)
 
 LD= g++
-LDPATHS= -L$(DEV_HOME)/lib
-LDLIBS=  -lntl -lgmp -lcoder -lcthread
+CK_LDPATHS= -L$(DEV_HOME)/lib
+PGP_LDPATHS= -L.
+TLS_LDPATHS= -L.
+CK_LDLIBS=  -lntl -lgmp -lcoder -lcthread
+PGP_LDLIBS=  -lcoder -lcryptokitty
+TLS_LDLIBS=  -lcoder -lcryptokitty -lckpgp
 ifeq ($(UNAME), Darwin)
-LDFLAGS= -Wall -g -dynamiclib $(LDPATHS) $(LDLIBS)
+LDFLAGS= -Wall -g -dynamiclib
 endif
 ifeq ($(UNAME), Linux)
-LDFLAGS= -Wall -g -shared $(LDPATHS) $(LDLIBS)
+LDFLAGS= -Wall -g -shared
 endif
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
@@ -89,9 +94,9 @@ TLSOBJECT= $(TLS_OBJECT)
 PGPOBJECT= $(OPENPGP_OBJECT)
 
 ifeq ($(UNAME), Darwin)
-CKLIBRARY= libcryptokitty.dynlib
-TLSLIBRARY= libcktls.dynlib
-PGPLIBRARY= libckpgp.dynlib
+CKLIBRARY= libcryptokitty.dylib
+TLSLIBRARY= libcktls.dylib
+PGPLIBRARY= libckpgp.dylib
 endif
 ifeq ($(UNAME), Linux)
 CKLIBRARY= libcryptokitty.so
@@ -136,30 +141,31 @@ $(OPENPGP_OBJECT): $(OPENPGP_SOURCE) $(OPENPGP_HEADER)
 	$(MAKE) -C openpgp
 
 $(CKLIBRARY): $(CKOBJECT)
-	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS)
+	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS) $(CK_LDPATHS) $(CK_LDLIBS)
 
 $(TLSLIBRARY): $(TLSOBJECT)
-	    $(LD) -o $@ $(TLSOBJECT) $(LDFLAGS) -L. -lcryptokitty -lckpgp
+	    $(LD) -o $@ $(TLSOBJECT) $(LDFLAGS) $(TLS_LDPATHS) $(TLS_LDLIBS)
 
 $(PGPLIBRARY): $(PGPOBJECT)
-	    $(LD) -o $@ $(PGPOBJECT) $(LDFLAGS) -L. -lcryptokitty
+	    $(LD) -o $@ $(PGPOBJECT) $(LDFLAGS) $(PGP_LDPATHS) $(PGP_LDLIBS)
 
 install: $(LIBRRY)
+	rm -rf $(CK_INCLUDE)
 	cp $(CKLIBRARY) $(DEV_HOME)/lib
 	cp $(TLSLIBRARY) $(DEV_HOME)/lib
 	cp $(PGPLIBRARY) $(DEV_HOME)/lib
-	cp -af include/cipher $(DEV_HOME)/include/CryptoKitty
-	cp -af include/ciphermodes $(DEV_HOME)/include/CryptoKitty
-	cp -af include/data $(DEV_HOME)/include/CryptoKitty
-	cp -af include/digest $(DEV_HOME)/include/CryptoKitty
-	cp -af include/exceptions $(DEV_HOME)/include/CryptoKitty
-	cp -af include/cipher $(DEV_HOME)/include/CryptoKitty
-	cp -af include/keys $(DEV_HOME)/include/CryptoKitty
-	cp -af include/mac $(DEV_HOME)/include/CryptoKitty
-	cp -af include/random $(DEV_HOME)/include/CryptoKitty
-	cp -af include/signature $(DEV_HOME)/include/CryptoKitty
-	cp -af include/tls $(DEV_HOME)/include/CryptoKitty
-	cp -af include/openpgp $(DEV_HOME)/include/CryptoKitty
+	cp -af include/cipher $(CK_INCLUDE)
+	cp -af include/ciphermodes $(CK_INCLUDE)
+	cp -af include/data $(CK_INCLUDE)
+	cp -af include/digest $(CK_INCLUDE)
+	cp -af include/exceptions $(CK_INCLUDE)
+	cp -af include/cipher $(CK_INCLUDE)
+	cp -af include/keys $(CK_INCLUDE)
+	cp -af include/mac $(CK_INCLUDE)
+	cp -af include/random $(CK_INCLUDE)
+	cp -af include/signature $(CK_INCLUDE)
+	cp -af include/tls $(CK_INCLUDE)
+	cp -af include/openpgp $(CK_INCLUDE)
 
 clean:
 	rm -f $(CKLIBRARY) $(TLSLIBRARY) $(PGPLIBRARY)

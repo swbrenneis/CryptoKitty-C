@@ -102,6 +102,9 @@ const coder::ByteArray& Finished::encode() {
     coder::ByteArray key(state->getMasterSecret());
     hmac.setKey(key.range(0, keyLength));
     hmac.setMessage(seed);
+    //coder::ByteArray hmacBytes(hmac.getHMAC());
+    //std::cout << "HMAC = " << hmacBytes << std::endl;
+    //encoded.append(hmacBytes);
     encoded.append(hmac.getHMAC());
 
     return encoded;

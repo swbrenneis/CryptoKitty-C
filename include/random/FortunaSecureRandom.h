@@ -7,10 +7,12 @@
 
 namespace CK {
 
+class FortunaGenerator;
+
 class FortunaSecureRandom : public SecureRandom {
 
     public:
-        FortunaSecureRandom();
+        FortunaSecureRandom(bool standalone = false);
         ~FortunaSecureRandom();
 
     public:
@@ -20,6 +22,10 @@ class FortunaSecureRandom : public SecureRandom {
 
     private:
         uint32_t readBytes(coder::ByteArray& bytes, uint32_t count) const;
+
+    private:
+        bool standalone;
+        FortunaGenerator *gen;
 
 };
 

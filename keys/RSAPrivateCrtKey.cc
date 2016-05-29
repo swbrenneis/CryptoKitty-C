@@ -44,6 +44,18 @@ const BigInteger& RSAPrivateCrtKey::getInverse() const {
 
 }
 
+const BigInteger& RSAPrivateCrtKey::getPrimeExponentP() const {
+
+    return dP;
+
+}
+
+const BigInteger& RSAPrivateCrtKey::getPrimeExponentQ() const {
+
+    return dQ;
+
+}
+
 const BigInteger& RSAPrivateCrtKey::getPrimeP() const {
 
     return p;
