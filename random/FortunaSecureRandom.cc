@@ -12,25 +12,15 @@
 
 namespace CK {
 
+FortunaGenerator *FortunaSecureRandom::gen = new FortunaGenerator;
+bool FortunaSecureRandom::standalone = false;
+
 static std::string socketPath("/var/fortuna/rnd");
 
-FortunaSecureRandom::FortunaSecureRandom(bool s)
-: standalone(s) {
-
-    if (standalone) {
-        gen = 0;
-    }
-    else {
-        gen = new FortunaGenerator;
-        gen->start();
-    }
-
+FortunaSecureRandom::FortunaSecureRandom() {
 }
 
 FortunaSecureRandom::~FortunaSecureRandom() {
-
-    delete gen;
-
 }
 
 void FortunaSecureRandom::nextBytes(coder::ByteArray& bytes) {
@@ -127,6 +117,15 @@ uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count)
     close(fd);
 
     return count;
+}
+
+void FortunaSecureRandom::setStandalone(bool s) {
+
+    standalone = s;
+    if (!standalone) {
+        gen->start();
+    }
+
 }
 
 }

@@ -12,20 +12,21 @@ class FortunaGenerator;
 class FortunaSecureRandom : public SecureRandom {
 
     public:
-        FortunaSecureRandom(bool standalone = false);
+        FortunaSecureRandom();
         ~FortunaSecureRandom();
 
     public:
-        virtual void nextBytes(coder::ByteArray& bytes);
-        virtual uint32_t nextInt();
-        virtual uint64_t nextLong();
+        void nextBytes(coder::ByteArray& bytes);
+        uint32_t nextInt();
+        uint64_t nextLong();
+        static void setStandalone(bool s);
 
     private:
         uint32_t readBytes(coder::ByteArray& bytes, uint32_t count) const;
 
     private:
-        bool standalone;
-        FortunaGenerator *gen;
+        static bool standalone;
+        static FortunaGenerator *gen;
 
 };
 
