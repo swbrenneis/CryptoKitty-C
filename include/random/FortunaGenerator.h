@@ -6,6 +6,10 @@
 #include "cthread/Thread.h"
 #include <deque>
 
+namespace cthread {
+    class Mutex;
+}
+
 namespace CK {
 
 class AES;
@@ -40,6 +44,7 @@ class FortunaGenerator : public cthread::Thread::Callback {
         coder::ByteArray key;
         BigInteger counter;
         BigInteger limit;
+        cthread::Mutex *keyMutex;
 
 };
 

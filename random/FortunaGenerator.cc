@@ -6,6 +6,7 @@
 #include "coder/Unsigned64.h"
 #include "data/NanoTime.h"
 #include "cthread/Lock.h"
+#include "cthread/Mutex.h"
 #include <fstream>
 #include <cmath>
 
@@ -14,13 +15,17 @@ namespace CK {
 FortunaGenerator::FortunaGenerator()
 : run(false),
   cipher(new AES(AES::AES256)),
-  counter(0L) {
+  counter(0L),
+  keyMutex(new cthread::Mutex) {
 
       limit.setBit(256);    // Limits counter to 16 bytes
 
 }
 
 FortunaGenerator::~FortunaGenerator() {
+
+    delete keyMutex;
+
 }
 
 void FortunaGenerator::end() {
@@ -57,6 +62,8 @@ void FortunaGenerator::generateRandomData(coder::ByteArray& bytes, uint32_t leng
         throw OutOfRangeException("Requested byte count out of range");
     }
 
+    cthread::Lock lock(keyMutex);
+
     double n = length;
     coder::ByteArray blocks(generateBlocks(ceil(n / 16)));
     bytes.append(blocks.range(0, length));
@@ -65,6 +72,8 @@ void FortunaGenerator::generateRandomData(coder::ByteArray& bytes, uint32_t leng
 }
 
 void FortunaGenerator::reseed(const coder::ByteArray& seed) {
+
+    cthread::Lock lock(keyMutex);
 
     SHA256 sha;
     key.append(seed);
