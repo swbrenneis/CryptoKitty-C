@@ -62,11 +62,12 @@ void FortunaGenerator::generateRandomData(coder::ByteArray& bytes, uint32_t leng
         throw OutOfRangeException("Requested byte count out of range");
     }
 
-    cthread::Lock lock(keyMutex);
-
     double n = length;
     coder::ByteArray blocks(generateBlocks(ceil(n / 16)));
     bytes.append(blocks.range(0, length));
+
+    cthread::Lock lock(keyMutex);
+
     key = generateBlocks(2);
 
 }
@@ -92,8 +93,6 @@ void FortunaGenerator::reseed(const coder::ByteArray& seed) {
 }
 
 void FortunaGenerator::start() {
-
-    cthread::Lock lock;
 
     if (!run) {
         // Initialize pools
