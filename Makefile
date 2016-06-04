@@ -5,6 +5,7 @@ endif
 ifeq ($(UNAME), Linux)
 DEV_HOME=$(HOME)/dev
 endif
+
 CK_INCLUDE= $(DEV_HOME)/include/CryptoKitty-C
 CK_LIB= $(DEV_HOME)/lib
 
