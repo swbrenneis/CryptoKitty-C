@@ -2,7 +2,6 @@
 #define INVALIDKEYEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -19,7 +18,7 @@ class InvalidKeyException : public Exception {
         InvalidKeyException& operator= (const InvalidKeyException& other);
 
     public:
-        virtual ~InvalidKeyException() {}
+        ~InvalidKeyException() {}
 
 };
 

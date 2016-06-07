@@ -2,7 +2,6 @@
 #define SECURERANDOMEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class SecureRandomException : public Exception {
         SecureRandomException& operator= (const SecureRandomException& other);
 
     public:
-        virtual ~SecureRandomException() {}
+        ~SecureRandomException() {}
 
 };
 

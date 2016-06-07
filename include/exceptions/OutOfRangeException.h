@@ -2,7 +2,6 @@
 #define OUTOFRANGEEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class OutOfRangeException : public Exception {
         OutOfRangeException& operator= (const OutOfRangeException& other);
 
     public:
-        virtual ~OutOfRangeException() {}
+        ~OutOfRangeException() {}
 
 };
 

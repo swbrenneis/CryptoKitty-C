@@ -20,7 +20,7 @@ class NoSuchAlgorithmException : public Exception {
         NoSuchAlgorithmException& operator= (const NoSuchAlgorithmException& other);
 
     public:
-        virtual ~NoSuchAlgorithmException() {}
+        ~NoSuchAlgorithmException() {}
 
 };
 

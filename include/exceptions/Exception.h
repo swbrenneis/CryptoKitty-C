@@ -1,11 +1,12 @@
 #ifndef EXCEPTION_H_INCLUDED
 #define EXCEPTION_H_INCLUDED
 
+#include <exception>
 #include <string>
 
 namespace CK {
 
-class Exception {
+class Exception  : public std::exception {
 
     protected:
         Exception() {}
@@ -17,10 +18,10 @@ class Exception {
         Exception& operator= (const Exception& other);
 
     public:
-        virtual ~Exception() {}
+        ~Exception() {}
 
     public:
-        virtual const std::string& what() const { return message; }
+        const char *what() const _GLIBCXX_USE_NOEXCEPT { return message.c_str(); }
 
     private:
         std::string message;

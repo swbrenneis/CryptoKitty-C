@@ -2,7 +2,6 @@
 #define DATAEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class DataException : public Exception {
         DataException& operator= (const DataException& other);
 
     public:
-        virtual ~DataException() {}
+        ~DataException() {}
 
 };
 

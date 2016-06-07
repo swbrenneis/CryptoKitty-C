@@ -2,7 +2,6 @@
 #define ENCODINGEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class EncodingException : public Exception {
         EncodingException& operator= (const EncodingException& other);
 
     public:
-        virtual ~EncodingException() {}
+        ~EncodingException() {}
 
 };
 

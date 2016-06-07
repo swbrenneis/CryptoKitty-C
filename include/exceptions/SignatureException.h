@@ -2,7 +2,6 @@
 #define SIGNATUREEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class SignatureException : public Exception {
         SignatureException& operator= (const SignatureException& other);
 
     public:
-        virtual ~SignatureException() {}
+        ~SignatureException() {}
 
 };
 

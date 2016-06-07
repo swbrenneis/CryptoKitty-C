@@ -2,7 +2,6 @@
 #define TCPEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class TCPException : public Exception {
         TCPException& operator= (const TCPException& other);
 
     public:
-        virtual ~TCPException() {}
+        ~TCPException() {}
 
 };
 

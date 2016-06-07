@@ -116,7 +116,7 @@ coder::ByteArray PKCS1rsassa::sign(const RSAPrivateKey& K, const coder::ByteArra
         EM = emsaPKCS1Encode(M, k);
     }
     catch (EncodingException& e) {
-        if (e.what() == "Intended encoded message length too short") {
+        if (std::string(e.what()) == "Intended encoded message length too short") {
             throw new BadParameterException("RSA modulus too short");
         }
         else {

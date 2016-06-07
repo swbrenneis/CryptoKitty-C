@@ -2,7 +2,6 @@
 #define BADPARAMETEREXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class BadParameterException : public Exception {
         BadParameterException& operator= (const BadParameterException& other);
 
     public:
-        virtual ~BadParameterException() {}
+        ~BadParameterException() {}
 
 };
 

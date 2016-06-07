@@ -2,7 +2,6 @@
 #define ILLEGALSTATEEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class IllegalStateException : public Exception {
         IllegalStateException& operator= (const IllegalStateException& other);
 
     public:
-        virtual ~IllegalStateException() {}
+        ~IllegalStateException() {}
 
 };
 

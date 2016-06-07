@@ -2,7 +2,6 @@
 #define DECRYPTIONEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -18,7 +17,7 @@ class DecryptionException : public Exception {
         DecryptionException& operator= (const DecryptionException& other);
 
     public:
-        virtual ~DecryptionException() {}
+        ~DecryptionException() {}
 
 };
 

@@ -2,7 +2,6 @@
 #define AUTHENTICATIONEXCEPTION_H_INCLUDED
 
 #include "exceptions/Exception.h"
-#include <string>
 
 namespace CK {
 
@@ -20,7 +19,7 @@ class AuthenticationException : public Exception {
         AuthenticationException& operator= (const AuthenticationException& other);
 
     public:
-        virtual ~AuthenticationException() {}
+        ~AuthenticationException() {}
 
 };
 
