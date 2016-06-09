@@ -11,7 +11,7 @@ CK_LIB= $(DEV_HOME)/lib
 
 LD= g++
 LDPATHS= -L$(DEV_HOME)/lib
-LDLIBS=  -lntl -lgmp -lcoder -lcthread
+LDLIBS=  -lntl -lgmp -lcoder -lcthread -lpthread
 ifeq ($(UNAME), Darwin)
 LDFLAGS= -Wall -g -dynamiclib
 endif
