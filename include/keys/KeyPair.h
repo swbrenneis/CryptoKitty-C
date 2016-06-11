@@ -21,6 +21,7 @@ template<class Pu, class Pr> class KeyPair {
     public:
         Pu* publicKey() { return pubKey; }
         Pr* privateKey() { return prvKey; }
+        void releaseKeys() { pubKey = 0; prvKey = 0; }
 
     private:
         Pu* pubKey;
