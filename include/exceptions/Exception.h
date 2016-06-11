@@ -7,7 +7,7 @@
 #ifdef __MACH__
 #define EXCEPTION_THROW_SPEC throw()
 #else
-#define EXCEPTION_THROW_SPEC _GLIBCXX_USE_NOEXCEP
+#define EXCEPTION_THROW_SPEC noexcept
 #endif
 
 namespace CK {
