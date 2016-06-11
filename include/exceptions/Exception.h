@@ -4,6 +4,12 @@
 #include <exception>
 #include <string>
 
+#ifdef __MACH__
+#define EXCEPTION_THROW_SPEC throw()
+#else
+#define EXCEPTION_THROW_SPEC _GLIBCXX_USE_NOEXCEP
+#endif
+
 namespace CK {
 
 class Exception  : public std::exception {
@@ -21,7 +27,7 @@ class Exception  : public std::exception {
         ~Exception() {}
 
     public:
-        const char *what() const _GLIBCXX_USE_NOEXCEPT { return message.c_str(); }
+        const char *what() const EXCEPTION_THROW_SPEC { return message.c_str(); }
 
     private:
         std::string message;
