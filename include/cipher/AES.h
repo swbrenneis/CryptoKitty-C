@@ -1,7 +1,7 @@
 #ifndef AES_H_INCLUDED
 #define AES_H_INCLUDED
 
-#include "cipher/Cipher.h"
+#include "CryptoKitty-C/cipher/Cipher.h"
 
 namespace CK {
 
