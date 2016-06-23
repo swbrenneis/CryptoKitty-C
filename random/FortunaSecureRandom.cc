@@ -15,7 +15,7 @@ namespace CK {
 FortunaGenerator *FortunaSecureRandom::gen = new FortunaGenerator;
 bool FortunaSecureRandom::standalone = false;
 
-static std::string socketPath("/var/fortuna/rnd");
+static std::string socketPath("/var/run/secomm/fortuna/rnd");
 
 FortunaSecureRandom::FortunaSecureRandom() {
 }
