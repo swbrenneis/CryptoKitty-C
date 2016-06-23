@@ -1,7 +1,7 @@
 #ifndef DHKEYEXCHANGE_H_INCLUDED
 #define DHKEYEXCHANGE_H_INCLUDED
 
-#include "data/BigInteger.h"
+#include "CryptoKitty-C/data/BigInteger.h"
 
 namespace CK {
 
