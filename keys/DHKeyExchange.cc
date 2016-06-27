@@ -30,6 +30,9 @@ const BigInteger& DHKeyExchange::generatePublicKey() {
             p = BigInteger(bitsize, false, rnd);
         }
         g = BigInteger(bitsize/2, false, rnd);
+        while (g.bitLength() < bitsize/2) {
+            g = BigInteger(bitsize/2, false, rnd);
+        }
     }
 
     if (a == BigInteger::ZERO) {
