@@ -1,7 +1,7 @@
 #ifndef SECURERANDOM_H_INCLUDED
 #define SECURERANDOM_H_INCLUDED
 
-#include "CryptoKitty-C/random/Random.h"
+#include "Random.h"
 #include <string>
 
 namespace CK {

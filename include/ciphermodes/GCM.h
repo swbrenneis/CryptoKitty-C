@@ -1,7 +1,7 @@
 #ifndef GCM_H_INCLUDED
 #define GCM_H_INCLUDED
 
-#include "CryptoKitty-C/ciphermodes/CipherMode.h"
+#include "CipherMode.h"
 #include "CryptoKitty-C/data/BigInteger.h"
 #include <cstdint>
 

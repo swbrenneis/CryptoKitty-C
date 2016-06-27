@@ -1,7 +1,7 @@
 #ifndef DIGESTBASE_H_INCLUDED
 #define DIGESTBASE_H_INCLUDED
 
-#include "digest/Digest.h"
+#include "Digest.h"
 #include <string>
 
 namespace CK {
