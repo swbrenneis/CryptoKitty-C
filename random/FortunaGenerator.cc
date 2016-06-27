@@ -42,6 +42,9 @@ coder::ByteArray FortunaGenerator::generateBlocks(uint16_t k) {
         coder::ByteArray c(counter.getEncoded(BigInteger::LITTLEENDIAN));
         coder::ByteArray pad(16 - c.getLength(), 0);
         c.append(pad);
+        if (key.getLength() > 32) {
+            key = key.range(0, 32);
+        }
         r.append(cipher->encrypt(c, key));
         counter++;
         if (counter >= limit) {
@@ -69,6 +72,9 @@ void FortunaGenerator::generateRandomData(coder::ByteArray& bytes, uint32_t leng
     cthread::Lock lock(keyMutex);
 
     key = generateBlocks(2);
+    if (key.getLength() > 32) {
+        key = key.range(0, 32);
+    }
 
 }
 
@@ -79,6 +85,9 @@ void FortunaGenerator::reseed(const coder::ByteArray& seed) {
     SHA256 sha;
     key.append(seed);
     key = sha.digest(key);
+    if (key.getLength() > 32) {
+        key = key.range(0, 32);
+    }
     counter++;
     if (counter >= limit) {
         counter = 1L;
