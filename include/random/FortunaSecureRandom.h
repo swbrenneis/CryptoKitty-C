@@ -2,7 +2,7 @@
 #define FORTUNASECURERANDOM_H_INCLUDED
 
 #include "SecureRandom.h"
-#include "CryptoKitty-C/data/BigInteger.h"
+#include "../data/BigInteger.h"
 #include "coder/ByteArray.h"
 
 namespace CK {

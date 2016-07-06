@@ -1,7 +1,7 @@
 #ifndef SHA1_H_INCLUDED
 #define SHA1_H_INCLUDED
 
-#include "digest/DigestBase.h"
+#include "DigestBase.h"
 
 namespace CK {
 

@@ -1,8 +1,8 @@
 #ifndef RSAKEYPAIRGENERATOR_H_INCLUDED
 #define RSAKEYPAIRGENERATOR_H_INCLUDED
 
-#include "data/BigInteger.h"
-#include "keys/KeyPair.h"
+#include "../data/BigInteger.h"
+#include "KeyPair.h"
 
 namespace CK {
 

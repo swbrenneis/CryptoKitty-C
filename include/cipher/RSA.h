@@ -1,7 +1,7 @@
 #ifndef RSA_H_INCLUDED
 #define RSA_H_INCLUDED
 
-#include "data/BigInteger.h"
+#include "../data/BigInteger.h"
 
 namespace CK {
 

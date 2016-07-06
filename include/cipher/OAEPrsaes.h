@@ -1,8 +1,8 @@
 #ifndef OAEPRSAES_H_INCLUDED
 #define OAEPRSAES_H_INCLUDED
 
-#include "cipher/RSA.h"
-#include "coder/ByteArray.h"
+#include "RSA.h"
+#include <coder/ByteArray.h>
 
 namespace CK {
 

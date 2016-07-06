@@ -1,9 +1,9 @@
 #ifndef FORTUNAGENERATOR_H_INCLUDED
 #define FORTUNAGENERATOR_H_INCLUDED
 
-#include "coder/ByteArray.h"
-#include "data/BigInteger.h"
-#include "cthread/Thread.h"
+#include "../data/BigInteger.h"
+#include <cthread/Thread.h>
+#include <coder/ByteArray.h>
 #include <deque>
 
 namespace cthread {

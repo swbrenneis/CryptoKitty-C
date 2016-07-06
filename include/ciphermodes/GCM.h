@@ -2,7 +2,7 @@
 #define GCM_H_INCLUDED
 
 #include "CipherMode.h"
-#include "CryptoKitty-C/data/BigInteger.h"
+#include "../data/BigInteger.h"
 #include <cstdint>
 
 namespace CK {

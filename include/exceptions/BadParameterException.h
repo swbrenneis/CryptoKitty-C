@@ -1,7 +1,7 @@
 #ifndef BADPARAMETEREXCEPTION_H_INCLUDED
 #define BADPARAMETEREXCEPTION_H_INCLUDED
 
-#include "exceptions/Exception.h"
+#include "Exception.h"
 
 namespace CK {
 

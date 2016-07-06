@@ -8,7 +8,7 @@ endif
 
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT -DVMRANDOM
-CPPINCLUDES= -I../include -I$(DEV_HOME)/include
+CPPINCLUDES= -I../include
 CPPFLAGS= -Wall -g -MMD -std=c++11 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
 
 CPP_SOURCES= BBSSecureRandom.cc FortunaGenerator.cc FortunaSecureRandom.cc CMWCRandom.cc \

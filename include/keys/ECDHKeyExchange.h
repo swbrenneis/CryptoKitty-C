@@ -1,7 +1,7 @@
 #ifndef ECDHKEYEXCHANGE_H_INCLUDED
 #define ECDHKEYEXCHANGE_H_INCLUDED
 
-#include "CryptoKitty-C/data/BigInteger.h"
+#include "../data/BigInteger.h"
 
 namespace CK {
 

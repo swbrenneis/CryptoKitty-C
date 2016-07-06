@@ -1,8 +1,8 @@
 #ifndef RSAPRIVATEKEY_H_INCLUDED
 #define RSAPRIVATEKEY_H_INCLUDED
 
-#include "keys/PrivateKey.h"
-#include "data/BigInteger.h"
+#include "PrivateKey.h"
+#include "../data/BigInteger.h"
 
 namespace CK {
 

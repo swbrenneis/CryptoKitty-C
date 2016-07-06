@@ -5,13 +5,12 @@ endif
 ifeq ($(UNAME), Linux)
 DEV_HOME=$(HOME)/dev
 endif
-
-CK_INCLUDE= $(DEV_HOME)/include/CryptoKitty-C
-CK_LIB= $(DEV_HOME)/lib
+INSTALL_PATH= /usr/local
+CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
 LD= g++
 LDPATHS= -L$(DEV_HOME)/lib
-LDLIBS=  -lntl -lgmp -lcoder -lcthread -lpthread
+LDLIBS=  -lntl -lgmp -lcoder -lcthread
 ifeq ($(UNAME), Darwin)
 LDFLAGS= -Wall -g -dynamiclib
 endif
@@ -65,17 +64,17 @@ CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
 		  $(SIGNATURE_OBJECT)
 
 ifeq ($(UNAME), Darwin)
-CKLIBRARY= libcryptokitty.dylib
+LIBRARY= libcryptokitty.dylib
 endif
 ifeq ($(UNAME), Linux)
-CKLIBRARY= libcryptokitty.so
+LIBRARY= libcryptokitty.so
 endif
 
 .SUFFIXES:
 
 .PHONY: clean install
 
-all: $(CKLIBRARY)
+all: $(LIBRARY)
 
 $(CIPHER_OBJECT): $(CIPHER_SOURCE) $(CIPHER_HEADER)
 	$(MAKE) -C cipher
@@ -101,17 +100,23 @@ $(RANDOM_OBJECT): $(RANDOM_SOURCE) $(RANDOM_HEADER)
 $(SIGNATURE_OBJECT): $(SIGNATURE_SOURCE) $(SIGNATURE_HEADER)
 	$(MAKE) -C signature
 
-$(CKLIBRARY): $(CKOBJECT)
+$(LIBRARY): $(CKOBJECT)
 	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS) $(LDPATHS) $(LDLIBS)
 
 install: $(LIBRRY)
 	rm -rf $(CK_INCLUDE)
 	mkdir -p $(CK_INCLUDE)
-	cp $(CKLIBRARY) $(DEV_HOME)/lib
-	cp -af include/* $(CK_INCLUDE)
+	cp -R --preserve=timestamps include/* $(CK_INCLUDE)
+	chmod 755 $(CK_INCLUDE)
+	chmod 755 $(CK_INCLUDE)/
+	chown -R root:root $(CK_INCLUDE)
+	cp --preserve=timestamps $(LIBRARY) $(INSTALL_PATH)/lib64
+	chmod 755 $(INSTALL_PATH)/lib64/$(LIBRARY)
+	chown root:root $(INSTALL_PATH)/lib64/$(LIBRARY)
+	strip $(INSTALL_PATH)/lib64/$(LIBRARY)
 
 clean:
-	rm -f $(CKLIBRARY)
+	rm -f $(LIBRARY)
 	cd cipher && $(MAKE) clean
 	cd ciphermodes && $(MAKE) clean
 	cd data && $(MAKE) clean

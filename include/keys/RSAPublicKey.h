@@ -1,8 +1,8 @@
 #ifndef RSAPUBLICKEY_H_INCLUDED
 #define RSAPUBLICKEY_H_INCLUDED
 
-#include "keys/PublicKey.h"
-#include "data/BigInteger.h"
+#include "PublicKey.h"
+#include "../data/BigInteger.h"
 
 namespace CK {
 
