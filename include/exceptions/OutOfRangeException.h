@@ -1,7 +1,7 @@
 #ifndef OUTOFRANGEEXCEPTION_H_INCLUDED
 #define OUTOFRANGEEXCEPTION_H_INCLUDED
 
-#include "exceptions/Exception.h"
+#include "Exception.h"
 
 namespace CK {
 
