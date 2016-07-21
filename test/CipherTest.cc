@@ -1,18 +1,18 @@
 #include "CipherTest.h"
-#include "cipher/AES.h"
-#include "cipher/OAEPrsaes.h"
-#include "keys/RSAKeyPairGenerator.h"
-#include "keys/RSAPrivateCrtKey.h"
-#include "keys/RSAPrivateModKey.h"
-#include "keys/RSAPublicKey.h"
-#include "ciphermodes/CBC.h"
-#include "ciphermodes/GCM.h"
-#include "ciphermodes/MtE.h"
-#include "coder/ByteArray.h"
-#include "mac/HMAC.h"
-#include "digest/SHA256.h"
-#include "random/SecureRandom.h"
-#include "data/BigInteger.h"
+#include <CryptoKitty-C/cipher/AES.h>
+#include <CryptoKitty-C/cipher/OAEPrsaes.h>
+#include <CryptoKitty-C/keys/RSAKeyPairGenerator.h>
+#include <CryptoKitty-C/keys/RSAPrivateCrtKey.h>
+#include <CryptoKitty-C/keys/RSAPrivateModKey.h>
+#include <CryptoKitty-C/keys/RSAPublicKey.h>
+#include <CryptoKitty-C/ciphermodes/CBC.h>
+#include <CryptoKitty-C/ciphermodes/GCM.h>
+#include <CryptoKitty-C/ciphermodes/MtE.h>
+#include <coder/ByteArray.h>
+#include <CryptoKitty-C/mac/HMAC.h>
+#include <CryptoKitty-C/digest/SHA256.h>
+#include <CryptoKitty-C/random/FortunaSecureRandom.h>
+#include <CryptoKitty-C/data/BigInteger.h>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -241,15 +241,15 @@ bool CipherTest::AESTest() {
 bool CipherTest::RSAOAEPTest() {
 
     std::cout << "Generating 2048 bit key pair." << std::endl;
-    std::unique_ptr<CK::SecureRandom> rnd(CK::SecureRandom::getSecureRandom("Fortuna"));
+    CK::FortunaSecureRandom rnd;
     CK::RSAKeyPairGenerator keyGen;
-    keyGen.initialize(2048, rnd.get());
+    keyGen.initialize(2048, &rnd);
     std::unique_ptr<CK::KeyPair<CK::RSAPublicKey, CK::RSAPrivateKey> >
                                                 pair(keyGen.generateKeyPair());
 
     coder::ByteArray label("This is my label");
     coder::ByteArray seed(32);
-    rnd->nextBytes(seed);
+    rnd.nextBytes(seed);
     CK::OAEPrsaes rsae(CK::OAEPrsaes::sha256);
     rsae.setSeed(seed);
     rsae.setLabel(label);
@@ -294,18 +294,40 @@ bool CipherTest::RSAOAEPTest() {
     et1.setSeed(s1);
     coder::ByteArray ct1(et1.encrypt(pub1, pt1));
     std::cout << "Expected ciphertext: " << ex1 << std::endl;
-    std::cout << "Actual ciphertext: " << ct1.toString() << std::endl;
+    std::cout << "Actual ciphertext: " << ct1.toHexString() << std::endl;
 
     CK::OAEPrsaes dt1(CK::OAEPrsaes::sha1);
     coder::ByteArray rpt1(dt1.decrypt(prv1, ct1));
-    std::cout << "Plaintext: " << pt1.toString() << std::endl;
-    std::cout << "Decrypted plaintext: " << rpt1.toString() << std::endl;
+    std::cout << "Plaintext: " << pt1.toHexString() << std::endl;
+    std::cout << "Decrypted plaintext: " << rpt1.toHexString() << std::endl;
 
     if (pt1 != rpt1 || ct1 != ect1) {
         std::cout << "OAEP test vector 1 failed." << std::endl;
         return false;
     }
     std::cout << "OAEP test vector 1 passed." << std::endl;
+
+    coder::ByteArray pt2("750c4047f547e8e41411856523298ac9bae245efaf1397fbe56f9dd5", true);
+    coder::ByteArray s2("0cc742ce4a9b7f32f951bcb251efd925fe4fe35f", true);
+
+    std::string ex2("640db1acc58e0568fe5407e5f9b701dff8c3c91e716c536fc7fcec6cb5b71c1165988d4a279e1577d730fc7a29932e3f00c81515236d8d8e31017a7a09df4352d904cdeb79aa583adcc31ea698a4c05283daba9089be5491f67c1a4ee48dc74bbbe6643aef846679b4cb395a352d5ed115912df696ffe0702932946d71492b44");
+    coder::ByteArray ect2(ex2, true);
+   CK::OAEPrsaes et2(CK::OAEPrsaes::sha1);
+    et1.setSeed(s2);
+    coder::ByteArray ct2(et2.encrypt(pub1, pt2));
+    std::cout << "Expected ciphertext: " << ex2 << std::endl;
+    std::cout << "Actual ciphertext: " << ct2.toHexString() << std::endl;
+
+    CK::OAEPrsaes dt2(CK::OAEPrsaes::sha1);
+    coder::ByteArray rpt2(dt2.decrypt(prv1, ct2));
+    std::cout << "Plaintext: " << pt2.toHexString() << std::endl;
+    std::cout << "Decrypted plaintext: " << rpt2.toHexString() << std::endl;
+
+    if (pt2 != rpt2 || ct2 != ect2) {
+        std::cout << "OAEP test vector 2 failed." << std::endl;
+        return false;
+    }
+    std::cout << "OAEP test vector 2 passed." << std::endl;
 
     return true;
 

@@ -4,8 +4,10 @@
 #include "coder/Unsigned32.h"
 #include "exceptions/SecureRandomException.h"
 #include <fstream>
+#include <sstream>
 #include <memory>
 #include <cmath>
+#include <cstring>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -15,7 +17,7 @@ namespace CK {
 FortunaGenerator *FortunaSecureRandom::gen = new FortunaGenerator;
 bool FortunaSecureRandom::standalone = false;
 
-static std::string socketPath("/var/run/secomm/fortuna/rnd");
+static std::string socketPath("/opt/secomm/fortuna/rnd");
 
 FortunaSecureRandom::FortunaSecureRandom() {
 }
@@ -80,13 +82,17 @@ uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count)
 
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (fd < 0) {
-        throw SecureRandomException("Fortuna: Unable to open stream");
+        std::ostringstream str;
+        str << "Fortuna unable to open stream: " << strerror(errno);
+        throw SecureRandomException(str.str());
     }
 
     int res = connect(fd,reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
     if (res < 0) {
         close(fd);
-        throw SecureRandomException("Fortuna: Unable to open stream");
+        std::ostringstream str;
+        str << "Fortuna unable to open stream: " << strerror(errno);
+        throw SecureRandomException(str.str());
     }
 
     coder::Unsigned32 u32(count);

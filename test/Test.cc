@@ -4,7 +4,7 @@
 #include "RandomTest.h"
 #include "SignatureTest.h"
 #include "CipherTest.h"
-#include "exceptions/Exception.h"
+#include <CryptoKitty-C/random/FortunaSecureRandom.h>
 #include <string>
 #include <iostream>
 
@@ -14,6 +14,8 @@ int main(int argc, char** argv) {
     if (argc > 1) {
         tests = argv[1];
     }
+
+    CK::FortunaSecureRandom::setStandalone(true);
 
     if (tests == "digest" || tests == "all") {
         DigestTest digest;
@@ -46,7 +48,7 @@ int main(int argc, char** argv) {
             }
             std::cout << std::endl << "SHA-384 test passed." << std::endl;
         }
-        catch (CK::Exception& e) {
+        catch (std::exception& e) {
             std::cout << "Exception thrown: " << e.what() << std::endl;
             return -1;
         }
@@ -148,7 +150,7 @@ int main(int argc, char** argv) {
             }
             std::cout << std::endl << "AES test passed." << std::endl;
         }
-        catch (CK::Exception& e) {
+        catch (std::exception& e) {
             std::cout << "Exception caught: " << e.what() << std::endl;
         }
 
@@ -162,7 +164,7 @@ int main(int argc, char** argv) {
             }
             std::cout << std::endl << "RSA OAEP encoding test passed." << std::endl;
         }
-        catch (CK::Exception& e) {
+        catch (std::exception& e) {
             std::cout << "Exception caught: " << e.what() << std::endl;
         }
 

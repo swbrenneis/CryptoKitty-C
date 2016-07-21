@@ -1,6 +1,6 @@
 #include "SignatureTest.h"
 #include "keys/RSAKeyPairGenerator.h"
-#include "random/SecureRandom.h"
+#include "random/FortunaSecureRandom.h"
 #include "signature/RSASignature.h"
 #include "digest/SHA256.h"
 #include "cipher/PKCS1rsassa.h"
@@ -21,10 +21,10 @@ bool SignatureTest::RSAPKCS1test(int keysize) {
     std::cout << "Message - " << msg << std::endl;
     coder::ByteArray m(msg);
 
-    CK::SecureRandom *rng = CK::SecureRandom::getSecureRandom("BBS");
+    CK::FortunaSecureRandom rnd;
     std::cout << keysize << " bit RSA Key pair." << std::endl;
     CK::RSAKeyPairGenerator gen;
-    gen.initialize(keysize, rng);
+    gen.initialize(keysize, &rnd);
     CK::KeyPair<CK::RSAPublicKey, CK::RSAPrivateKey> *pair =
                     gen.generateKeyPair();
 
@@ -66,10 +66,10 @@ bool SignatureTest::RSAPSStest(int keysize) {
     std::cout << "Message - " << msg << std::endl;
     coder::ByteArray m(msg);
 
-    CK::SecureRandom *rng = CK::SecureRandom::getSecureRandom("BBS");
+    CK::FortunaSecureRandom rnd;
     std::cout << keysize << " bit RSA Key pair." << std::endl;
     CK::RSAKeyPairGenerator gen;
-    gen.initialize(keysize, rng);
+    gen.initialize(keysize, &rnd);
     CK::KeyPair<CK::RSAPublicKey, CK::RSAPrivateKey> *pair =
                     gen.generateKeyPair();
 
