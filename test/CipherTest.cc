@@ -305,15 +305,15 @@ bool CipherTest::RSAOAEPTest() {
         std::cout << "OAEP test vector 1 failed." << std::endl;
         return false;
     }
-    std::cout << "OAEP test vector 1 passed." << std::endl;
+    std::cout << "OAEP test vector 1 passed." << std::endl << std::endl;
 
     coder::ByteArray pt2("750c4047f547e8e41411856523298ac9bae245efaf1397fbe56f9dd5", true);
     coder::ByteArray s2("0cc742ce4a9b7f32f951bcb251efd925fe4fe35f", true);
 
     std::string ex2("640db1acc58e0568fe5407e5f9b701dff8c3c91e716c536fc7fcec6cb5b71c1165988d4a279e1577d730fc7a29932e3f00c81515236d8d8e31017a7a09df4352d904cdeb79aa583adcc31ea698a4c05283daba9089be5491f67c1a4ee48dc74bbbe6643aef846679b4cb395a352d5ed115912df696ffe0702932946d71492b44");
     coder::ByteArray ect2(ex2, true);
-   CK::OAEPrsaes et2(CK::OAEPrsaes::sha1);
-    et1.setSeed(s2);
+    CK::OAEPrsaes et2(CK::OAEPrsaes::sha1);
+    et2.setSeed(s2);
     coder::ByteArray ct2(et2.encrypt(pub1, pt2));
     std::cout << "Expected ciphertext: " << ex2 << std::endl;
     std::cout << "Actual ciphertext: " << ct2.toHexString() << std::endl;

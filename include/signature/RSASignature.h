@@ -1,9 +1,9 @@
 #ifndef RSASIGNATURE_H_INCLUDED
 #define RSASIGNATURE_H_INCLUDED
 
-#include "coder/ByteArray.h"
-#include "keys/RSAPublicKey.h"
-#include "keys/RSAPrivateKey.h"
+#include <coder/ByteArray.h>
+#include "../keys/RSAPublicKey.h"
+#include "../keys/RSAPrivateKey.h"
 
 namespace CK {
 

@@ -1,7 +1,7 @@
 #ifndef CTR_H_INCLUDED
 #define CTR_H_INCLUDED
 
-#include "ciphermodes/CipherMode.h"
+#include "CipherMode.h"
 
 namespace CK {
 

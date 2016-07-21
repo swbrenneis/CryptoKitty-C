@@ -1,7 +1,6 @@
 #include "MACTest.h"
-#include "mac/HMAC.h"
-#include "digest/SHA256.h"
-#include "exceptions/Exception.h"
+#include <CryptoKitty-C/mac/HMAC.h>
+#include <CryptoKitty-C/digest/SHA256.h>
 #include <string>
 #include <iostream>
 
@@ -37,7 +36,7 @@ bool MACTest::HMACTest() {
 
     return true;
     }
-    catch (CK::Exception& e) {
+    catch (std::exception& e) {
         std::cout << "Exception thrown: " << e.what() << std::endl;
         return false;
     }

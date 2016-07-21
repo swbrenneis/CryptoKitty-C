@@ -1,8 +1,8 @@
 #ifndef RSAPRIVATEMODKEY_H_INCLUDED
 #define RSAPRIVATEMODKEY_H_INCLUDED
 
-#include "keys/RSAPrivateKey.h"
-#include "data/BigInteger.h"
+#include "RSAPrivateKey.h"
+#include "../data/BigInteger.h"
 
 namespace CK {
 

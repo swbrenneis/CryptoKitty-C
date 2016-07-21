@@ -1,7 +1,7 @@
 #ifndef MTE_H_INCLUDED
 #define MTE_H_INCLUDED
 
-#include "ciphermodes/CipherMode.h"
+#include "CipherMode.h"
 
 namespace CK {
 

@@ -1,7 +1,7 @@
 #ifndef PSSRSASSA_H_INCLUDED
 #define PSSRSASSA_H_INCLUDED
 
-#include "cipher/RSA.h"
+#include "../cipher/RSA.h"
 
 namespace CK {
 

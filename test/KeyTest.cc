@@ -1,5 +1,5 @@
 #include "KeyTest.h"
-#include "keys/DHKeyExchange.h"
+#include <CryptoKitty-C/keys/DHKeyExchange.h>
 #include <iostream>
 
 KeyTest::KeyTest() {

@@ -1,7 +1,7 @@
 #ifndef CBC_H_INCLUDED
 #define CBC_H_INCLUDED
 
-#include "ciphermodes/CipherMode.h"
+#include "CipherMode.h"
 
 namespace CK {
 
