@@ -35,19 +35,21 @@ class GCM : public CipherMode {
                                                 const coder::ByteArray& C) const;
         coder::ByteArray incr(const coder::ByteArray& X) const;
         coder::ByteArray multiply(const coder::ByteArray& X, const coder::ByteArray& Y) const;
+        void setAppendTag(bool app) { appendTag = app; }
+        void setTagSize(uint8_t t) { tagSize = t; }
         void shiftBlock(coder::ByteArray& block) const;
 
     private:
+        uint8_t tagSize;        // Authentication tag size
+        bool appendTag;      // True = append tag to ciphertext
         struct GCMNonce {
             uint8_t salt[4];
             uint8_t nonce_explicit[8];
         };
         Cipher *cipher;
-        coder::ByteArray T;    // Authentication tag;
-        coder::ByteArray IV;   // Initial value;
-        coder::ByteArray A;   // Authenticated data;
-
-        static uint8_t tagSize; // Authentication tag size;
+        coder::ByteArray T;    // Authentication tag
+        coder::ByteArray IV;   // Initial value
+        coder::ByteArray A;    // Authenticated data
 
 };
 
