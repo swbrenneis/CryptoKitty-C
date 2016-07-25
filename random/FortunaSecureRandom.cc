@@ -96,14 +96,14 @@ uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count)
     }
 
     coder::Unsigned32 u32(count);
-    std::unique_ptr<uint8_t> wbuf(u32.getEncoded(coder::bigendian).asArray());
+    std::unique_ptr<uint8_t[]> wbuf(u32.getEncoded(coder::bigendian).asArray());
     res = send(fd, wbuf.get(), 4, 0);
     if (res != 4) {
         close(fd);
         throw SecureRandomException("Fortuna: Unable to send stream");
     }
 
-    std::unique_ptr<uint8_t> rbuf(new uint8_t[count]);
+    std::unique_ptr<uint8_t[]> rbuf(new uint8_t[count]);
     uint32_t read = 0;
     while (read < count) {
         res = recv(fd, rbuf.get(), count, 0);
