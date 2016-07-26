@@ -36,8 +36,9 @@ coder::ByteArray GCM::decrypt(const coder::ByteArray& C, const coder::ByteArray&
 
     coder::ByteArray ciphertext(C);
     if (appendTag) {
-        T = C.range(C.getLength() - tagSize, tagSize);
-        ciphertext.truncate(tagSize);
+        uint32_t tagLength = tagSize / 8;
+        T = C.range(C.getLength() - tagLength, tagLength);
+        ciphertext.truncate(tagLength);
     }
     int n = ciphertext.getLength() / 16;
     int u = ciphertext.getLength() % 16;
