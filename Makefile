@@ -110,10 +110,10 @@ install: $(LIBRRY)
 	chmod 755 $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)/
 	chown -R root:root $(CK_INCLUDE)
+	strip $(LIBRARY)
 	cp --preserve=timestamps $(LIBRARY) $(INSTALL_PATH)/lib64
 	chmod 755 $(INSTALL_PATH)/lib64/$(LIBRARY)
 	chown root:root $(INSTALL_PATH)/lib64/$(LIBRARY)
-	strip $(INSTALL_PATH)/lib64/$(LIBRARY)
 
 clean:
 	rm -f $(LIBRARY)
