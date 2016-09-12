@@ -55,7 +55,7 @@ void Random::nextBytes(coder::ByteArray& bytes) {
 /*
  * Return a random unsigned integer;
  */
-uint32_t Random::nextInt() {
+uint32_t Random::nextUnsignedInt() {
 
     return next(sizeof(uint32_t) * 8) & ULONG_MAX;
 
@@ -64,7 +64,7 @@ uint32_t Random::nextInt() {
 /*
  * Return a random signed long integer.
  */
-uint64_t Random::nextLong() {
+uint64_t Random::nextUnsignedLong() {
 
     return next(sizeof(uint64_t) * 8);
 
