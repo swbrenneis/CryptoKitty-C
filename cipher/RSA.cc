@@ -102,7 +102,7 @@ BigInteger RSA::rsavp1(const RSAPublicKey& K, const BigInteger& s) {
     rnd.setSeed(nt.getFullTime());
     timespec ts;
     ts.tv_sec = 0;
-    ts.tv_nsec = rnd.nextInt();
+    ts.tv_nsec = rnd.nextUnsignedInt();
     nanosleep(&ts, 0);
 
     //std:: cout << "rsavp1 s = " << s << std::endl;

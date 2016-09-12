@@ -8,16 +8,19 @@
 #include <memory>
 #include <cmath>
 #include <cstring>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 namespace CK {
 
-FortunaGenerator *FortunaSecureRandom::gen = new FortunaGenerator;
+FortunaGenerator *FortunaSecureRandom::gen = 0;
 bool FortunaSecureRandom::standalone = false;
 
-static std::string socketPath("/opt/secomm/fortuna/rnd");
+static const std::string FORTUNAPATH("/dev/fortuna");
+static const size_t BUFSIZE = 512;      // Maximum read size of fortuna device.
+static const uint32_t LIMIT = 0x100000;    // Length limited to 2**20 by generator
 
 FortunaSecureRandom::FortunaSecureRandom() {
 }
@@ -29,11 +32,10 @@ void FortunaSecureRandom::nextBytes(coder::ByteArray& bytes) {
 
     uint32_t length = bytes.getLength();
     uint32_t offset = 0;
-    uint32_t limit = 0x100000;    // Length limited to 2**20 by generator
     coder::ByteArray rbytes;
     while (length > 0) {
         rbytes.clear();
-        uint32_t count = std::min(length, limit);
+        uint32_t count = std::min(length, LIMIT);
         uint32_t read;
         if (standalone) {
             read = readBytes(rbytes, count);
@@ -52,9 +54,9 @@ void FortunaSecureRandom::nextBytes(coder::ByteArray& bytes) {
 /*
  * Returns the next 32 bits of entropy.
  */
-uint32_t FortunaSecureRandom::nextInt() {
+uint32_t FortunaSecureRandom::nextUnsignedInt() {
 
-    coder::ByteArray bytes(4);
+    coder::ByteArray bytes(4, 0);
     nextBytes(bytes);
     coder::Unsigned32 u32(bytes);
     return u32.getValue();
@@ -64,9 +66,9 @@ uint32_t FortunaSecureRandom::nextInt() {
 /*
  * Returns the next 64 bits of entropy.
  */
-uint64_t FortunaSecureRandom::nextLong() {
+uint64_t FortunaSecureRandom::nextUnsignedLong() {
 
-    coder::ByteArray bytes(8);
+    coder::ByteArray bytes(8, 0);
     nextBytes(bytes);
     coder::Unsigned64 u64(bytes);
     return u64.getValue();
@@ -75,60 +77,46 @@ uint64_t FortunaSecureRandom::nextLong() {
 
 uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count) const {
 
-    sockaddr_un addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path)-1);
+    std::unique_ptr<uint8_t[]> rbuf(new uint8_t[count]);
+    char *cbuf = reinterpret_cast<char*>(rbuf.get());
+    size_t toRead = count;
+    if (toRead > BUFSIZE) {
+        toRead = BUFSIZE;
+    }
+    std::ifstream rdev;
+    std::filebuf *fbuf = rdev.rdbuf();
+    fbuf->pubsetbuf(0, 0);
+    rdev.open(FORTUNAPATH);
+    if (rdev.good()) {
+        rdev.read(cbuf, toRead);
+    }
+    rdev.close();
 
-    int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    /*int fd = open(FORTUNAPATH.c_str(), O_RDONLY);
     if (fd < 0) {
         std::ostringstream str;
-        str << "Fortuna unable to open stream: " << strerror(errno);
+        str << "Fortuna file open error: " << strerror(errno);
         throw SecureRandomException(str.str());
     }
 
-    int res = connect(fd,reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
-    if (res < 0) {
-        close(fd);
+    int readin = read(fd, cbuf, count);
+    if (readin < 0) {
         std::ostringstream str;
-        str << "Fortuna unable to open stream: " << strerror(errno);
+        str << "Fortuna file read error: " << strerror(errno);
         throw SecureRandomException(str.str());
     }
+    close(fd);*/
 
-    coder::Unsigned32 u32(count);
-    std::unique_ptr<uint8_t[]> wbuf(u32.getEncoded(coder::bigendian).asArray());
-    res = send(fd, wbuf.get(), 4, 0);
-    if (res != 4) {
-        close(fd);
-        throw SecureRandomException("Fortuna: Unable to send stream");
-    }
+    bytes.append(rbuf.get(), toRead);
+    return toRead;
 
-    std::unique_ptr<uint8_t[]> rbuf(new uint8_t[count]);
-    uint32_t read = 0;
-    while (read < count) {
-        res = recv(fd, rbuf.get(), count, 0);
-        if (res < 0) {
-            close(fd);
-            throw SecureRandomException("Fortuna: Unable to read stream");
-        }
-        if (res == 0) {     // Best effort.
-            bytes.append(rbuf.get(), read);
-            close(fd);
-            return read;
-        }
-        read += res;
-    }
-
-    bytes.append(rbuf.get(), count);
-    close(fd);
-
-    return count;
 }
 
 void FortunaSecureRandom::setStandalone(bool s) {
 
     standalone = s;
     if (!standalone) {
+        gen = new FortunaGenerator;
         gen->start();
     }
 
