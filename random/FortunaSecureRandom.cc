@@ -16,6 +16,9 @@
 namespace CK {
 
 FortunaGenerator *FortunaSecureRandom::gen = 0;
+// Indicates whether the RNG is self-contained.
+// If true, the random block generator is built into
+// the object.
 bool FortunaSecureRandom::standalone = false;
 
 static const std::string FORTUNAPATH("/dev/fortuna");
@@ -37,7 +40,7 @@ void FortunaSecureRandom::nextBytes(coder::ByteArray& bytes) {
         rbytes.clear();
         uint32_t count = std::min(length, LIMIT);
         uint32_t read;
-        if (standalone) {
+        if (!standalone) {
             read = readBytes(rbytes, count);
         }
         else {
@@ -115,7 +118,7 @@ uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count)
 void FortunaSecureRandom::setStandalone(bool s) {
 
     standalone = s;
-    if (!standalone) {
+    if (standalone) {
         gen = new FortunaGenerator;
         gen->start();
     }
