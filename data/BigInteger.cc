@@ -537,6 +537,15 @@ bool BigInteger::testBit(int bitnum) const {
 }
 
 /*
+ * Returns a long (64 bit) representation of this integer.
+ */
+long BigInteger::toLong() {
+
+    return NTL::to_long(*number);
+
+}
+
+/*
  * Returns a BigInteger equal to bitwise xor of this and logical.
  */
 BigInteger BigInteger::Xor(const BigInteger& logical) const {
