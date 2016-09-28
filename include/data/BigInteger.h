@@ -105,6 +105,8 @@ class BigInteger {
         BigInteger subtract(const BigInteger& subtractor) const;
         // Returns true if the specified bit is set.
         bool testBit(int bitnum) const;
+        // Returns the long representation of this integer. May be truncated.
+        long toLong();
         // Returns a BigInteger that is the bitwise exclusive or of this
         // and logical.
         BigInteger Xor(const BigInteger& logical) const;
