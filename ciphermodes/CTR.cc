@@ -1,23 +1,13 @@
 #include "ciphermodes/CTR.h"
-#include "cipher/Cipher.h"
+#include "cipher/BlockCipher.h"
 #include "exceptions/BadParameterException.h"
 #include "coder/Unsigned64.h"
 #include <cmath>
 
 namespace CK {
 
-CTR::CTR(Cipher *c, const coder::ByteArray& n) {
-
-    if (n.getLength() != c->blockSize() - 8) {
-        throw BadParameterException("Invalid nonce size");
-    }
-
-    cipher = c;
-    counter = n;
-    coder::ByteArray ctr(8,0);
-    ctr[7] = 1;
-    counter.append(ctr);
-
+CTR::CTR(BlockCipher *c)
+: cipher(c) {
 }
 
 CTR::~CTR() {
@@ -86,6 +76,19 @@ void CTR::incrementCounter() {
     ctr.setValue(ctr.getValue() + 1);
     counter.append(nonce);
     counter.append(ctr.getEncoded(coder::bigendian));
+
+}
+
+void CTR::setIV(const coder::ByteArray& iv) {
+
+    if (iv.getLength() != cipher->blockSize() - 8) {
+        throw BadParameterException("Invalid nonce size");
+    }
+
+    counter = iv;
+    coder::ByteArray ctr(8,0);
+    ctr[7] = 1;
+    counter.append(ctr);
 
 }
 

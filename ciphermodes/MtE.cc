@@ -3,7 +3,7 @@
 
 namespace CK {
 
-MtE::MtE(CipherMode *c, HMAC* h)
+MtE::MtE(BlockCipherMode *c, HMAC* h)
 : cipher(c),
   hmac(h),
   authenticated(false) {

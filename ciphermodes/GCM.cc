@@ -1,5 +1,5 @@
 #include "ciphermodes/GCM.h"
-#include "cipher/Cipher.h"
+#include "cipher/BlockCipher.h"
 #include "coder/Unsigned64.h"
 #include "coder/Unsigned32.h"
 #include "data/BigInteger.h"
@@ -11,11 +11,10 @@
 
 namespace CK {
 
-GCM::GCM(Cipher *c, const coder::ByteArray& iv)
+GCM::GCM(BlockCipher *c, bool append)
 : tagSize(128),
-  appendTag(true),
-  cipher(c),
-  IV(iv) {
+  appendTag(append),
+  cipher(c) {
 
     if (cipher->blockSize() != 16) {
         throw BadParameterException("Invalid cipher block size");
@@ -321,7 +320,7 @@ void GCM::shiftBlock(coder::ByteArray& block) const {
 
 }
 
-void GCM::setAuthData(const coder::ByteArray& ad) {
+void GCM::setAuthenticationData(const coder::ByteArray& ad) {
 
     /*if (ad.getLength() * 8 > A_MAX) {
         throw BadParameterException("GCM setAuthData: Invalid authentication data");

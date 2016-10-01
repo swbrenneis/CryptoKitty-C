@@ -1,16 +1,16 @@
 #ifndef MTE_H_INCLUDED
 #define MTE_H_INCLUDED
 
-#include "CipherMode.h"
+#include "BlockCipherMode.h"
 
 namespace CK {
 
 class HMAC;
 
-class MtE : public CipherMode {
+class MtE : public BlockCipherMode {
 
     public:
-        MtE(CipherMode *c, HMAC* h);
+        MtE(BlockCipherMode *c, HMAC* h);
         ~MtE();
 
     private:
@@ -23,10 +23,11 @@ class MtE : public CipherMode {
                                             const coder::ByteArray& key);
         coder::ByteArray encrypt(const coder::ByteArray& plaintext,
                                             const coder::ByteArray& key);
+        void setIV(const coder::ByteArray& iv) {}
 
     private:
         unsigned blockSize;
-        CipherMode *cipher;
+        BlockCipherMode *cipher;
         HMAC *hmac;
         bool authenticated;
 
