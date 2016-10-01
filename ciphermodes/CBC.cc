@@ -1,18 +1,14 @@
 #include "ciphermodes/CBC.h"
-#include "cipher/Cipher.h"
+#include "cipher/BlockCipher.h"
 #include "exceptions/BadParameterException.h"
 #include <deque>
 
 namespace CK {
 
-CBC::CBC(Cipher *c, const coder::ByteArray& i)
-: cipher(c),
-  iv(i) {
+CBC::CBC(BlockCipher *c)
+: cipher(c) {
 
     blockSize = cipher->blockSize();
-    if (iv.getLength() != blockSize) {
-        throw BadParameterException("CBC Invalid IV");
-    }
 
 }
 
@@ -122,6 +118,15 @@ coder::ByteArray CBC::encrypt(const coder::ByteArray& plaintext, const coder::By
     }
 
     return ciphertext.range(0, plaintext.getLength());
+
+}
+
+void CBC::setIV(const coder::ByteArray& nonce) {
+
+    iv = nonce;
+    if (iv.getLength() != blockSize) {
+        throw BadParameterException("CBC Invalid IV");
+    }
 
 }
 

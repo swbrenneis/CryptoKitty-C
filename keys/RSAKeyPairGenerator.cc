@@ -38,6 +38,8 @@ void RSAKeyPairGenerator::initialize(int bits,
  */
 KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool crt) {
 
+    // Puplic exponent
+    BigInteger e(65537L);
     // Create SG primes.
     BigInteger p(keySize / 2, false, *random);
     BigInteger q(keySize / 2, false, *random);
@@ -55,15 +57,17 @@ KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool 
     BigInteger phi = pp * qq;
     // Calculate the public exponent.
     // e is coprime (gcd = 1) with phi.
-    bool eFound = false;
-    BigInteger e;
-    while (!eFound) {
+    //bool eFound = false;
+    if (e.gcd(phi) != BigInteger::ONE) {
+        return generateKeyPair(crt);
+    }
+    /*while (!eFound) {
         e = BigInteger(64, false, *random);
         // 3 < e <= n-1
         if (e > THREE && e < n) {
             eFound = e.gcd(phi) == BigInteger::ONE;
         }
-    }
+    }*/
 
     // d * e = 1 mod phi (d = e^{1} mod phi)
     BigInteger d = e.modInverse(phi);

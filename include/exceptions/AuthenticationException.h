@@ -1,7 +1,7 @@
 #ifndef AUTHENTICATIONEXCEPTION_H_INCLUDED
 #define AUTHENTICATIONEXCEPTION_H_INCLUDED
 
-#include "exceptions/Exception.h"
+#include "Exception.h"
 
 namespace CK {
 

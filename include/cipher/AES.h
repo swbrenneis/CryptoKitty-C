@@ -1,11 +1,11 @@
 #ifndef AES_H_INCLUDED
 #define AES_H_INCLUDED
 
-#include "Cipher.h"
+#include "BlockCipher.h"
 
 namespace CK {
 
-class AES : public Cipher {
+class AES : public BlockCipher {
 
    public:
        enum KeySize { AES128=16, AES192=24, AES256=32 };
@@ -24,6 +24,7 @@ class AES : public Cipher {
                 decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key);
         coder::ByteArray
                 encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key);
+        void reset() {}
 
     private:
         typedef uint8_t Word[4];

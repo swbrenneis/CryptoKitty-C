@@ -1,16 +1,16 @@
 #ifndef CTR_H_INCLUDED
 #define CTR_H_INCLUDED
 
-#include "CipherMode.h"
+#include "BlockCipherMode.h"
 
 namespace CK {
 
-class Cipher;
+class BlockCipher;
 
-class CTR : public CipherMode {
+class CTR : public BlockCipherMode {
 
     public:
-        CTR(Cipher *cipher, const coder::ByteArray& nonce);
+        CTR(BlockCipher *cipher);
         ~CTR();
 
     private:
@@ -20,12 +20,13 @@ class CTR : public CipherMode {
     public:
         coder::ByteArray decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key);
         coder::ByteArray encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key);
+        void setIV(const coder::ByteArray& iv);
 
     private:
         void incrementCounter();
 
     private:
-        Cipher *cipher;
+        BlockCipher *cipher;
         coder::ByteArray counter;
 
 };
