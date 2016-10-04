@@ -1,16 +1,14 @@
 #include "random/FortunaSecureRandom.h"
 #include "random/FortunaGenerator.h"
-#include "coder/Unsigned64.h"
-#include "coder/Unsigned32.h"
 #include "exceptions/SecureRandomException.h"
-#include <fstream>
+#include <coder/Unsigned64.h>
+#include <coder/Unsigned32.h>
 #include <sstream>
 #include <memory>
-#include <cmath>
 #include <cstring>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include <unistd.h>
 
 namespace CK {
@@ -20,10 +18,8 @@ FortunaGenerator *FortunaSecureRandom::gen = 0;
 // If true, the random block generator is built into
 // the object.
 bool FortunaSecureRandom::standalone = false;
-
-static const std::string FORTUNAPATH("/dev/fortuna");
-static const size_t BUFSIZE = 512;      // Maximum read size of fortuna device.
-static const uint32_t LIMIT = 0x100000;    // Length limited to 2**20 by generator
+static const short FORTUNAPORT = 16574;
+static const char *LOCALHOST = "127.0.0.1";
 
 FortunaSecureRandom::FortunaSecureRandom() {
 }
@@ -33,18 +29,20 @@ FortunaSecureRandom::~FortunaSecureRandom() {
 
 void FortunaSecureRandom::nextBytes(coder::ByteArray& bytes) {
 
-    uint32_t length = bytes.getLength();
-    uint32_t offset = 0;
+    if (bytes.getLength() > 0xffffffff) {
+        throw SecureRandomException("Invalid request size");
+    }
+    uint16_t length = bytes.getLength();
+    uint16_t offset = 0;
     coder::ByteArray rbytes;
     while (length > 0) {
         rbytes.clear();
-        uint32_t count = std::min(length, LIMIT);
-        uint32_t read;
+        uint16_t read;
         if (!standalone) {
-            read = readBytes(rbytes, count);
+            read = readBytes(rbytes, length);
         }
         else {
-            gen->generateRandomData(rbytes, count);
+            gen->generateRandomData(rbytes, length);
             read = rbytes.getLength();
         }
         bytes.copy(offset, rbytes, 0, read);
@@ -78,40 +76,46 @@ uint64_t FortunaSecureRandom::nextUnsignedLong() {
 
 }
 
-uint32_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint32_t count) const {
+uint16_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint16_t count) const {
 
-    std::unique_ptr<uint8_t[]> rbuf(new uint8_t[count]);
-    char *cbuf = reinterpret_cast<char*>(rbuf.get());
-    size_t toRead = count;
-    if (toRead > BUFSIZE) {
-        toRead = BUFSIZE;
-    }
-    std::ifstream rdev;
-    std::filebuf *fbuf = rdev.rdbuf();
-    fbuf->pubsetbuf(0, 0);
-    rdev.open(FORTUNAPATH);
-    if (rdev.good()) {
-        rdev.read(cbuf, toRead);
-    }
-    rdev.close();
-
-    /*int fd = open(FORTUNAPATH.c_str(), O_RDONLY);
-    if (fd < 0) {
+    int socket = ::socket(PF_INET, SOCK_DGRAM, 0);
+    if (socket < 0) {
         std::ostringstream str;
-        str << "Fortuna file open error: " << strerror(errno);
+        str << "Socket creation error: " << strerror(errno) << std::endl;
         throw SecureRandomException(str.str());
     }
 
-    int readin = read(fd, cbuf, count);
-    if (readin < 0) {
+    int optval = 1;
+    setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &optval , sizeof(int));
+
+    sockaddr_in name;
+    name.sin_family = AF_INET;
+    name.sin_port = htons(FORTUNAPORT);
+    hostent *hostinfo = gethostbyname(LOCALHOST);
+    name.sin_addr = *(reinterpret_cast<in_addr*>(hostinfo->h_addr));
+    socklen_t saLength = sizeof(sockaddr_in);
+
+    uint8_t countBytes[2];
+    countBytes[1] = count & 0xff;
+    countBytes[0] = count >> 8;
+    int res = sendto(socket, static_cast<void*>(countBytes), 2, 0,
+                                    reinterpret_cast<sockaddr*>(&name), saLength);
+    if (res < 0) {
         std::ostringstream str;
-        str << "Fortuna file read error: " << strerror(errno);
+        str << "Socket send error: " << strerror(errno) << std::endl;
         throw SecureRandomException(str.str());
     }
-    close(fd);*/
+    std::unique_ptr<uint8_t[]> inBytes(new uint8_t[count]);
+    res = recvfrom(socket, static_cast<void*>(inBytes.get()), count, 0,
+                                    reinterpret_cast<sockaddr*>(&name), &saLength);
+    if (res < 0) {
+        std::ostringstream str;
+        str << "Socket receive error: " << strerror(errno) << std::endl;
+        throw SecureRandomException(str.str());
+    }
 
-    bytes.append(rbuf.get(), toRead);
-    return toRead;
+    bytes.append(inBytes.get(), res);
+    return res;
 
 }
 

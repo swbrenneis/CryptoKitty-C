@@ -1,7 +1,8 @@
 #ifndef BIGINTEGER_H_INCLUDED
 #define BIGINTEGER_H_INCLUDED
 
-#include "coder/ByteArray.h"
+#include "jni/JNIClass.h"
+#include <coder/ByteArray.h>
 #include <deque>
 #include <iostream>
 
@@ -16,8 +17,11 @@ class Random;
 /*
  * This is a delegate class for Victor Shoup's
  * Number Theory Library ZZ class.
+ *
+ * It is used as a backing class for the CryptoKitty Java implementation.
+ *
  */
-class BigInteger {
+class BigInteger : public JNIClass {
 
     public:
         static const int LITTLEENDIAN;

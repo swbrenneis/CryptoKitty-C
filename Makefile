@@ -8,6 +8,7 @@ TAILS_INCLUDE:= -I$(INSTALL_PATH)/include
 export TAILS_INCLUDE
 CHOWN_USER= amnesia:amnesia
 else
+DEV_HOME= $(HOME)/dev
 INSTALL_PATH= /usr/local
 CHOWN_USER= root:root
 endif
@@ -36,6 +37,7 @@ DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o dig
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
 			   include/digest/SHA512.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
+JNI_HEADER= include/jni/JNICLass.h
 KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
 			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
 			 keys/RSAPrivateCrtKey.o keys/RSAPrivateModKey.o \
