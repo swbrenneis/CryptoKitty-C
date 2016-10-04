@@ -1,22 +1,11 @@
-UNAME= $(shell uname)
-ifeq ($(UNAME), Darwin)
-DEV_HOME=$(HOME)/Development
-endif
-ifeq ($(UNAME), Linux)
-DEV_HOME=$(HOME)/dev
-endif
+DEV_HOME= $(HOME)/dev
 INSTALL_PATH= /usr/local
 CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
 LD= g++
 LDPATHS= -L$(DEV_HOME)/lib
 LDLIBS=  -lntl -lgmp -lcoder -lcthread
-ifeq ($(UNAME), Darwin)
-LDFLAGS= -Wall -g -dynamiclib
-endif
-ifeq ($(UNAME), Linux)
 LDFLAGS= -Wall -g -shared -Wl,--no-undefined
-endif
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
 			   cipher/PSSmgf1.o cipher/PSSrsassa.o cipher/RSA.o
@@ -36,6 +25,7 @@ DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o dig
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
 			   include/digest/SHA512.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
+JNI_HEADER= include/jni/JNICLass.h
 KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
 			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
 			 keys/RSAPrivateCrtKey.o keys/RSAPrivateModKey.o \
@@ -63,12 +53,7 @@ CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
 		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
 		  $(SIGNATURE_OBJECT)
 
-ifeq ($(UNAME), Darwin)
-LIBRARY= libcryptokitty.dylib
-endif
-ifeq ($(UNAME), Linux)
 LIBRARY= libcryptokitty.so
-endif
 
 .SUFFIXES:
 

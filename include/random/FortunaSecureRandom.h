@@ -22,7 +22,7 @@ class FortunaSecureRandom : public SecureRandom {
         static void setStandalone(bool s);
 
     private:
-        uint32_t readBytes(coder::ByteArray& bytes, uint32_t count) const;
+        uint16_t readBytes(coder::ByteArray& bytes, uint16_t count) const;
 
     private:
         static bool standalone;
