@@ -7,6 +7,7 @@
 #include "data/NanoTime.h"
 #include "cthread/Lock.h"
 #include "cthread/Mutex.h"
+#include <memory>
 #include <fstream>
 #include <cmath>
 
@@ -99,11 +100,10 @@ void FortunaGenerator::reseed(const coder::ByteArray& seed) {
         counter = 1L;
     }
     std::ofstream seedstr("fgseed", std::ios::trunc|std::ios::binary);
-    uint8_t *bytes = key.asArray();
-    char *cbuf = reinterpret_cast<char*>(bytes);
+    std::unique_ptr<uint8_t[]> bytes(key.asArray());
+    char *cbuf = reinterpret_cast<char*>(bytes.get());
     seedstr.write(cbuf, seed.getLength());
     seedstr.close();
-    delete[] bytes;
 
 }
 
