@@ -1,11 +1,12 @@
 #ifndef BLOCKCIPHER_H_INCLUDED
 #define BLOCKCIPHER_H_INCLUDED
 
+#include "../jni/JNIReference.h"
 #include "coder/ByteArray.h"
 
 namespace CK {
 
-class BlockCipher {
+class BlockCipher : public JNIReference {
 
     protected:
         BlockCipher() {}

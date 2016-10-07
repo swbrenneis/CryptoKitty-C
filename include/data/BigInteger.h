@@ -1,7 +1,7 @@
 #ifndef BIGINTEGER_H_INCLUDED
 #define BIGINTEGER_H_INCLUDED
 
-#include "jni/JNIClass.h"
+#include "jni/JNIReference.h"
 #include <coder/ByteArray.h>
 #include <deque>
 #include <iostream>
@@ -21,7 +21,7 @@ class Random;
  * It is used as a backing class for the CryptoKitty Java implementation.
  *
  */
-class BigInteger : public JNIClass {
+class BigInteger : public JNIReference {
 
     public:
         static const int LITTLEENDIAN;
