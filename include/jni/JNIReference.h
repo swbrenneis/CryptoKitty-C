@@ -11,12 +11,18 @@ namespace CK {
 class JNIReference {
 
     public:
-        JNIReference() {}
+        JNIReference() : jni(false) {}
         virtual ~JNIReference() {}
 
     private:
         JNIReference(const JNIReference& other);
         JNIReference& operator= (const JNIReference& other);
+
+    public:
+        void setJni(bool j) { jni = j; }
+
+    protected:
+        bool jni;   // Indicates this is a JNI reference implementation.
 
 };
 

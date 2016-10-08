@@ -24,7 +24,9 @@ GCM::GCM(BlockCipher *c, bool append)
 
 GCM::~GCM() {
 
-    delete cipher;
+    if (!jni) {
+        delete cipher;
+    }
 
 }
 
