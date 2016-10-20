@@ -129,4 +129,5 @@ clean:
 	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
+	cd tls && $(MAKE) clean
 
