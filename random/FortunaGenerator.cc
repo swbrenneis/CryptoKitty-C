@@ -43,7 +43,7 @@ coder::ByteArray FortunaGenerator::generateBlocks(uint16_t k) {
     coder::ByteArray r;
 
     for (unsigned i = 0; i < k; ++i) {
-        coder::ByteArray c(counter.getEncoded(BigInteger::LITTLEENDIAN));
+        coder::ByteArray c(counter.getEncoded());
         coder::ByteArray pad(16 - c.getLength(), 0);
         c.append(pad);
         if (key.getLength() > 32) {

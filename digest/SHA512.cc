@@ -219,7 +219,7 @@ coder::ByteArray SHA512:: pad(const coder::ByteArray& in) const {
     //}
     // Append the 64 bit encoded bit length
     BigInteger l128(l);
-    coder::ByteArray b128(l128.getEncoded(BigInteger::BIGENDIAN));
+    coder::ByteArray b128(l128.getEncoded());
     pad = coder::ByteArray(16 - b128.getLength());
     work.append(pad);
     work.append(b128);

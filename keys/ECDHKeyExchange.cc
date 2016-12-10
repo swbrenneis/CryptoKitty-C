@@ -37,12 +37,12 @@ static const uint8_t p256bytes[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0
                                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 const ECDHKeyExchange::CurveParams ECDHKeyExchange::SECP256R1 = {
     0,
-    BigInteger(coder::ByteArray(n256bytes, sizeof(n256bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(a256bytes, sizeof(a256bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(b256bytes, sizeof(b256bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(xg256bytes, sizeof(xg256bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(yg256bytes, sizeof(yg256bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(p256bytes, sizeof(p256bytes)), BigInteger::BIGENDIAN),
+    BigInteger(coder::ByteArray(n256bytes, sizeof(n256bytes))),
+    BigInteger(coder::ByteArray(a256bytes, sizeof(a256bytes))),
+    BigInteger(coder::ByteArray(b256bytes, sizeof(b256bytes))),
+    BigInteger(coder::ByteArray(xg256bytes, sizeof(xg256bytes))),
+    BigInteger(coder::ByteArray(yg256bytes, sizeof(yg256bytes))),
+    BigInteger(coder::ByteArray(p256bytes, sizeof(p256bytes))),
     0x01 };
 static const uint8_t n384bytes[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
                                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -82,12 +82,12 @@ static const uint8_t p384bytes[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0
                                     0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF };
 const ECDHKeyExchange::CurveParams ECDHKeyExchange::SECP384R1 = {
     0,
-    BigInteger(coder::ByteArray(n384bytes, sizeof(n384bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(a384bytes, sizeof(a384bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(b384bytes, sizeof(b384bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(xg384bytes, sizeof(xg384bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(yg384bytes, sizeof(yg384bytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(p384bytes, sizeof(p384bytes)), BigInteger::BIGENDIAN),
+    BigInteger(coder::ByteArray(n384bytes, sizeof(n384bytes))),
+    BigInteger(coder::ByteArray(a384bytes, sizeof(a384bytes))),
+    BigInteger(coder::ByteArray(b384bytes, sizeof(b384bytes))),
+    BigInteger(coder::ByteArray(xg384bytes, sizeof(xg384bytes))),
+    BigInteger(coder::ByteArray(yg384bytes, sizeof(yg384bytes))),
+    BigInteger(coder::ByteArray(p384bytes, sizeof(p384bytes))),
     0x01 };
 
 static const uint8_t p256kbytes[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -110,12 +110,12 @@ static const uint8_t n256kbytes[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 
                                     0xbf, 0xd2, 0x5e, 0x8c, 0xd0, 0x36, 0x41, 0x41 };
 const ECDHKeyExchange::CurveParams ECDHKeyExchange::SECP256K1 = {
     0,
-    BigInteger(coder::ByteArray(n256kbytes, sizeof(n256kbytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(a256kbytes, sizeof(a256kbytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(b256kbytes, sizeof(b256kbytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(xg256kbytes, sizeof(xg256kbytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(yg256kbytes, sizeof(yg256kbytes)), BigInteger::BIGENDIAN),
-    BigInteger(coder::ByteArray(p256kbytes, sizeof(p256kbytes)), BigInteger::BIGENDIAN),
+    BigInteger(coder::ByteArray(n256kbytes, sizeof(n256kbytes))),
+    BigInteger(coder::ByteArray(a256kbytes, sizeof(a256kbytes))),
+    BigInteger(coder::ByteArray(b256kbytes, sizeof(b256kbytes))),
+    BigInteger(coder::ByteArray(xg256kbytes, sizeof(xg256kbytes))),
+    BigInteger(coder::ByteArray(yg256kbytes, sizeof(yg256kbytes))),
+    BigInteger(coder::ByteArray(p256kbytes, sizeof(p256kbytes))),
     0x01 };
 
 ECDHKeyExchange::ECDHKeyExchange()
@@ -170,7 +170,7 @@ coder::ByteArray ECDHKeyExchange::elementToString(const BigInteger& e) const {
     else {
         double pDouble = p.bitLength();
         int mlen = ceil(pDouble / 8);
-        coder::ByteArray encoded(e.getEncoded(BigInteger::BIGENDIAN));
+        coder::ByteArray encoded(e.getEncoded());
         result.setLength(encoded.getLength() - mlen);
         result.append(encoded);
     }
@@ -431,7 +431,7 @@ BigInteger ECDHKeyExchange::stringToElement(const coder::ByteArray& encoded) con
         // Figure this out.
     }
     else {
-       result.decode(encoded, BigInteger::BIGENDIAN);
+       result.decode(encoded);
        if (result < BigInteger::ZERO || result >= p) {
            throw BadParameterException("Invalid element");
        }
