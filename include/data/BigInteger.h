@@ -24,8 +24,6 @@ class Random;
 class BigInteger : public JNIReference {
 
     public:
-        static const int LITTLEENDIAN;
-        static const int BIGENDIAN;
         static const BigInteger ZERO;
         static const BigInteger ONE;
 
@@ -40,7 +38,8 @@ class BigInteger : public JNIReference {
         // Constructs a BigInteger object with a value of 0 
         BigInteger();
         BigInteger(const BigInteger& other);
-        BigInteger(const coder::ByteArray& bytes, int endian);
+        // Constructs a BigInteger from a bigendian encoded byte array.
+        BigInteger(const coder::ByteArray& bytes);
         // Constructs a BigInteger object with initial value
         BigInteger(long intial);
         // Constructs a BigInteger object with a probablistic
@@ -72,7 +71,7 @@ class BigInteger : public JNIReference {
         // Returns the total number of bits
         int bitSize() const;
         // Decode a byte array
-        void decode(const coder::ByteArray& bytes, int endian);
+        void decode(const coder::ByteArray& bytes);
         // Returns a BigInteger equal to this divided by divisor.
         BigInteger divide(const BigInteger& divisor) const;
         // Returns true if this = other.
@@ -80,7 +79,7 @@ class BigInteger : public JNIReference {
         // Returns the greatest common denominator of this and a.
         BigInteger gcd(const BigInteger& a) const;
         // Returns a coder::ByteArray in the specified encoding.
-        coder::ByteArray getEncoded(int endian) const;
+        coder::ByteArray getEncoded() const;
         // Returns a BigInteger that is the bitwise inversion of this.
         BigInteger invert() const;
         // Returns a BigInteger equal to this shifted left count times.
