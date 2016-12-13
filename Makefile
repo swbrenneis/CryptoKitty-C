@@ -8,12 +8,15 @@ endif
 INSTALL_PATH= /usr/local
 CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
-LD= g++
-LDPATHS= -L$(DEV_HOME)/lib
-LDLIBS=  -lntl -lgmp -lcoder -lcthread
 ifeq ($(UNAME), Darwin)
-LDFLAGS= -Wall -g -dynamiclib
+LD= libtool
+LDFLAGS= -static
 endif
+ifeq ($(UNAME), Linux)
+LD= g++
+endif
+LDPATHS= -L$(DEV_HOME)/from_source/lib
+LDLIBS=  -lntl -lgmp -lcoder -lcthread
 ifeq ($(UNAME), Linux)
 LDFLAGS= -Wall -g -shared -Wl,--no-undefined
 endif
@@ -64,7 +67,7 @@ CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
 		  $(SIGNATURE_OBJECT)
 
 ifeq ($(UNAME), Darwin)
-LIBRARY= libcryptokitty.dylib
+LIBRARY= libcryptokitty.a
 endif
 ifeq ($(UNAME), Linux)
 LIBRARY= libcryptokitty.so
