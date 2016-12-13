@@ -25,6 +25,9 @@ DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o dig
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
 			   include/digest/SHA512.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
+ENCODING_OBJECT= encoding/PEMCodec.o encoding/Base64.o encoding/DERCodec.o
+ENCODING_HEADER= include/encoding/PEMCodec.h include/encoding/Base64.h include/encoding/DERCodec.h
+ENCODING_SOURCE= $(ENCODING_OBJECT:.o=.cc)
 JNI_HEADER= include/jni/JNIReference.h
 KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
 			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
@@ -51,9 +54,9 @@ SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
 TLS_OBJECT= tls/TLSCertificate.o tls/TLSCredentials.o tls/TLSSession.o
 TLS_HEADER= include/tls/TLSCertificate.h include/tls/TLSCredentials.h include/tls/TLSSession.h
 TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
-CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
-		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
-		  $(SIGNATURE_OBJECT) $(TLS_OBJECT)
+CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) $(DIGEST_OBJECT) \
+		  $(ENCODING_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) $(SIGNATURE_OBJECT) \
+		  $(TLS_OBJECT)
 
 LIBRARY= libcryptokitty.so
 
@@ -74,6 +77,9 @@ $(DATA_OBJECT): $(DATA_SOURCE) $(DATA_HEADER)
 
 $(DIGEST_OBJECT): $(DIGEST_SOURCE) $(DIGEST_HEADER)
 	$(MAKE) -C digest
+
+$(ENCODING_OBJECT): $(ENCODING_SOURCE) $(ENCODING_HEADER)
+	$(MAKE) -C encoding
 
 $(KEYS_OBJECT): $(KEYS_SOURCE) $(KEYS_HEADER)
 	$(MAKE) -C keys
@@ -111,6 +117,7 @@ clean:
 	cd ciphermodes && $(MAKE) clean
 	cd data && $(MAKE) clean
 	cd digest && $(MAKE) clean
+	cd encoding && $(MAKE) clean
 	cd keys && $(MAKE) clean
 	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean

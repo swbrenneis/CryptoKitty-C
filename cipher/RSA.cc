@@ -40,7 +40,15 @@ coder::ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
     //std::cout << "i2sop x = " << x << std::endl;
     coder::ByteArray work(x.getEncoded());
     if (work.getLength() > xLen) {
-        throw BadParameterException("Invalid specified length");
+        if (work[0] == 0) {
+            // BigInteger encoding places a sign byte in the LSB when necessary.
+            // It needs to be removed to make the encoded integer the specified
+            // length.
+            work = work.range(1);
+        }
+        else {
+            throw BadParameterException("Invalid specified length");
+        }
     }
     coder::ByteArray pad(xLen - work.getLength());
     pad.append(work);
