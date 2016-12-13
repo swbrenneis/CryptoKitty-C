@@ -44,6 +44,7 @@ coder::ByteArray FortunaGenerator::generateBlocks(uint16_t k) {
 
     for (unsigned i = 0; i < k; ++i) {
         coder::ByteArray c(counter.getEncoded());
+        c.flip();   // We want the counter in little-endian order.
         coder::ByteArray pad(16 - c.getLength(), 0);
         c.append(pad);
         if (key.getLength() > 32) {

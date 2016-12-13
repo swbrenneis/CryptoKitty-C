@@ -23,11 +23,14 @@ class RSAPrivateCrtKey : public RSAPrivateKey {
 
     public:
         const BigInteger& getInverse() const;
+        const BigInteger& getModulus() const { return n; }
         const BigInteger& getPrimeExponentP() const;
         const BigInteger& getPrimeExponentQ() const;
         const BigInteger& getPrimeP() const;
         const BigInteger& getPrimeQ() const;
         const BigInteger& getPrivateExponent() const { return d; }
+        void setModulus(const BigInteger& mod) { n = mod; }
+        void setPrivateExponent(const BigInteger& exp) { d = exp; }
 
     protected:
         // Decryption primitive.

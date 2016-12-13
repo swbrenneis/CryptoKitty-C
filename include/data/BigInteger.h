@@ -82,6 +82,8 @@ class BigInteger : public JNIReference {
         coder::ByteArray getEncoded() const;
         // Returns a BigInteger that is the bitwise inversion of this.
         BigInteger invert() const;
+        // Returns true if the integer is a probable prime.
+        bool isProbablePrime() const;
         // Returns a BigInteger equal to this shifted left count times.
         BigInteger leftShift(long count) const;
         // Returns true if this < other.

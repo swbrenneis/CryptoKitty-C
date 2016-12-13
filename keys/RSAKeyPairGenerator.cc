@@ -82,7 +82,10 @@ KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool 
         BigInteger dP = e.modInverse(pp);
         BigInteger dQ = e.modInverse(qq);
         BigInteger qInv = q.modInverse(p);
-        prv = new RSAPrivateCrtKey(p, q, dP, dQ, qInv);
+        RSAPrivateCrtKey *crtKey = new RSAPrivateCrtKey(p, q, dP, dQ, qInv);
+        crtKey->setModulus(n);
+        crtKey->setPrivateExponent(d);
+        prv = crtKey;
     }
     else {
         prv = new RSAPrivateModKey(n, d);

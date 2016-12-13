@@ -33,8 +33,7 @@ void makePrime(NTL::ZZ& n, bool sgPrime) {
             n += 2;
         }
     }
-    // I don't think Shoup knows that there is a bool type
-    // in C++.
+    // Not sure why ProbPrime returns an integer.
     provisional = false;
     while (!provisional) {
         provisional = NTL::ProbPrime(n, 64) == 1;
@@ -239,8 +238,7 @@ void BigInteger::decode(const coder::ByteArray& bytes) {
     int bl = bytes.getLength(); // have to do this so the indexes
                                 // don't wrap.
 
-    // Start from index 1. Byte 0 is the sign byte. Always 0.
-    for (int n = 1; n < bl; ++n) {
+    for (int n = 0; n < bl; ++n) {
         *number = *number << 8;
         *number |= bytes[n];
     }
@@ -293,7 +291,11 @@ coder::ByteArray BigInteger::getEncoded() const {
         work = work / 256;
         index --;
     }
-    result.push(0);
+    // If the MSB is set in the lowest octet, we need to add
+    // a sign byte so that the value is always positive.
+    if ((result[0] & 0x80) != 0) {
+        result.push(0);
+    }
     return result;
 
 }
@@ -309,6 +311,15 @@ BigInteger BigInteger::invert() const {
         NTL::SetBit(mask, i);
     }
     return BigInteger(new NTL::ZZ(*number ^ mask));
+
+}
+
+/*
+ * Returns true if the integer is probably prime.
+ */
+bool BigInteger::isProbablePrime() const {
+
+    return NTL::ProbPrime(*number, 64) == 1;
 
 }
 
