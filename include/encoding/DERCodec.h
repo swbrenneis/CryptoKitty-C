@@ -3,6 +3,11 @@
 
 #include <coder/ByteArray.h>
 
+namespace coder {
+    class ByteArrayInputStream;
+    class ByteArrayOutputStream;
+}
+
 namespace CK {
 
 class RSAPublicKey;
@@ -19,20 +24,29 @@ class DERCodec {
         DERCodec& operator= (const DERCodec& other);
 
     public:
-        void encodeAlgorithm(coder::ByteArray& algorithm);
-        void encodeBitString(coder::ByteArray& bitString, const coder::ByteArray& data);
-        void encodeInteger(coder::ByteArray& integer, const coder::ByteArray& data);
-        void encodeOctetString(coder::ByteArray& octetString, const coder::ByteArray& data);
-        void encodeSequence(coder::ByteArray& sequence, const coder::ByteArray& data);
-        int getBitString(const coder::ByteArray& source, coder::ByteArray& bitstring);
-        int getInteger(const coder::ByteArray& source, coder::ByteArray& integer);
-        int getOctetString(const coder::ByteArray& source, coder::ByteArray& octetstring);
-        int getSegment(const coder::ByteArray& source, coder::ByteArray& segment);
-        int getSequence(const coder::ByteArray& source, coder::ByteArray& sequence);
-        void parseAlgorithm(const coder::ByteArray& sequence);
+        void encodeAlgorithm(coder::ByteArrayOutputStream& algorithm);
+        void encodeBitString(coder::ByteArrayOutputStream& out,
+                                                        const coder::ByteArray& data);
+        void encodeInteger(coder::ByteArrayOutputStream& out,
+                                                        const coder::ByteArray& data);
+        void encodeOctetString(coder::ByteArrayOutputStream& out,
+                                                        const coder::ByteArray& data);
+        void encodeSequence(coder::ByteArrayOutputStream& out,
+                                                        const coder::ByteArray& data);
+        void getBitString(coder::ByteArrayInputStream& source, 
+                                                coder::ByteArrayOutputStream& bitstring);
+        void getInteger(coder::ByteArrayInputStream& source,
+                                                coder::ByteArrayOutputStream& integer);
+        void getOctetString(coder::ByteArrayInputStream& source,
+                                                coder::ByteArrayOutputStream& octetstring);
+        void getSegment(coder::ByteArrayInputStream& source,
+                                                coder::ByteArrayOutputStream& segment);
+        void getSequence(coder::ByteArrayInputStream& source,
+                                                coder::ByteArrayOutputStream& sequence);
+        void parseAlgorithm(coder::ByteArrayInputStream& source);
 
     private:
-        void setLength(coder::ByteArray& segment, const coder::ByteArray& data);
+        void setLength(coder::ByteArrayOutputStream& out, unsigned length);
 
     private:
         coder::ByteArray rsa_oid;

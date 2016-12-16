@@ -6,7 +6,7 @@ namespace CK {
 
 RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
                                     const BigInteger& d, const BigInteger& e)
-: RSAPrivateKey("RSA CRT"),
+: RSAPrivateKey(crt),
   p(p),
   q(q) {
 
@@ -23,7 +23,7 @@ RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
 RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
                                     const BigInteger& dp, const BigInteger& dq,
                                     const BigInteger& qi)
-: RSAPrivateKey("RSA CRT"),
+: RSAPrivateKey(crt),
   p(p),
   q(q),
   dP(dp),

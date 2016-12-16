@@ -6,9 +6,12 @@
 #include "keys/RSAPrivateCrtKey.h"
 #include "keys/RSAPrivateModKey.h"
 #include "exceptions/EncodingException.h"
+#include <coder/ByteArray.h>
+#include <coder/ByteArrayInputStream.h>
+#include <coder/ByteArrayOutputStream.h>
 #include <coder/Unsigned16.h>
 #include <coder/Unsigned32.h>
-#include <memory>
+#include <sstream>
 
 namespace CK {
 
@@ -42,191 +45,329 @@ PEMCodec::~PEMCodec() {
 
 }
 
-RSAPrivateKey *PEMCodec::decodePrivateKey(std::istream& in) {
+RSAPrivateKey *PEMCodec::decodePrivateKey(const std::string& keyString) {
 
-    std::unique_ptr<char[]> buf(new char[BUFSIZE]);
+    if (keyString.find(RSA_PRIVATE_PREAMBLE) == 0) {
+        x509Keys = false;
+    }
+    else if (keyString.find(PRIVATE_PREAMBLE) == 0) {
+        x509Keys = true;
+    }
+    else {
+        throw EncodingException("Not a PEM format private key");
+    }
 
-    // Get the preamble and key body.
-    in.getline(buf.get(), BUFSIZE);
-    std::string preamble(buf.get());
+    std::istringstream in(keyString);
     Base64 base64;
-    base64.decode(in, '-');
+    base64.decode(in);
+    coder::ByteArrayInputStream encoded(base64.getData());
 
-    setPrivateKeyType(in, preamble);
     derCodec = new DERCodec;
-    coder::ByteArray sequence;
-    int nextSeg = derCodec->getSequence(base64.getData(), sequence);
+    coder::ByteArrayOutputStream sequence;
+    derCodec->getSequence(encoded, sequence);
     // The sequence should include the whole array.
-    if (nextSeg >= 0) {
+    if (encoded.available() > 0) {
         throw EncodingException("Invalid private key encoding");
     }
 
+    coder::ByteArrayInputStream seq(sequence.toByteArray());
     if (x509Keys) {
-        return parsePrivateKey(sequence);
+        return parsePrivateKey(seq);
     }
     else {
         // The RSA key is just a sequence of integers.
-        return getPrivateKey(sequence);
+        return getPrivateKey(seq);
     }
 
 }
 
-RSAPublicKey *PEMCodec::decodePublicKey(std::istream& in) {
+RSAPublicKey *PEMCodec::decodePublicKey(const std::string& keyString) {
 
-    std::unique_ptr<char[]> buf(new char[BUFSIZE]);
+    if (keyString.find(RSA_PUBLIC_PREAMBLE) == 0) {
+        x509Keys = false;
+    }
+    else if (keyString.find(PUBLIC_PREAMBLE) == 0) {
+        x509Keys = true;
+    }
+    else {
+        throw EncodingException("Not a PEM format public key");
+    }
 
-    // Get the preamble and key body.
-    in.getline(buf.get(), BUFSIZE);
-    std::string preamble(buf.get());
+    std::istringstream in(keyString);
     Base64 base64;
-    base64.decode(in, '-');
+    base64.decode(in);
+    coder::ByteArrayInputStream encoded(base64.getData());
 
-    setPublicKeyType(in, preamble);
     derCodec = new DERCodec;
-    coder::ByteArray sequence;
-    int nextSeg = derCodec->getSequence(base64.getData(), sequence);
+    coder::ByteArrayOutputStream sequence;
+    derCodec->getSequence(encoded, sequence);
     // The sequence should include the whole array.
-    if (nextSeg >= 0) {
+    if (encoded.available() > 0) {
         throw EncodingException("Invalid public key encoding");
     }
 
+    coder::ByteArrayInputStream seq(sequence.toByteArray());
     if (x509Keys) {
-        return parsePublicKey(sequence);
+        return parsePublicKey(seq);
     }
     else {
         // The RSA key is just a sequence of integers.
-        return getPublicKey(sequence);
+        return getPublicKey(seq);
     }
 
 }
 
-void PEMCodec::encode(std::ostream& out, const RSAPublicKey& publicKey) {
+void PEMCodec::encode(std::ostream& out, const RSAPrivateKey& privateKey,
+                                        const RSAPublicKey& publicKey) {
 
-    out << PUBLIC_PREAMBLE << std::endl;
-
-    derCodec = new DERCodec;
-    coder::ByteArray n;
-    derCodec->encodeInteger(n, publicKey.getModulus().getEncoded());
-    coder::ByteArray e;
-    derCodec->encodeInteger(e, publicKey.getPublicExponent().getEncoded());
-    n.append(e);
-
-    coder::ByteArray key;
     if (x509Keys) {
-        // encode the integer sequence
-        coder::ByteArray integers;
-        derCodec->encodeSequence(integers, n);
-        coder::ByteArray bitstring;
-        derCodec->encodeBitString(bitstring, integers);
-
-        // Encode the algorithm
-        coder::ByteArray algorithm;
-        derCodec->encodeAlgorithm(algorithm);
-
-        // Append the bit string and encode the sequence
-        algorithm.append(bitstring);
-        derCodec->encodeSequence(key, algorithm);
+        out << PRIVATE_PREAMBLE << std::endl;
     }
     else {
-        // RSA key PEM is just the integer sequence.
-        derCodec->encodeSequence(key, n);
+        out << RSA_PRIVATE_PREAMBLE << std::endl;
     }
 
-    Base64 base64(key);
+    derCodec = new DERCodec;
+    coder::ByteArrayOutputStream *keyBytes = new coder::ByteArrayOutputStream;
+    if (privateKey.getKeyType() == RSAPrivateKey::mod) {
+        encodeTwoPrimeKey(*keyBytes, *dynamic_cast<const RSAPrivateModKey*>(&privateKey));
+    }
+    else if (privateKey.getKeyType() == RSAPrivateKey::crt) {
+        encodeMultiprimeKey(*keyBytes,
+                        *dynamic_cast<const RSAPrivateCrtKey*>(&privateKey), publicKey);
+    }
+    else {
+        throw EncodingException("Unknown private key type");
+    }
+
+    coder::ByteArrayOutputStream *sequence;
+    if (x509Keys ) {
+        sequence = new coder::ByteArrayOutputStream;
+        derCodec->encodeSequence(*sequence, keyBytes->toByteArray());
+        delete keyBytes;
+    }
+    else {
+        sequence = keyBytes;
+    }
+
+    Base64 base64(sequence->toByteArray());
+    delete sequence;
     base64.encode(out);
-    out << PUBLIC_EPILOGUE << std::endl;
+
+    if (x509Keys) {
+        out << PRIVATE_EPILOGUE << std::endl;
+    }
+    else {
+        out << RSA_PRIVATE_EPILOGUE << std::endl;
+    }
 
 }
 
-void PEMCodec::encode(std::ostream& out, const RSAPublicKey& publicKey,
-                                        const RSAPrivateCrtKey& privateKey) {
+void PEMCodec::encode(std::ostream& out, const RSAPublicKey& key) {
 
-    out << PRIVATE_PREAMBLE << std::endl;
+    if (x509Keys) {
+        out << PUBLIC_PREAMBLE << std::endl;
+    }
+    else {
+        out << RSA_PUBLIC_PREAMBLE << std::endl;
+    }
 
     derCodec = new DERCodec;
+    coder::ByteArrayOutputStream *keyBytes = new coder::ByteArrayOutputStream;
+    encodePublicKey(*keyBytes, key);
 
-    // Encode primes
-    coder::ByteArray primes;
+    coder::ByteArrayOutputStream *sequence;
+    if (x509Keys ) {
+        sequence= new coder::ByteArrayOutputStream();
+        derCodec->encodeSequence(*sequence, keyBytes->toByteArray());
+        delete keyBytes;
+    }
+    else {
+        sequence = keyBytes;
+    }
+
+    Base64 base64(sequence->toByteArray());
+    delete sequence;
+    base64.encode(out);
+
+    if (x509Keys) {
+        out << PUBLIC_EPILOGUE << std::endl;
+    }
+    else {
+        out << RSA_PUBLIC_EPILOGUE << std::endl;
+    }
+
+}
+
+void PEMCodec::encodeMultiprimeKey(coder::ByteArrayOutputStream& out,
+                                                const RSAPrivateCrtKey& privateKey,
+                                                const RSAPublicKey& publicKey) {
+
+    coder::ByteArrayOutputStream primes;
     derCodec->encodeInteger(primes, MULTIPRIME_VERSION);
-    encodePrimes(primes, publicKey, privateKey);
+    encodePrimes(primes, privateKey, publicKey);
 
-    coder::ByteArray key;
     if (x509Keys) {
-        // encode the integer sequence
-        coder::ByteArray integers;
-        derCodec->encodeSequence(integers, primes);
-        coder::ByteArray octetstring;
-        derCodec->encodeOctetString(octetstring, integers);
-
-        coder::ByteArray version;
-        derCodec->encodeInteger(version, MULTIPRIME_VERSION);
-
-        // Encode the algorithm and append to version.
-        coder::ByteArray algorithm;
-        derCodec->encodeAlgorithm(algorithm);
-        version.append(algorithm);
-
-        // Append the bit string and encode the sequence
-        version.append(octetstring);
-        derCodec->encodeSequence(key, version);
+        derCodec->encodeInteger(out, MULTIPRIME_VERSION);
+        derCodec->encodeAlgorithm(out);
+        coder::ByteArrayOutputStream primeSeq;
+        derCodec->encodeSequence(primeSeq, primes.toByteArray());
+        derCodec->encodeOctetString(out, primeSeq.toByteArray());
     }
     else {
-        // RSA key PEM is just the integer sequence.
-        derCodec->encodeSequence(key, primes);
+        out.write(primes.toByteArray());
     }
 
-    Base64 base64(key);
-    base64.encode(out);
-    out << PRIVATE_EPILOGUE << std::endl;
+}
+
+void PEMCodec::encodePrimes(coder::ByteArrayOutputStream& out,
+                                                const RSAPrivateCrtKey& privateKey,
+                                                const RSAPublicKey& publicKey) {
+
+    derCodec->encodeInteger(out, privateKey.getModulus().getEncoded());
+    derCodec->encodeInteger(out, publicKey.getPublicExponent().getEncoded());
+    derCodec->encodeInteger(out, privateKey.getPrivateExponent().getEncoded());
+    derCodec->encodeInteger(out, privateKey.getPrimeP().getEncoded());
+    derCodec->encodeInteger(out, privateKey.getPrimeQ().getEncoded());
+    derCodec->encodeInteger(out, privateKey.getPrimeExponentP().getEncoded());
+    derCodec->encodeInteger(out, privateKey.getPrimeExponentQ().getEncoded());
+    derCodec->encodeInteger(out, privateKey.getInverse().getEncoded());
 
 }
 
-void PEMCodec::encodePrimes(coder::ByteArray& primes, const RSAPublicKey& publicKey,
-                                                        const RSAPrivateCrtKey& privateKey) {
-    // Modulus.
-    coder::ByteArray n;
-    derCodec->encodeInteger(n, publicKey.getModulus().getEncoded());
-    primes.append(n);
+void PEMCodec::encodePrimes(coder::ByteArrayOutputStream& out,
+                                                const RSAPrivateModKey& key) {
 
-    // Public exponent.
-    coder::ByteArray e;
-    derCodec->encodeInteger(e, publicKey.getPublicExponent().getEncoded());
-    primes.append(e);
-
-    // Private exponent.
-    coder::ByteArray d;
-    derCodec->encodeInteger(d, privateKey.getPrivateExponent().getEncoded());
-    primes.append(d);
-
-    // First prime
-    coder::ByteArray p;
-    derCodec->encodeInteger(p, privateKey.getPrimeP().getEncoded());
-    primes.append(p);
-
-    // Second prime
-    coder::ByteArray q;
-    derCodec->encodeInteger(q, privateKey.getPrimeQ().getEncoded());
-    primes.append(q);
-
-    // First prime exponent
-    coder::ByteArray expp;
-    derCodec->encodeInteger(expp, privateKey.getPrimeExponentP().getEncoded());
-    primes.append(expp);
-
-    // Second prime exponent
-    coder::ByteArray expq;
-    derCodec->encodeInteger(expq, privateKey.getPrimeExponentQ().getEncoded());
-    primes.append(expq);
-
-    // Coefficient
-    coder::ByteArray coeff;
-    derCodec->encodeInteger(coeff, privateKey.getInverse().getEncoded());
-    primes.append(coeff);
+    derCodec->encodeInteger(out, key.getModulus().getEncoded());
+    derCodec->encodeInteger(out, key.getPrivateExponent().getEncoded());
 
 }
 
-RSAPrivateKey *PEMCodec::getPrivateKey(const coder::ByteArray& key) {
+void PEMCodec::encodePublicKey(coder::ByteArrayOutputStream& out,
+                                                const RSAPublicKey& key) {
 
+    coder::ByteArrayOutputStream primes;
+    derCodec->encodeInteger(primes, key.getModulus().getEncoded());
+    derCodec->encodeInteger(primes, key.getPublicExponent().getEncoded());
+
+    if (x509Keys) {
+        derCodec->encodeAlgorithm(out);
+        coder::ByteArrayOutputStream primeSeq;
+        derCodec->encodeSequence(primeSeq, primes.toByteArray());
+        coder::ByteArrayOutputStream bitstring;
+        derCodec->encodeBitString(bitstring, primeSeq.toByteArray());
+        out.write(bitstring.toByteArray());
+    }
+    else {
+        out.write(primes.toByteArray());
+    }
+
+}
+
+void PEMCodec::encodeTwoPrimeKey(coder::ByteArrayOutputStream& out,
+                                                const RSAPrivateModKey& key) {
+
+    coder::ByteArrayOutputStream primes;
+    derCodec->encodeInteger(primes, TWO_PRIME_VERSION);
+    encodePrimes(primes, key);
+
+    if (x509Keys) {
+        derCodec->encodeInteger(out, TWO_PRIME_VERSION);
+        derCodec->encodeAlgorithm(out);
+        coder::ByteArrayOutputStream primeSeq;
+        derCodec->encodeSequence(primeSeq, primes.toByteArray());
+        derCodec->encodeOctetString(out, primeSeq.toByteArray());
+    }
+    else {
+        out.write(primes.toByteArray());
+    }
+}
+
+RSAPrivateKey *PEMCodec::getPrivateKey(coder::ByteArrayInputStream& key) {
+
+    coder::ByteArrayOutputStream version;
+    derCodec->getInteger(key, version);        
+    if (key.available() == 0) {
+        throw EncodingException("Invalid private key encoding");
+    }
+    coder::ByteArray vBytes(version.toByteArray());
+
+    coder::ByteArrayOutputStream nBytes;
+    derCodec->getInteger(key, nBytes);
+    if (key.available() == 0) {
+        throw EncodingException("Invalid private key encoding");
+    }
+    BigInteger n(nBytes.toByteArray());
+
+    if (vBytes[0] == TWO_PRIME_VERSION[0]) {
+        coder::ByteArrayOutputStream dBytes;
+        derCodec->getInteger(key, dBytes);
+        if (key.available() != 0) {
+            throw EncodingException("Invalid private key encoding");
+        }
+        BigInteger d(dBytes.toByteArray());
+        return new RSAPrivateModKey(n, d);
+    }
+    else if (vBytes[0] == MULTIPRIME_VERSION[0]) {
+        coder::ByteArrayOutputStream eBytes;
+        derCodec->getInteger(key, eBytes);
+        if (key.available() == 0) {
+            throw EncodingException("Invalid private key encoding");
+        }
+        BigInteger e(eBytes.toByteArray());
+
+        coder::ByteArrayOutputStream dBytes;
+        derCodec->getInteger(key, dBytes);
+        if (key.available() == 0) {
+            throw EncodingException("Invalid private key encoding");
+        }
+        BigInteger d(dBytes.toByteArray());
+
+        coder::ByteArrayOutputStream pBytes;
+        derCodec->getInteger(key, pBytes);
+        if (key.available() == 0) {
+            throw EncodingException("Invalid private key encoding");
+        }
+        BigInteger p(pBytes.toByteArray());
+
+        coder::ByteArrayOutputStream qBytes;
+        derCodec->getInteger(key, qBytes);
+        if (key.available() == 0) {
+            throw EncodingException("Invalid private key encoding");
+        }
+        BigInteger q(qBytes.toByteArray());
+
+        coder::ByteArrayOutputStream ppBytes;
+        derCodec->getInteger(key, ppBytes);
+        if (key.available() == 0) {
+            throw EncodingException("Invalid private key encoding");
+        }
+        BigInteger expp(ppBytes.toByteArray());
+
+        coder::ByteArrayOutputStream qqBytes;
+        derCodec->getInteger(key, qqBytes);
+        if (key.available() == 0) {
+            throw EncodingException("Invalid private key encoding");
+        }
+        BigInteger expq(qqBytes.toByteArray());
+
+        coder::ByteArrayOutputStream cBytes;
+        derCodec->getInteger(key, cBytes);
+        if (key.available() != 0) {
+            throw EncodingException("Invalid private key encoding");
+        }
+        BigInteger coeff(cBytes.toByteArray());
+        RSAPrivateCrtKey *k = new RSAPrivateCrtKey(p, q, expp, expq, coeff);
+        k->setPrivateExponent(d);
+        k->setModulus(n);
+        return k;
+    }
+    else {
+        throw EncodingException("Invalid private key encoding");
+    }
+
+}
+/*
     coder::ByteArray version;
     int nextSeg = derCodec->getInteger(key, version);
     if (nextSeg < 0) {
@@ -302,125 +443,95 @@ RSAPrivateKey *PEMCodec::getPrivateKey(const coder::ByteArray& key) {
     }
 
 }
+*/
+RSAPublicKey *PEMCodec::getPublicKey(coder::ByteArrayInputStream& key) {
 
-RSAPublicKey *PEMCodec::getPublicKey(const coder::ByteArray& key) {
-
-    coder::ByteArray n;
-    int nextSeg = derCodec->getInteger(key, n);
-    if (nextSeg < 0) {
-        throw EncodingException("Invalid public key encoding");
-    }
-    coder::ByteArray e;
-    nextSeg = derCodec->getInteger(key.range(nextSeg), e);
-    if (nextSeg >= 0) {
-        // Extra stuff in the sequence. Suspicious.
-        throw EncodingException("Invalid public key encoding");
-    }
-    return new RSAPublicKey(BigInteger(n), BigInteger(e));
-
-}
-
-RSAPrivateKey *PEMCodec::parsePrivateKey(const coder::ByteArray& key) {
-
-    coder::ByteArray version;
-    int nextSeg = derCodec->getInteger(key, version);
-    if (nextSeg < 0) {
+    coder::ByteArrayOutputStream nBytes;
+    derCodec->getInteger(key, nBytes);
+    if (key.available() == 0) {
         throw EncodingException("Invalid private key encoding");
     }
-    coder::ByteArray algorithm;
-    int segLength = derCodec->getSequence(key.range(nextSeg), algorithm);
-    if (segLength < 0) {
+    BigInteger n(nBytes.toByteArray());
+
+    coder::ByteArrayOutputStream eBytes;
+    derCodec->getInteger(key, eBytes);
+    if (key.available() == 0) {
         throw EncodingException("Invalid private key encoding");
     }
-    // There is no useful data in here. We just parse it for errors.
-    derCodec->parseAlgorithm(algorithm);
+    BigInteger e(eBytes.toByteArray());
 
-    nextSeg += segLength;
-    // The key integers are inside of a bit string.
-    coder::ByteArray octetstring;
-    segLength = derCodec->getOctetString(key.range(nextSeg), octetstring);
-    if (segLength >= 0) {
-        // Training stuff et the end of the key. Suspicious!
+    return new RSAPublicKey(n, e);
+
+}
+
+RSAPrivateKey *PEMCodec::parsePrivateKey(coder::ByteArrayInputStream& key) {
+
+    coder::ByteArrayOutputStream version;
+    derCodec->getInteger(key, version);        
+    if (key.available() == 0) {
         throw EncodingException("Invalid private key encoding");
     }
-    coder::ByteArray sequence;
-    derCodec->getSequence(octetstring, sequence);
-    return getPrivateKey(sequence);
+
+    coder::ByteArrayOutputStream algorithm;
+    derCodec->getSequence(key, algorithm);        
+    if (key.available() == 0) {
+        throw EncodingException("Invalid private key encoding");
+    }
+
+    // Nothing useful in this sequence. Parsing for errors only.
+    coder::ByteArrayInputStream alg(algorithm.toByteArray());
+    derCodec->parseAlgorithm(alg);
+
+    coder::ByteArrayOutputStream octetString;
+    derCodec->getOctetString(key, octetString);
+    if (key.available() != 0) {
+        // Stuff after the end of the string. Suspicious!
+        throw EncodingException("Invalid private key encoding");
+    }
+
+    coder::ByteArrayOutputStream sequence;
+    coder::ByteArrayInputStream octets(octetString.toByteArray());
+    derCodec->getSequence(octets, sequence);
+    if (key.available() != 0) {
+        // Stuff after the end of the sequence. Suspicious!
+        throw EncodingException("Invalid private key encoding");
+    }
+
+    coder::ByteArrayInputStream keyStream(sequence.toByteArray());
+    return getPrivateKey(keyStream);
 
 }
 
-RSAPublicKey *PEMCodec::parsePublicKey(const coder::ByteArray& key) {
+RSAPublicKey *PEMCodec::parsePublicKey(coder::ByteArrayInputStream& key) {
 
-    coder::ByteArray algorithm;
-    int nextSeg = derCodec->getSequence(key, algorithm);
-    if (nextSeg < 0) {
+    coder::ByteArrayOutputStream algorithm;
+    derCodec->getSequence(key, algorithm);        
+    if (key.available() == 0) {
         throw EncodingException("Invalid public key encoding");
     }
-    // There is no useful data in here. We just parse it for errors.
-    derCodec->parseAlgorithm(algorithm);
 
-    // The key integers are inside of a bit string.
-    coder::ByteArray bitstring;
-    int segLength = derCodec->getBitString(key.range(nextSeg), bitstring);
-    if (segLength >= 0 || bitstring[0] != 0) {
-        // The leading null separates the elements of the bitstring.
+    // Nothing useful in this sequence. Parsing for errors only.
+    coder::ByteArrayInputStream alg(algorithm.toByteArray());
+    derCodec->parseAlgorithm(alg);
+
+    coder::ByteArrayOutputStream bitString;
+    derCodec->getBitString(key, bitString);
+    coder::ByteArray bitBytes(bitString.toByteArray());
+    if (key.available() != 0 || bitBytes[0] != 0) {
+        // The first byte in the bit string segment indicates an independent element.
         throw EncodingException("Invalid public key encoding");
     }
-    coder::ByteArray sequence;
-    derCodec->getSequence(bitstring.range(1), sequence);
-    return getPublicKey(sequence);
 
-}
-
-void PEMCodec::setPrivateKeyType(std::istream& in, const std::string& preamble) {
-
-    std::unique_ptr<char[]> buf(new char[BUFSIZE]);
-    x509Keys = false;
-    if (preamble == RSA_PRIVATE_PREAMBLE) {
-        // Decode an RSA private key PEM stream.
-        in.getline(buf.get(), BUFSIZE);
-        if (std::string(buf.get()) != RSA_PRIVATE_EPILOGUE) {
-            throw EncodingException("Invalid RSA epilogue");
-        }
-    }
-    else if (preamble == PRIVATE_PREAMBLE) {
-        // Decode a generic private key PEM stream.
-        in.getline(buf.get(), BUFSIZE);
-        if (std::string(buf.get()) != PRIVATE_EPILOGUE) {
-            throw EncodingException("Invalid private key epilogue");
-        }
-        x509Keys = true;
-    }
-    else {
-        // Invalid Stream
-        throw EncodingException("Invalid private key preamble");
+    coder::ByteArrayOutputStream sequence;
+    coder::ByteArrayInputStream bits(bitBytes.range(1));
+    derCodec->getSequence(bits, sequence);
+    if (key.available() != 0) {
+        // Stuff after the end of the sequence. Suspicious!
+        throw EncodingException("Invalid public key encoding");
     }
 
-}
-
-void PEMCodec::setPublicKeyType(std::istream& in, const std::string& preamble) {
-
-    std::unique_ptr<char[]> buf(new char[BUFSIZE]);
-    x509Keys = false;
-    if (preamble == RSA_PUBLIC_PREAMBLE) {
-        // Decode an RSA public key PEM stream.
-        in.getline(buf.get(), BUFSIZE);
-        if (std::string(buf.get()) != RSA_PUBLIC_EPILOGUE) {
-            throw EncodingException("Invalid RSA epilogue");
-        }
-    }
-    else if (preamble == PUBLIC_PREAMBLE) {
-        // Decode a generic public key PEM stream.
-        in.getline(buf.get(), BUFSIZE);
-        if (std::string(buf.get()) != PUBLIC_EPILOGUE) {
-            throw EncodingException("Invalid public key epilogue");
-        }
-        x509Keys = true;
-    }
-    else {
-        // Invalid Stream
-        throw EncodingException("Invalid public key preamble");
-    }
+    coder::ByteArrayInputStream keyStream(sequence.toByteArray());
+    return getPublicKey(keyStream);
 
 }
 

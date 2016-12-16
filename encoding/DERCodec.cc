@@ -4,6 +4,8 @@
 #include "keys/RSAPrivateCrtKey.h"
 #include <coder/Unsigned16.h>
 #include <coder/Unsigned32.h>
+#include <coder/ByteArrayInputStream.h>
+#include <coder/ByteArrayOutputStream.h>
 
 namespace CK {
 
@@ -26,80 +28,83 @@ DERCodec::DERCodec()
 DERCodec::~DERCodec() {
 }
 
-void DERCodec::encodeAlgorithm(coder::ByteArray& algorithm) {
+void DERCodec::encodeAlgorithm(coder::ByteArrayOutputStream& out) {
 
-    coder::ByteArray adata(rsa_oid);
-    adata.append(der_null);
-    encodeSequence(algorithm, adata);
-
-}
-
-void DERCodec::encodeBitString(coder::ByteArray& bitstring, const coder::ByteArray& data) {
-
-    bitstring.append(BIT_STRING_TAG);
-    coder::ByteArray bitdata;
-    bitdata.append(0);          // Null to indicate bitstring element.
-    bitdata.append(data);
-    setLength(bitstring, bitdata);
-    bitstring.append(bitdata);
+    coder::ByteArrayOutputStream algorithm;
+    algorithm.write(coder::ByteArray(RSA_OID, OID_LENGTH));
+    algorithm.write(coder::ByteArray(DER_NULL, 2));
+    encodeSequence(out, algorithm.toByteArray());
 
 }
 
-void DERCodec::encodeInteger(coder::ByteArray& integer, const coder::ByteArray& data) {
+void DERCodec::encodeBitString(coder::ByteArrayOutputStream& out, const coder::ByteArray& bits) {
 
-    integer.append(INTEGER_TAG);
-    setLength(integer, data);
-    integer.append(data);
-
-}
-
-void DERCodec::encodeOctetString(coder::ByteArray& octetstring, const coder::ByteArray& data) {
-
-    octetstring.append(OCTET_STRING_TAG);
-    setLength(octetstring, data);
-    octetstring.append(data);
+    out.write(BIT_STRING_TAG);
+    setLength(out, bits.getLength() + 1);
+    out.write(0);
+    out.write(bits);
 
 }
 
-void DERCodec::encodeSequence(coder::ByteArray& sequence, const coder::ByteArray& data) {
+void DERCodec::encodeInteger(coder::ByteArrayOutputStream& out, const coder::ByteArray& integer) {
 
-    sequence.append(SEQUENCE_TAG);
-    setLength(sequence, data);
-    sequence.append(data);
+    out.write(INTEGER_TAG);
+    setLength(out, integer.getLength());
+    out.write(integer);
 
 }
 
-int DERCodec::getBitString(const coder::ByteArray& source, coder::ByteArray& bitstring) {
+void DERCodec::encodeOctetString(coder::ByteArrayOutputStream& out, const coder::ByteArray& octetstring) {
 
-    if (source[0] != BIT_STRING_TAG) {
+    out.write(OCTET_STRING_TAG);
+    setLength(out, octetstring.getLength());
+    out.write(octetstring);
+
+}
+
+void DERCodec::encodeSequence(coder::ByteArrayOutputStream& out, const coder::ByteArray& sequence) {
+
+    out.write(SEQUENCE_TAG);
+    setLength(out, sequence.getLength());
+    out.write(sequence);
+
+}
+
+void DERCodec::getBitString(coder::ByteArrayInputStream& source,
+                                                coder::ByteArrayOutputStream& bitstring) {
+
+    if (source.read() != BIT_STRING_TAG) {
         throw EncodingException("Not a bit string");
     }
 
-    return getSegment(source, bitstring);
+    getSegment(source, bitstring);
 
 }
 
-int DERCodec::getInteger(const coder::ByteArray& source, coder::ByteArray& integer) {
+void DERCodec::getInteger(coder::ByteArrayInputStream& source,
+                                                coder::ByteArrayOutputStream& integer) {
 
-    if (source[0] != INTEGER_TAG) {
+    if (source.read() != INTEGER_TAG) {
         throw EncodingException("Not an integer");
     }
 
-    return getSegment(source, integer);
+    getSegment(source, integer);
 
 }
 
-int DERCodec::getOctetString(const coder::ByteArray& source, coder::ByteArray& octetstring) {
+void DERCodec::getOctetString(coder::ByteArrayInputStream& source,
+                                                coder::ByteArrayOutputStream& octetstring) {
 
-    if (source[0] != OCTET_STRING_TAG) {
+    if (source.read() != OCTET_STRING_TAG) {
         throw EncodingException("Not an octet string");
     }
 
-    return getSegment(source, octetstring);
+    getSegment(source, octetstring);
 
 }
 
-int DERCodec::getSegment(const coder::ByteArray& source, coder::ByteArray& segment) {
+void DERCodec::getSegment(coder::ByteArrayInputStream& source,
+                                                coder::ByteArrayOutputStream& segment) {
 
     // The first byte is the tag.
     // BER/DER length encoding:
@@ -107,74 +112,71 @@ int DERCodec::getSegment(const coder::ByteArray& source, coder::ByteArray& segme
     // It MSB is set, lower 7 bits contant number of bytes containing the length.
     // Length is always expressed in the minimum number of bytes.
     uint32_t length;
-    uint32_t index = 2;
-    if (source[1] > 0x80) {
-        uint32_t lengthSize = source[1] & 0x7f;
+    int indicator = source.read();
+    if ((indicator & 0x80) != 0) {
+        uint32_t lengthSize = indicator & 0x7f;
+        coder::ByteArray lBytes(lengthSize, 0);
+        source.read(lBytes);
         if (lengthSize == 2) {
-            coder::Unsigned16 u16(source.range(2, 2), coder::bigendian);
+            coder::Unsigned16 u16(lBytes, coder::bigendian);
             length = u16.getValue();
         }
-        else if (lengthSize < 5) {
-            coder::ByteArray lBytes(4, 0);
-            // lengthSize will be 3 or 4.
-            lBytes.copy(4 - lengthSize, source.range(1, lengthSize), 0);
+        else {
             coder::Unsigned32 u32(lBytes, coder::bigendian);
             length = u32.getValue();
         }
-        index += lengthSize;
     }
     else {
-        length = source[1];
-    }
-    // No buffer overruns please.
-    if (index + length > source.getLength()) {
-        throw EncodingException("Invalid segment length");
+        length = indicator;
     }
 
-    segment.append(source.range(index, length));
-    int segLength = index + length;
-    if (segLength >= static_cast<int>(source.getLength())) {
-        segLength = -1;
-    }
-    return segLength;
+    // Read the segment
+    coder::ByteArray segBytes(length, 0);
+    source.read(segBytes);
+    segment.write(segBytes);
 
 }
 
-int DERCodec::getSequence(const coder::ByteArray& source, coder::ByteArray& sequence) {
+void DERCodec::getSequence(coder::ByteArrayInputStream& source,
+                                            coder::ByteArrayOutputStream& sequence) {
 
-    if (source[0] != SEQUENCE_TAG) {
+    if (source.read() != SEQUENCE_TAG) {
         throw EncodingException("Not a sequence");
     }
 
-    return getSegment(source, sequence);
+    getSegment(source, sequence);
 
 }
 
-void DERCodec::parseAlgorithm(const coder::ByteArray& sequence) {
+void DERCodec::parseAlgorithm(coder::ByteArrayInputStream& source) {
 
-    if (sequence[0] != OID_TAG) {
+    if (source.read() != OID_TAG) {
         throw EncodingException("Invalid algorithm encoding");
     }
 
-    coder::ByteArray oid;
-    int nextSeg = getSegment(sequence, oid);
-    if (nextSeg < 0 || sequence[nextSeg] != NULL_TAG || sequence[nextSeg+1] != 0) {
+    coder::ByteArrayOutputStream oid;
+    getSegment(source, oid);
+    if (source.available() == 0) {
+        throw EncodingException("Invalid algorithm encoding");
+    }
+
+    int nullTag = source.read();
+    int nullValue = source.read();
+    if (nullTag != NULL_TAG || nullValue != 0) {
         throw EncodingException("Invalid algorithm encoding");
     }
 
 }
 
-void DERCodec::setLength(coder::ByteArray& segment, const coder::ByteArray& data) {
-
-    uint32_t length = data.getLength();
+void DERCodec::setLength(coder::ByteArrayOutputStream& out, unsigned length) {
 
     if (length <= 127) {
-        segment.append(length & 0x7f);
+        out.write(length);
     }
     else {      //  For now, there shouldn't be an integer length greater than 16 bits.
-        segment.append(0x82);
+        out.write(0x82);
         coder::Unsigned16 u16(length);
-        segment.append(u16.getEncoded(coder::bigendian));
+        out.write(u16.getEncoded(coder::bigendian));
     }
 
 }

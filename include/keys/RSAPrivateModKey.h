@@ -18,8 +18,8 @@ class RSAPrivateModKey : public RSAPrivateKey {
         ~RSAPrivateModKey();
 
     public:
-        const BigInteger& getPrivateExponent() const;
-        const BigInteger& getModulus() const;
+        const BigInteger& getPrivateExponent() const { return prvExp; }
+        const BigInteger& getModulus() const { return mod; }
 
     protected:
         // Decryption primitive.

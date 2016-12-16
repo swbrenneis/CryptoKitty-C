@@ -8,11 +8,14 @@ namespace CK {
 
 class RSAPrivateKey : public PrivateKey {
 
+    public:
+        enum KeyType { crt, mod };
+
     private:
         RSAPrivateKey();
 
     protected:
-       RSAPrivateKey(const std::string& alg);
+        RSAPrivateKey(KeyType keyType);
 
     public:
         virtual ~RSAPrivateKey();
@@ -22,7 +25,8 @@ class RSAPrivateKey : public PrivateKey {
         RSAPrivateKey& operator=(const RSAPrivateKey& other);
 
     public:
-        virtual int getBitLength() const;
+        virtual int getBitLength() const { return bitLength; }
+        virtual KeyType getKeyType() const { return keyType; }
 
     protected:
         friend class PKCS1rsassa;
@@ -35,6 +39,9 @@ class RSAPrivateKey : public PrivateKey {
 
     protected:
         int bitLength;
+
+    private:
+        KeyType keyType;
 
 };
 
