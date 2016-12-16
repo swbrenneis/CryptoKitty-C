@@ -27,8 +27,6 @@ static const std::string PRIVATE_EPILOGUE("-----END PRIVATE KEY-----");
 static const coder::ByteArray TWO_PRIME_VERSION(1, 0);
 static const coder::ByteArray MULTIPRIME_VERSION(1, 1);
 
-static const int BUFSIZE = 100;
-
 PEMCodec::PEMCodec()
 : x509Keys(false),
   derCodec(0) {
