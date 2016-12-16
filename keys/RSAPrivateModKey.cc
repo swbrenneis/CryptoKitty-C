@@ -5,7 +5,7 @@ namespace CK {
 
 RSAPrivateModKey::RSAPrivateModKey(const BigInteger& d,
                 const BigInteger& n)
-: RSAPrivateKey("RSA Modulus"),
+: RSAPrivateKey(KeyType::mod),
   prvExp(d),
   mod(n) {
 

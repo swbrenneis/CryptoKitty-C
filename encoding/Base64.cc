@@ -1,4 +1,5 @@
 #include "encoding/Base64.h"
+#include "exceptions/EncodingException.h"
 #include <algorithm>
 #include <memory>
 #include <cstring>
@@ -9,17 +10,19 @@ static const std::string
     ALPHABET("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
 static const int BUFSIZE = 100;
 
-Base64::Base64() {
+Base64::Base64()
+: pem(false) {
 }
 
 Base64::Base64(const coder::ByteArray& d)
-: data(d) {
+: pem(false),
+  data(d) {
 }
 
 Base64::~Base64() {
 }
 
-void Base64::decode(std::istream& in, char stop) {
+void Base64::decode(std::istream& in) {
 
     data.clear();
 
@@ -27,13 +30,17 @@ void Base64::decode(std::istream& in, char stop) {
     char quartet[4];
     uint8_t triplet[3];
 
-    bool stopped = false;
-    while (!in.eof() && !stopped) {
-        int pos = in.tellg();
+    in.getline(buf.get(), BUFSIZE);
+    if (*(buf.get()) == '-') {
+        pem = true;
         in.getline(buf.get(), BUFSIZE);
-        if (*(buf.get()) == stop) {
-            in.seekg(pos);
-            stopped = true;
+    }
+    while (!in.eof()) {
+        in.getline(buf.get(), BUFSIZE);
+        if (*(buf.get()) == '-') {
+            if (!pem) {
+                throw EncodingException("Illegal base 64 value");
+            }
         }
         else {
             int length = strlen(buf.get());

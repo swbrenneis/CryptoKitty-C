@@ -18,7 +18,7 @@ class Base64 {
         Base64& operator= (const Base64& other);
 
     public:
-        void decode(std::istream& in, char stop);
+        void decode(std::istream& in);
         void encode(std::ostream& out);
         const coder::ByteArray& getData() const { return data; }
 
@@ -27,6 +27,7 @@ class Base64 {
         void encodeTriplet(uint8_t *content, int tsize, char *b64);
 
     private:
+        bool pem;
         coder::ByteArray data;
 
 };
