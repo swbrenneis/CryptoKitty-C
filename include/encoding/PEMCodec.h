@@ -32,6 +32,7 @@ class PEMCodec {
 
     public:
         RSAPrivateKey *decodePrivateKey(const std::string& keyString);
+        RSAPublicKey *decodePublicFromPrivate(const std::string& keyString);
         RSAPublicKey *decodePublicKey(const std::string& keyString);
         void encode(std::ostream& out, const RSAPublicKey& key);
         void encode(std::ostream& out, const RSAPrivateKey& privateKey,
@@ -51,8 +52,10 @@ class PEMCodec {
         void encodeTwoPrimeKey(coder::ByteArrayOutputStream& out,
                                                     const RSAPrivateModKey& privateKey);
         RSAPrivateKey *getPrivateKey(coder::ByteArrayInputStream& key);
+        RSAPublicKey *getPublicFromPrivate(coder::ByteArrayInputStream& key);
         RSAPublicKey *getPublicKey(coder::ByteArrayInputStream& key);
         RSAPrivateKey *parsePrivateKey(coder::ByteArrayInputStream& key);
+        RSAPublicKey *parsePublicFromPrivate(coder::ByteArrayInputStream& key);
         RSAPublicKey *parsePublicKey(coder::ByteArrayInputStream& key);
 
     private:
