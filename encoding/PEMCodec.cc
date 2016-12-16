@@ -81,6 +81,42 @@ RSAPrivateKey *PEMCodec::decodePrivateKey(const std::string& keyString) {
 
 }
 
+RSAPublicKey *PEMCodec::decodePublicFromPrivate(const std::string& keyString) {
+
+    if (keyString.find(RSA_PRIVATE_PREAMBLE) == 0) {
+        x509Keys = false;
+    }
+    else if (keyString.find(PRIVATE_PREAMBLE) == 0) {
+        x509Keys = true;
+    }
+    else {
+        throw EncodingException("Not a PEM format private key");
+    }
+
+    std::istringstream in(keyString);
+    Base64 base64;
+    base64.decode(in);
+    coder::ByteArrayInputStream encoded(base64.getData());
+
+    derCodec = new DERCodec;
+    coder::ByteArrayOutputStream sequence;
+    derCodec->getSequence(encoded, sequence);
+    // The sequence should include the whole array.
+    if (encoded.available() > 0) {
+        throw EncodingException("Invalid private key encoding");
+    }
+
+    coder::ByteArrayInputStream seq(sequence.toByteArray());
+    if (x509Keys) {
+        return parsePublicFromPrivate(seq);
+    }
+    else {
+        // The RSA key is just a sequence of integers.
+        return getPublicFromPrivate(seq);
+    }
+
+}
+
 RSAPublicKey *PEMCodec::decodePublicKey(const std::string& keyString) {
 
     if (keyString.find(RSA_PUBLIC_PREAMBLE) == 0) {
@@ -367,83 +403,41 @@ RSAPrivateKey *PEMCodec::getPrivateKey(coder::ByteArrayInputStream& key) {
     }
 
 }
-/*
-    coder::ByteArray version;
-    int nextSeg = derCodec->getInteger(key, version);
-    if (nextSeg < 0) {
-        throw EncodingException("Invalid private key encoding");
-    }
-    coder::ByteArray n;
-    int segLength = derCodec->getInteger(key.range(nextSeg), n);
-    if (segLength < 0) {
-        throw EncodingException("Invalid private key encoding");
-    }
-    nextSeg += segLength;
 
-    if (version[0] == TWO_PRIME_VERSION[0]) {
-        coder::ByteArray d;
-        segLength = derCodec->getInteger(key.range(nextSeg), d);
-        if (segLength >= 0) {
-            // Extra stuff in the sequence. Suspicious.
-            throw EncodingException("Invalid private key encoding");
-        }
-        return new RSAPrivateModKey(BigInteger(n), BigInteger(d));
+RSAPublicKey *PEMCodec::getPublicFromPrivate(coder::ByteArrayInputStream& key) {
+
+    coder::ByteArrayOutputStream version;
+    derCodec->getInteger(key, version);        
+    if (key.available() == 0) {
+        throw EncodingException("Invalid private key encoding");
     }
-    else if (version[0] == MULTIPRIME_VERSION[0]) {
-        coder::ByteArray e;
-        segLength = derCodec->getInteger(key.range(nextSeg), e);
-        if (segLength < 0) {
+    coder::ByteArray vBytes(version.toByteArray());
+
+    coder::ByteArrayOutputStream nBytes;
+    derCodec->getInteger(key, nBytes);
+    if (key.available() == 0) {
+        throw EncodingException("Invalid private key encoding");
+    }
+    BigInteger n(nBytes.toByteArray());
+
+    if (vBytes[0] == TWO_PRIME_VERSION[0]) {
+        throw EncodingException("Unable to extract a public key from this encoding");
+    }
+    else if (vBytes[0] == MULTIPRIME_VERSION[0]) {
+        coder::ByteArrayOutputStream eBytes;
+        derCodec->getInteger(key, eBytes);
+        if (key.available() == 0) {
             throw EncodingException("Invalid private key encoding");
         }
-        nextSeg += segLength;
-        coder::ByteArray d;
-        segLength = derCodec->getInteger(key.range(nextSeg), d);
-        if (segLength < 0) {
-            throw EncodingException("Invalid private key encoding");
-        }
-        nextSeg += segLength;
-        coder::ByteArray p;
-        segLength = derCodec->getInteger(key.range(nextSeg), p);
-        if (segLength < 0) {
-            throw EncodingException("Invalid private key encoding");
-        }
-        nextSeg += segLength;
-        coder::ByteArray q;
-        segLength = derCodec->getInteger(key.range(nextSeg), q);
-        if (segLength < 0) {
-            throw EncodingException("Invalid private key encoding");
-        }
-        nextSeg += segLength;
-        coder::ByteArray expp;
-        segLength = derCodec->getInteger(key.range(nextSeg), expp);
-        if (segLength < 0) {
-            throw EncodingException("Invalid private key encoding");
-        }
-        nextSeg += segLength;
-        coder::ByteArray expq;
-        segLength = derCodec->getInteger(key.range(nextSeg), expq);
-        if (segLength < 0) {
-            throw EncodingException("Invalid private key encoding");
-        }
-        nextSeg += segLength;
-        coder::ByteArray coeff;
-        segLength = derCodec->getInteger(key.range(nextSeg), coeff);
-        if (segLength >= 0) {
-            // Extra stuff in the sequence. Suspicious.
-            throw EncodingException("Invalid private key encoding");
-        }
-        RSAPrivateCrtKey *k = new RSAPrivateCrtKey(BigInteger(p), BigInteger(q),
-                                BigInteger(expp), BigInteger(expq), BigInteger(coeff));
-        k->setModulus(BigInteger(n));
-        k->setPrivateExponent(BigInteger(d));
-        return k;
+        BigInteger e(eBytes.toByteArray());
+        return new RSAPublicKey(n, e);
     }
     else {
         throw EncodingException("Invalid private key encoding");
     }
 
 }
-*/
+
 RSAPublicKey *PEMCodec::getPublicKey(coder::ByteArrayInputStream& key) {
 
     coder::ByteArrayOutputStream nBytes;
@@ -499,6 +493,44 @@ RSAPrivateKey *PEMCodec::parsePrivateKey(coder::ByteArrayInputStream& key) {
 
     coder::ByteArrayInputStream keyStream(sequence.toByteArray());
     return getPrivateKey(keyStream);
+
+}
+
+RSAPublicKey *PEMCodec::parsePublicFromPrivate(coder::ByteArrayInputStream& key) {
+
+    coder::ByteArrayOutputStream version;
+    derCodec->getInteger(key, version);        
+    if (key.available() == 0) {
+        throw EncodingException("Invalid private key encoding");
+    }
+
+    coder::ByteArrayOutputStream algorithm;
+    derCodec->getSequence(key, algorithm);        
+    if (key.available() == 0) {
+        throw EncodingException("Invalid private key encoding");
+    }
+
+    // Nothing useful in this sequence. Parsing for errors only.
+    coder::ByteArrayInputStream alg(algorithm.toByteArray());
+    derCodec->parseAlgorithm(alg);
+
+    coder::ByteArrayOutputStream octetString;
+    derCodec->getOctetString(key, octetString);
+    if (key.available() != 0) {
+        // Stuff after the end of the string. Suspicious!
+        throw EncodingException("Invalid private key encoding");
+    }
+
+    coder::ByteArrayOutputStream sequence;
+    coder::ByteArrayInputStream octets(octetString.toByteArray());
+    derCodec->getSequence(octets, sequence);
+    if (key.available() != 0) {
+        // Stuff after the end of the sequence. Suspicious!
+        throw EncodingException("Invalid private key encoding");
+    }
+
+    coder::ByteArrayInputStream keyStream(sequence.toByteArray());
+    return getPublicFromPrivate(keyStream);
 
 }
 
