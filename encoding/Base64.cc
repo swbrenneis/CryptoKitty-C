@@ -36,7 +36,6 @@ void Base64::decode(std::istream& in) {
         in.getline(buf.get(), BUFSIZE);
     }
     while (!in.eof()) {
-        in.getline(buf.get(), BUFSIZE);
         if (*(buf.get()) == '-') {
             if (!pem) {
                 throw EncodingException("Illegal base 64 value");
@@ -56,6 +55,7 @@ void Base64::decode(std::istream& in) {
                 data.append(triplet, tbytes);
             }
         }
+        in.getline(buf.get(), BUFSIZE);
     }
 
 }
