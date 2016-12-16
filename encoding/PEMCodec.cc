@@ -449,7 +449,8 @@ RSAPublicKey *PEMCodec::getPublicKey(coder::ByteArrayInputStream& key) {
 
     coder::ByteArrayOutputStream eBytes;
     derCodec->getInteger(key, eBytes);
-    if (key.available() == 0) {
+    if (key.available() != 0) {
+        // Stuff after the integer encodings. Suspicious!
         throw EncodingException("Invalid private key encoding");
     }
     BigInteger e(eBytes.toByteArray());
@@ -466,15 +467,11 @@ RSAPrivateKey *PEMCodec::parsePrivateKey(coder::ByteArrayInputStream& key) {
         throw EncodingException("Invalid private key encoding");
     }
 
-    coder::ByteArrayOutputStream algorithm;
-    derCodec->getSequence(key, algorithm);        
+    // Nothing useful in this sequence. Parsing for errors only.
+    derCodec->parseAlgorithm(key);
     if (key.available() == 0) {
         throw EncodingException("Invalid private key encoding");
     }
-
-    // Nothing useful in this sequence. Parsing for errors only.
-    coder::ByteArrayInputStream alg(algorithm.toByteArray());
-    derCodec->parseAlgorithm(alg);
 
     coder::ByteArrayOutputStream octetString;
     derCodec->getOctetString(key, octetString);
@@ -504,15 +501,11 @@ RSAPublicKey *PEMCodec::parsePublicFromPrivate(coder::ByteArrayInputStream& key)
         throw EncodingException("Invalid private key encoding");
     }
 
-    coder::ByteArrayOutputStream algorithm;
-    derCodec->getSequence(key, algorithm);        
+    // Nothing useful in this sequence. Parsing for errors only.
+    derCodec->parseAlgorithm(key);
     if (key.available() == 0) {
         throw EncodingException("Invalid private key encoding");
     }
-
-    // Nothing useful in this sequence. Parsing for errors only.
-    coder::ByteArrayInputStream alg(algorithm.toByteArray());
-    derCodec->parseAlgorithm(alg);
 
     coder::ByteArrayOutputStream octetString;
     derCodec->getOctetString(key, octetString);
@@ -536,15 +529,11 @@ RSAPublicKey *PEMCodec::parsePublicFromPrivate(coder::ByteArrayInputStream& key)
 
 RSAPublicKey *PEMCodec::parsePublicKey(coder::ByteArrayInputStream& key) {
 
-    coder::ByteArrayOutputStream algorithm;
-    derCodec->getSequence(key, algorithm);        
+    // Nothing useful in this sequence. Parsing for errors only.
+    derCodec->parseAlgorithm(key);
     if (key.available() == 0) {
         throw EncodingException("Invalid public key encoding");
     }
-
-    // Nothing useful in this sequence. Parsing for errors only.
-    coder::ByteArrayInputStream alg(algorithm.toByteArray());
-    derCodec->parseAlgorithm(alg);
 
     coder::ByteArrayOutputStream bitString;
     derCodec->getBitString(key, bitString);

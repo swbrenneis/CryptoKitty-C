@@ -150,18 +150,26 @@ void DERCodec::getSequence(coder::ByteArrayInputStream& source,
 
 void DERCodec::parseAlgorithm(coder::ByteArrayInputStream& source) {
 
-    if (source.read() != OID_TAG) {
+    coder::ByteArrayOutputStream sequence;
+    getSequence(source, sequence);
+    coder::ByteArrayInputStream algorithm(sequence.toByteArray());
+
+    if (algorithm.read() != OID_TAG) {
         throw EncodingException("Invalid algorithm encoding");
     }
 
     coder::ByteArrayOutputStream oid;
-    getSegment(source, oid);
-    if (source.available() == 0) {
+    getSegment(algorithm, oid);
+    coder::ByteArray rsa_oid(RSA_OID, OID_LENGTH);
+    if (oid.toByteArray() != rsa_oid.range(2)) {
+        throw EncodingException("Invalid RSA object ID");
+    }
+    if (algorithm.available() == 0) {
         throw EncodingException("Invalid algorithm encoding");
     }
 
-    int nullTag = source.read();
-    int nullValue = source.read();
+    int nullTag = algorithm.read();
+    int nullValue = algorithm.read();
     if (nullTag != NULL_TAG || nullValue != 0) {
         throw EncodingException("Invalid algorithm encoding");
     }
