@@ -1,7 +1,5 @@
 #include "encoding/DERCodec.h"
 #include "exceptions/EncodingException.h"
-#include "keys/RSAPublicKey.h"
-#include "keys/RSAPrivateCrtKey.h"
 #include <coder/Unsigned16.h>
 #include <coder/Unsigned32.h>
 #include <coder/ByteArrayInputStream.h>
