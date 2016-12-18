@@ -4,6 +4,7 @@
 #include "data/NanoTime.h"
 #include "exceptions/BadParameterException.h"
 #include "exceptions/SignatureException.h"
+#include <coder/ByteArray.h>
 #include <cmath>
 #include <time.h>
 

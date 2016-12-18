@@ -2,6 +2,7 @@
 #define PSSRSASSA_H_INCLUDED
 
 #include "../cipher/RSA.h"
+#include <coder/ByteArray.h>
 
 namespace CK {
 
