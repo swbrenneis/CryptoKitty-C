@@ -2,9 +2,12 @@
 #define BIGINTEGER_H_INCLUDED
 
 #include "jni/JNIReference.h"
-#include <coder/ByteArray.h>
 #include <deque>
 #include <iostream>
+
+namespace coder {
+    class ByteArray;
+}
 
 namespace NTL {
     class ZZ;

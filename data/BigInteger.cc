@@ -1,6 +1,7 @@
 #include "data/BigInteger.h"
 #include "random/Random.h"
 #include "exceptions/BadParameterException.h"
+#include <coder/ByteArray.h>
 #include <algorithm>
 #include <climits>
 #include <cmath>
