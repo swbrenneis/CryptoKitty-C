@@ -1,22 +1,23 @@
-UNAME= $(shell uname)
-ifeq ($(UNAME), Darwin)
-DEV_HOME=$(HOME)/Development
-endif
-ifeq ($(UNAME), Linux)
-DEV_HOME=$(HOME)/dev
-endif
+DEV_HOME:= $(HOME)/dev
+export DEV_HOME
+WHOAMI= $(shell whoami)
+ifeq ($(WHOAMI), amnesia)
+# Tails
+INSTALL_PATH= $(HOME)/Persistent/local
+TAILS_INCLUDE:= -I$(INSTALL_PATH)/include
+export TAILS_INCLUDE
+TAILS_LIB:= -L$(INSTALL_PATH)/lib -L$(INSTALL_PATH)/lib64
+CHOWN_USER= amnesia:amnesia
+else
 INSTALL_PATH= /usr/local
+CHOWN_USER= root:root
+endif
 CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
 LD= g++
-LDPATHS= -L$(DEV_HOME)/lib
+LDPATHS= -L$(DEV_HOME)/lib $(TAILS_LIB)
 LDLIBS=  -lntl -lgmp -lcoder -lcthread
-ifeq ($(UNAME), Darwin)
-LDFLAGS= -Wall -g -dynamiclib
-endif
-ifeq ($(UNAME), Linux)
 LDFLAGS= -Wall -g -shared -Wl,--no-undefined
-endif
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
 			   cipher/PSSmgf1.o cipher/PSSrsassa.o cipher/RSA.o
@@ -63,12 +64,7 @@ CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
 		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
 		  $(SIGNATURE_OBJECT)
 
-ifeq ($(UNAME), Darwin)
-LIBRARY= libcryptokitty.dylib
-endif
-ifeq ($(UNAME), Linux)
 LIBRARY= libcryptokitty.so
-endif
 
 .SUFFIXES:
 
@@ -109,11 +105,13 @@ install: $(LIBRRY)
 	cp -R --preserve=timestamps include/* $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)/
-	chown -R root:root $(CK_INCLUDE)
+	chown -R $(CHOWN_USER) $(CK_INCLUDE)
 	strip $(LIBRARY)
+	mkdir -p $(INSTALL_PATH)/lib64
 	cp --preserve=timestamps $(LIBRARY) $(INSTALL_PATH)/lib64
 	chmod 755 $(INSTALL_PATH)/lib64/$(LIBRARY)
-	chown root:root $(INSTALL_PATH)/lib64/$(LIBRARY)
+	chown $(CHOWN_USER) $(INSTALL_PATH)/lib64/$(LIBRARY)
+	strip $(INSTALL_PATH)/lib64/$(LIBRARY)
 
 clean:
 	rm -f $(LIBRARY)
