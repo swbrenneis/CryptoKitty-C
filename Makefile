@@ -6,7 +6,6 @@ ifeq ($(WHOAMI), amnesia)
 INSTALL_PATH= $(HOME)/Persistent/local
 TAILS_INCLUDE:= -I$(INSTALL_PATH)/include
 export TAILS_INCLUDE
-TAILS_LIB:= -L$(INSTALL_PATH)/lib -L$(INSTALL_PATH)/lib64
 CHOWN_USER= amnesia:amnesia
 else
 INSTALL_PATH= /usr/local
@@ -15,7 +14,7 @@ endif
 CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
 LD= g++
-LDPATHS= -L$(DEV_HOME)/lib $(TAILS_LIB)
+LDPATHS= -L$(DEV_HOME)/lib -L/usr/local/lib -L/usr/local/lib64
 LDLIBS=  -lntl -lgmp -lcoder -lcthread
 LDFLAGS= -Wall -g -shared -Wl,--no-undefined
 
