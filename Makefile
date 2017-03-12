@@ -1,10 +1,21 @@
-DEV_HOME= $(HOME)/dev
+DEV_HOME:= $(HOME)/dev
+export DEV_HOME
+WHOAMI= $(shell whoami)
+ifeq ($(WHOAMI), amnesia)
+# Tails
+INSTALL_PATH= $(HOME)/Persistent/local
+TAILS_INCLUDE:= -I$(INSTALL_PATH)/include
+export TAILS_INCLUDE
+CHOWN_USER= amnesia:amnesia
+else
 INSTALL_PATH= /usr/local
+CHOWN_USER= root:root
+endif
 CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
 LD= g++
-LDPATHS= -L$(DEV_HOME)/lib
-LDLIBS=  -lntl -lgmp -lcoder -lcthread -lgnutls
+LDPATHS= -L$(DEV_HOME)/lib -L/usr/local/lib -L/usr/local/lib64
+LDLIBS=  -lntl -lgmp -lcoder -lcthread
 LDFLAGS= -Wall -g -shared -Wl,--no-undefined
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
@@ -25,10 +36,6 @@ DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o dig
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
 			   include/digest/SHA512.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
-ENCODING_OBJECT= encoding/PEMCodec.o encoding/Base64.o encoding/DERCodec.o
-ENCODING_HEADER= include/encoding/PEMCodec.h include/encoding/Base64.h include/encoding/DERCodec.h
-ENCODING_SOURCE= $(ENCODING_OBJECT:.o=.cc)
-JNI_HEADER= include/jni/JNIReference.h
 KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
 			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
 			 keys/RSAPrivateCrtKey.o keys/RSAPrivateModKey.o \
@@ -51,12 +58,10 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
-TLS_OBJECT= tls/TLSCertificate.o tls/TLSCredentials.o tls/TLSSession.o
-TLS_HEADER= include/tls/TLSCertificate.h include/tls/TLSCredentials.h include/tls/TLSSession.h
-TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
-CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) $(DIGEST_OBJECT) \
-		  $(ENCODING_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) $(SIGNATURE_OBJECT) \
-		  $(TLS_OBJECT)
+
+CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
+		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
+		  $(SIGNATURE_OBJECT)
 
 LIBRARY= libcryptokitty.so
 
@@ -78,9 +83,6 @@ $(DATA_OBJECT): $(DATA_SOURCE) $(DATA_HEADER)
 $(DIGEST_OBJECT): $(DIGEST_SOURCE) $(DIGEST_HEADER)
 	$(MAKE) -C digest
 
-$(ENCODING_OBJECT): $(ENCODING_SOURCE) $(ENCODING_HEADER)
-	$(MAKE) -C encoding
-
 $(KEYS_OBJECT): $(KEYS_SOURCE) $(KEYS_HEADER)
 	$(MAKE) -C keys
 
@@ -93,9 +95,6 @@ $(RANDOM_OBJECT): $(RANDOM_SOURCE) $(RANDOM_HEADER)
 $(SIGNATURE_OBJECT): $(SIGNATURE_SOURCE) $(SIGNATURE_HEADER)
 	$(MAKE) -C signature
 
-$(TLS_OBJECT): $(TLS_SOURCE) $(TLS_HEADER)
-	$(MAKE) -C tls 
-
 $(LIBRARY): $(CKOBJECT)
 	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS) $(LDPATHS) $(LDLIBS)
 
@@ -105,10 +104,12 @@ install: $(LIBRRY)
 	cp -R --preserve=timestamps include/* $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)/
-	chown -R root:root $(CK_INCLUDE)
+	chown -R $(CHOWN_USER) $(CK_INCLUDE)
+	strip $(LIBRARY)
+	mkdir -p $(INSTALL_PATH)/lib64
 	cp --preserve=timestamps $(LIBRARY) $(INSTALL_PATH)/lib64
 	chmod 755 $(INSTALL_PATH)/lib64/$(LIBRARY)
-	chown root:root $(INSTALL_PATH)/lib64/$(LIBRARY)
+	chown $(CHOWN_USER) $(INSTALL_PATH)/lib64/$(LIBRARY)
 	strip $(INSTALL_PATH)/lib64/$(LIBRARY)
 
 clean:
@@ -117,10 +118,8 @@ clean:
 	cd ciphermodes && $(MAKE) clean
 	cd data && $(MAKE) clean
 	cd digest && $(MAKE) clean
-	cd encoding && $(MAKE) clean
 	cd keys && $(MAKE) clean
 	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
-	cd tls && $(MAKE) clean
 
