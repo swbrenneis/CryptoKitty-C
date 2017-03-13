@@ -24,7 +24,7 @@ class PrivateKey {
     public:
         const std::string& getAlgorithm() const;
 
-    private:
+    protected:
         std::string algorithm;
 
 };

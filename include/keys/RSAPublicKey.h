@@ -10,11 +10,11 @@ class RSAPublicKey : public PublicKey {
 
     private:
         RSAPublicKey();
-        RSAPublicKey(const RSAPublicKey& other);
-        RSAPublicKey& operator= (const RSAPublicKey& other);
 
     public:
         RSAPublicKey(const BigInteger& n, const BigInteger& e);
+        RSAPublicKey(const RSAPublicKey& other);
+        RSAPublicKey& operator= (const RSAPublicKey& other);
         ~RSAPublicKey();
 
     public:

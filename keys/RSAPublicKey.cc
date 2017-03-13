@@ -11,6 +11,25 @@ RSAPublicKey::RSAPublicKey(const BigInteger& n, const BigInteger& e)
 
 }
 
+RSAPublicKey::RSAPublicKey(const RSAPublicKey& other)
+: PublicKey("RSA") {    
+
+    bitLength = other.bitLength;
+    exp = other.exp;
+    mod = other.mod;
+
+}
+
+RSAPublicKey& RSAPublicKey::operator =(const RSAPublicKey& other) {
+
+    algorithm = "RSA";
+    bitLength = other.bitLength;
+    exp = other.exp;
+    mod = other.mod;
+    return *this;
+
+}
+
 RSAPublicKey::~RSAPublicKey() {
 }
 

@@ -10,11 +10,11 @@ class RSAPrivateModKey : public RSAPrivateKey {
 
     private:
         RSAPrivateModKey();
-        RSAPrivateModKey(const RSAPrivateModKey& other);
-        RSAPrivateModKey& operator= (const RSAPrivateModKey& other);
 
     public:
         RSAPrivateModKey(const BigInteger& d, const BigInteger& n);
+        RSAPrivateModKey(const RSAPrivateModKey& other);
+        RSAPrivateModKey& operator= (const RSAPrivateModKey& other);
         ~RSAPrivateModKey();
 
     public:

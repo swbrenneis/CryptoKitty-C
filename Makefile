@@ -106,7 +106,6 @@ install: $(LIBRRY)
 	chmod 755 $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)/
 	chown -R $(CHOWN_USER) $(CK_INCLUDE)
-	strip $(LIBRARY)
 	mkdir -p $(INSTALL_PATH)/lib64
 	cp --preserve=timestamps $(LIBRARY) $(INSTALL_PATH)/lib64
 	chmod 755 $(INSTALL_PATH)/lib64/$(LIBRARY)

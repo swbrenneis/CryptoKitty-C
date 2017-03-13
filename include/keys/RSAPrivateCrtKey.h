@@ -10,8 +10,6 @@ class RSAPrivateCrtKey : public RSAPrivateKey {
 
     private:
         RSAPrivateCrtKey();
-        RSAPrivateCrtKey(const RSAPrivateCrtKey& other);
-        RSAPrivateCrtKey& operator= (const RSAPrivateCrtKey& other);
 
     public:
         RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
@@ -19,6 +17,8 @@ class RSAPrivateCrtKey : public RSAPrivateKey {
         RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
                             const BigInteger& dp, const BigInteger& dq,
                             const BigInteger& qi);
+        RSAPrivateCrtKey(const RSAPrivateCrtKey& other);
+        RSAPrivateCrtKey& operator= (const RSAPrivateCrtKey& other);
         ~RSAPrivateCrtKey();
 
     public:

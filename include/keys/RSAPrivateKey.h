@@ -39,8 +39,6 @@ class RSAPrivateKey : public PrivateKey {
 
     protected:
         int bitLength;
-
-    private:
         KeyType keyType;
 
 };

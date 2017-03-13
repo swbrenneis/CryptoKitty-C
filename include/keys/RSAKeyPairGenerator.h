@@ -13,8 +13,11 @@ class RSAPrivateKey;
 
 class RSAKeyPairGenerator : public JNIReference {
 
-    public:
+    protected:
         RSAKeyPairGenerator();
+
+    public:
+        RSAKeyPairGenerator(SecureRandom *secure, int bits = 1024);
         ~RSAKeyPairGenerator();
 
     private:

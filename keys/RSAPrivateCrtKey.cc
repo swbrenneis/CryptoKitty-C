@@ -35,6 +35,36 @@ RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
 
 }
 
+RSAPrivateCrtKey::RSAPrivateCrtKey(const RSAPrivateCrtKey& other)
+: RSAPrivateKey(crt) {
+
+    p = other.p;
+    q = other.q;
+    dP = other.dP;
+    dQ = other.dQ;
+    qInv = other.qInv;
+    n = other.n;
+    d = other.d;
+    bitLength = other.bitLength;
+
+}
+
+RSAPrivateCrtKey& RSAPrivateCrtKey::operator =(const RSAPrivateCrtKey& other) {
+
+    p = other.p;
+    q = other.q;
+    dP = other.dP;
+    dQ = other.dQ;
+    qInv = other.qInv;
+    n = other.n;
+    d = other.d;
+    bitLength = other.bitLength;
+    keyType = crt;
+    algorithm = "RSA";
+    return *this;
+
+}
+
 RSAPrivateCrtKey::~RSAPrivateCrtKey() {
 }
 

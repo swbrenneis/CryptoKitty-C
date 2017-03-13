@@ -24,7 +24,7 @@ class PublicKey {
     public:
         virtual const std::string& getAlgorithm() const;
 
-    private:
+    protected:
         std::string algorithm;
 
 };
