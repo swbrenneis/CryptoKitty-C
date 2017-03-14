@@ -37,6 +37,9 @@ DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o dig
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
 			   include/digest/SHA512.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
+ENCODING_OBJECT= encoding/Base64.o encoding/DERCodec.o encoding/PEMCodec.o
+ENCODING_HEADER= include/encoding/Base64.h include/encoding/DERCodec.h include/encoding/PEMCodec.h
+ENCODING_SOURCE= $(ENCODING_OBJECT:.o=.cc)
 KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
 			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
 			 keys/RSAPrivateCrtKey.o keys/RSAPrivateModKey.o \
@@ -60,7 +63,7 @@ SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
 
-CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
+CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) $(ENCODING_OBJECT) \
 		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
 		  $(SIGNATURE_OBJECT)
 
@@ -80,6 +83,9 @@ $(CIPHERMODES_OBJECT): $(CIPHERMODES_SOURCE) $(CIPHERMODES_HEADER)
 
 $(DATA_OBJECT): $(DATA_SOURCE) $(DATA_HEADER)
 	$(MAKE) -C data
+
+$(ENCODING_OBJECT): $(ENCODING_SOURCE) $(ENCODING_HEADER)
+	$(MAKE) -C encoding 
 
 $(DIGEST_OBJECT): $(DIGEST_SOURCE) $(DIGEST_HEADER)
 	$(MAKE) -C digest
