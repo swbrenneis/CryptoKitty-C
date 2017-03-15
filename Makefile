@@ -37,9 +37,10 @@ DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o dig
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
 			   include/digest/SHA512.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
-ENCODING_OBJECT= encoding/Base64.o encoding/DERCodec.o encoding/PEMCodec.o encoding/RSACodec.o
-ENCODING_HEADER= include/encoding/Base64.h include/encoding/DERCodec.h include/encoding/PEMCodec.h \
-				 include/encoding/RSACodec.h
+ENCODING_OBJECT= encoding/Base64.o encoding/DERCodec.o encoding/GCMCodec.o encoding/PEMCodec.o \
+				 encoding/RSACodec.o
+ENCODING_HEADER= include/encoding/Base64.h include/encoding/DERCodec.h include/encoding/GCMCodec.h \
+				 include/encoding/PEMCodec.h include/encoding/RSACodec.h
 ENCODING_SOURCE= $(ENCODING_OBJECT:.o=.cc)
 KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
 			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \

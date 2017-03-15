@@ -5,10 +5,10 @@
 
 namespace CK {
 
-    class RSAPrivateKey;
-    class RSAPublicKey;
+class RSAPrivateKey;
+class RSAPublicKey;
 
-    class RSACodec : public coder::ByteStreamCodec {
+class RSACodec : public coder::ByteStreamCodec {
 
     public:
         RSACodec();
@@ -25,7 +25,7 @@ namespace CK {
     private:
         coder::ByteArray text;
 
-    };
+};
 
 }
 
