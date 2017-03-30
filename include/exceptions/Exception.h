@@ -1,5 +1,5 @@
-#ifndef EXCEPTION_H_INCLUDED
-#define EXCEPTION_H_INCLUDED
+#ifndef CKEXCEPTION_H_INCLUDED
+#define CKEXCEPTION_H_INCLUDED
 
 #include <exception>
 #include <string>
@@ -36,4 +36,4 @@ class Exception  : public std::exception {
 
 }
 
-#endif // BADPARAMETEREXCEPTION_H_INCLUDED
+#endif // CKEXCEPTION_H_INCLUDED

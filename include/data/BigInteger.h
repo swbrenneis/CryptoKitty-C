@@ -1,7 +1,7 @@
 #ifndef BIGINTEGER_H_INCLUDED
 #define BIGINTEGER_H_INCLUDED
 
-#include "jni/JNIReference.h"
+#include "../jni/JNIReference.h"
 #include <deque>
 #include <iostream>
 
