@@ -37,7 +37,7 @@ void RSAKeyPairGenerator::initialize(int bits,
 /*
  * Generate the key pair.
  */
-KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool crt) {
+RSAKeyPair *RSAKeyPairGenerator::generateKeyPair(bool crt) {
 
     // Puplic exponent
     BigInteger e(65537L);
@@ -92,7 +92,7 @@ KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool 
         prv = new RSAPrivateModKey(n, d);
     }
 
-    return new KeyPair<RSAPublicKey, RSAPrivateKey>(pub, prv);
+    return new RSAKeyPair(pub, prv);
 
 }
 

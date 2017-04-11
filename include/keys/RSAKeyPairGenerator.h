@@ -11,6 +11,8 @@ class SecureRandom;
 class RSAPublicKey;
 class RSAPrivateKey;
 
+typedef KeyPair<RSAPublicKey, RSAPrivateKey> RSAKeyPair;
+
 class RSAKeyPairGenerator : public JNIReference {
 
     protected:
@@ -26,7 +28,7 @@ class RSAKeyPairGenerator : public JNIReference {
                 operator= (const RSAKeyPairGenerator& other);
 
     public:
-        KeyPair<RSAPublicKey, RSAPrivateKey> *generateKeyPair(bool crt = true);
+        RSAKeyPair *generateKeyPair(bool crt = true);
         void initialize(int bits, SecureRandom* secure);
 
     private:
