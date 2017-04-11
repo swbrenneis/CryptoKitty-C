@@ -1,7 +1,7 @@
 #ifndef DECRYPTIONEXCEPTION_H_INCLUDED
 #define DECRYPTIONEXCEPTION_H_INCLUDED
 
-#include "exceptions/Exception.h"
+#include "Exception.h"
 
 namespace CK {
 

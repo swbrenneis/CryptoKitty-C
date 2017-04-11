@@ -1,7 +1,7 @@
 #ifndef ILLEGALOPERATIONEXCEPTION_H_INCLUDED
 #define ILLEGALOPERATIONEXCEPTION_H_INCLUDED
 
-#include "exceptions/Exception.h"
+#include "Exception.h"
 
 namespace CK {
 
