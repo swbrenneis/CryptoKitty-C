@@ -9,10 +9,11 @@ namespace CK {
 // Static initialization
 const BigInteger RSAKeyPairGenerator::THREE(3);
 
-/*
- * The class defaults to a key size of 1024 bits and
- * a BBSRandom secure PRNG.
- */
+RSAKeyPairGenerator::RSAKeyPairGenerator()
+: keySize(1024),
+  random(0) {
+}
+
 RSAKeyPairGenerator::RSAKeyPairGenerator(SecureRandom *secure, int bits)
 : keySize(bits),
   random(secure) {

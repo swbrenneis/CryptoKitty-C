@@ -64,10 +64,13 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
+TLS_OBJECT=  tls/TLSCertificate.o tls/TLSCredentials.o tls/TLSSession.o
+TLS_HEADER=  include/tls/TLSCertificate.h include/tls/TLSCredentials.h include/tls/TLSSession.h
+TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) $(ENCODING_OBJECT) \
 		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
-		  $(SIGNATURE_OBJECT)
+		  $(SIGNATURE_OBJECT) $(TLS_OBJECT)
 
 LIBRARY= libcryptokitty.so
 
@@ -104,6 +107,9 @@ $(RANDOM_OBJECT): $(RANDOM_SOURCE) $(RANDOM_HEADER)
 $(SIGNATURE_OBJECT): $(SIGNATURE_SOURCE) $(SIGNATURE_HEADER)
 	$(MAKE) -C signature
 
+$(TLS_OBJECT): $(TLS_SOURCE) $(TLS_HEADER)
+	$(MAKE) -C tls
+
 $(LIBRARY): $(CKOBJECT)
 	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS) $(LDPATHS) $(LDLIBS)
 
@@ -131,4 +137,5 @@ clean:
 	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
+	cd tls && $(MAKE) clean
 

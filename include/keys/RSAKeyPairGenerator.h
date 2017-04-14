@@ -15,10 +15,8 @@ typedef KeyPair<RSAPublicKey, RSAPrivateKey> RSAKeyPair;
 
 class RSAKeyPairGenerator : public JNIReference {
 
-    protected:
-        RSAKeyPairGenerator();
-
     public:
+        RSAKeyPairGenerator();
         RSAKeyPairGenerator(SecureRandom *secure, int bits = 1024);
         ~RSAKeyPairGenerator();
 
