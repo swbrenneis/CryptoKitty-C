@@ -24,9 +24,16 @@ RSACodec::~RSACodec() {
 
 void RSACodec::decrypt(const RSAPrivateKey& privateKey) {
 
+    if (text.getLength() == 0) {
+        throw EncodingException("Cannot decrypt empty stream");
+    }
+
     try {
         OAEPrsaes cipher(OAEPrsaes::sha256);
         stream = cipher.decrypt(privateKey, text);
+        if (stream.getLength() == 0) {
+            throw EncodingException("Decryption failed");
+        }
     }
     catch (DecryptionException& e) {
         throw EncodingException(e);
