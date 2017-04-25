@@ -19,14 +19,9 @@ class FortunaSecureRandom : public SecureRandom {
         void nextBytes(coder::ByteArray& bytes);
         uint32_t nextUnsignedInt();
         uint64_t nextUnsignedLong();
-        static void setStandalone(bool s);
 
     private:
         uint16_t readBytes(coder::ByteArray& bytes, uint16_t count) const;
-
-    private:
-        static bool standalone;
-        static FortunaGenerator *gen;
 
 };
 

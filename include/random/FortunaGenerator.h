@@ -2,19 +2,20 @@
 #define FORTUNAGENERATOR_H_INCLUDED
 
 #include "../data/BigInteger.h"
-#include <cthread/Thread.h>
+#include <cthread/Runnable.h>
 #include <coder/ByteArray.h>
 #include <deque>
 
 namespace cthread {
     class Mutex;
+    class Thread;
 }
 
 namespace CK {
 
 class AES;
 
-class FortunaGenerator : public cthread::Thread::Callback {
+class FortunaGenerator : public cthread::Runnable {
 
     public:
         FortunaGenerator();
@@ -29,13 +30,12 @@ class FortunaGenerator : public cthread::Thread::Callback {
         void start();
 
     private:
-        void end();
         coder::ByteArray generateBlocks(uint16_t k);
         void reseed(const coder::ByteArray& seed);
-        void *threadFunction();
+        void run();
 
     private:
-        bool run;
+        bool runFlag;
         cthread::Thread *thread;
         typedef std::deque<coder::ByteArray> EntropyPools;
         EntropyPools pools;

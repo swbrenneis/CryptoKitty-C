@@ -13,11 +13,6 @@
 
 namespace CK {
 
-FortunaGenerator *FortunaSecureRandom::gen = 0;
-// Indicates whether the RNG is self-contained.
-// If true, the random block generator is built into
-// the object.
-bool FortunaSecureRandom::standalone = false;
 static const short FORTUNAPORT = 16574;
 static const char *LOCALHOST = "127.0.0.1";
 
@@ -38,13 +33,7 @@ void FortunaSecureRandom::nextBytes(coder::ByteArray& bytes) {
     while (length > 0) {
         rbytes.clear();
         uint16_t read;
-        if (!standalone) {
-            read = readBytes(rbytes, length);
-        }
-        else {
-            gen->generateRandomData(rbytes, length);
-            read = rbytes.getLength();
-        }
+        read = readBytes(rbytes, length);
         bytes.copy(offset, rbytes, 0, read);
         length -= read;
         offset += read;
@@ -116,16 +105,6 @@ uint16_t FortunaSecureRandom::readBytes(coder::ByteArray& bytes, uint16_t count)
 
     bytes.append(inBytes.get(), res);
     return res;
-
-}
-
-void FortunaSecureRandom::setStandalone(bool s) {
-
-    standalone = s;
-    if (standalone) {
-        gen = new FortunaGenerator;
-        gen->start();
-    }
 
 }
 

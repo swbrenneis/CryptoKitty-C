@@ -7,6 +7,7 @@
 #include "data/NanoTime.h"
 #include "cthread/Lock.h"
 #include "cthread/Mutex.h"
+#include "cthread/Thread.h"
 #include <memory>
 #include <fstream>
 #include <cmath>
@@ -14,7 +15,7 @@
 namespace CK {
 
 FortunaGenerator::FortunaGenerator()
-: run(false),
+: runFlag(false),
   cipher(new AES(AES::AES256)),
   counter(0L),
   keyMutex(new cthread::Mutex) {
@@ -26,12 +27,6 @@ FortunaGenerator::FortunaGenerator()
 FortunaGenerator::~FortunaGenerator() {
 
     delete keyMutex;
-
-}
-
-void FortunaGenerator::end() {
-
-    reseed(pools.front());
 
 }
 
@@ -108,46 +103,13 @@ void FortunaGenerator::reseed(const coder::ByteArray& seed) {
 
 }
 
-void FortunaGenerator::start() {
-
-    if (!run) {
-        // Initialize pools
-        for (int n = 0; n < 32; ++n) {
-            coder::ByteArray pool;
-            pools.push_back(pool);
-        }
-
-        // Get the seed
-        char entr[32];
-        uint8_t *ubuf = reinterpret_cast<uint8_t*>(entr);
-        std::ifstream seedstr("fgseed", std::ios::binary);
-        if (!seedstr.good()) {                  // Seed file doesn't exist
-            std::ifstream rnd("/dev/urandom");    // Get some entropy from /dev/urandom
-            rnd.get(entr, 32);
-            rnd.close();
-        }
-        else {
-            seedstr.get(entr, 32);
-            seedstr.close();
-        }
-        coder::ByteArray seed(ubuf, 32);
-        reseed(seed);
-
-        // Start the accumulator.
-        thread = new cthread::Thread(this);
-        thread->start();
-        run = true;
-    }
-
-}
-
-void *FortunaGenerator::threadFunction() {
+void FortunaGenerator::run() {
 
     char ebuf[32];
     uint8_t *ubuf = reinterpret_cast<uint8_t*>(ebuf);
     uint64_t reseedCounter = 0;
 
-    while (run) {
+    while (runFlag) {
         coder::ByteArray rd;
         generateRandomData(rd, 4);
         coder::Unsigned32 nsec(rd, coder::littleendian);
@@ -220,7 +182,40 @@ void *FortunaGenerator::threadFunction() {
 
     }
 
-    return 0;
+    reseed(pools.front());
+
+}
+
+void FortunaGenerator::start() {
+
+    if (!runFlag) {
+        // Initialize pools
+        for (int n = 0; n < 32; ++n) {
+            coder::ByteArray pool;
+            pools.push_back(pool);
+        }
+
+        // Get the seed
+        char entr[32];
+        uint8_t *ubuf = reinterpret_cast<uint8_t*>(entr);
+        std::ifstream seedstr("fgseed", std::ios::binary);
+        if (!seedstr.good()) {                  // Seed file doesn't exist
+            std::ifstream rnd("/dev/urandom");    // Get some entropy from /dev/urandom
+            rnd.get(entr, 32);
+            rnd.close();
+        }
+        else {
+            seedstr.get(entr, 32);
+            seedstr.close();
+        }
+        coder::ByteArray seed(ubuf, 32);
+        reseed(seed);
+
+        // Start the accumulator.
+        runFlag = true;
+        thread = new cthread::Thread(this);
+        thread->start();
+    }
 
 }
 
