@@ -2,6 +2,7 @@
 #define BASE64_H_INCLUDED
 
 #include <coder/ByteArray.h>
+#include <string>
 #include <iostream>
 
 namespace CK {
@@ -21,6 +22,7 @@ class Base64 {
         void decode(std::istream& in);
         void encode(std::ostream& out);
         const coder::ByteArray& getData() const { return data; }
+        const std::string& getLastLine() const { return lastLine; }
 
     private:
         int decodeQuartet(uint8_t *content, char *b64);
@@ -29,6 +31,7 @@ class Base64 {
     private:
         bool pem;
         coder::ByteArray data;
+        std::string lastLine;
 
 };
 

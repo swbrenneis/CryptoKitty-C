@@ -40,6 +40,7 @@ void Base64::decode(std::istream& in) {
             if (!pem) {
                 throw EncodingException("Illegal base 64 value");
             }
+            lastLine = std::string(buf.get());
         }
         else {
             int length = strlen(buf.get());
