@@ -35,7 +35,7 @@ bool HMAC::authenticate(const coder::ByteArray& hmac) {
 coder::ByteArray HMAC::generateKey(unsigned bitsize) {
 
     if (bitsize / 8 < L) {
-        throw BadParameterException("Invalid key size");
+        throw BadParameterException("Invalid HMAC key size");
     }
 
     FortunaSecureRandom secure;
@@ -60,7 +60,7 @@ unsigned HMAC::getDigestLength() const {
 coder::ByteArray HMAC::getHMAC() {
 
     if (K.getLength() == 0) {
-        throw IllegalStateException("Key not set");
+        throw IllegalStateException("HMAC key not set");
     }
 
     // Pad or truncate the key until it is B bytes.
@@ -89,7 +89,7 @@ coder::ByteArray HMAC::getHMAC() {
 void HMAC::setKey(const coder::ByteArray& k) {
 
     if (k.getLength() < L) {
-        throw BadParameterException("Invalid key");
+        throw BadParameterException("Invalid HMAC key");
     }
 
     K = k;

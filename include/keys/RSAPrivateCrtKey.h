@@ -10,8 +10,6 @@ class RSAPrivateCrtKey : public RSAPrivateKey {
 
     private:
         RSAPrivateCrtKey();
-        RSAPrivateCrtKey(const RSAPrivateCrtKey& other);
-        RSAPrivateCrtKey& operator= (const RSAPrivateCrtKey& other);
 
     public:
         RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
@@ -19,15 +17,20 @@ class RSAPrivateCrtKey : public RSAPrivateKey {
         RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
                             const BigInteger& dp, const BigInteger& dq,
                             const BigInteger& qi);
+        RSAPrivateCrtKey(const RSAPrivateCrtKey& other);
+        RSAPrivateCrtKey& operator= (const RSAPrivateCrtKey& other);
         ~RSAPrivateCrtKey();
 
     public:
         const BigInteger& getInverse() const;
+        const BigInteger& getModulus() const { return n; }
         const BigInteger& getPrimeExponentP() const;
         const BigInteger& getPrimeExponentQ() const;
         const BigInteger& getPrimeP() const;
         const BigInteger& getPrimeQ() const;
         const BigInteger& getPrivateExponent() const { return d; }
+        void setModulus(const BigInteger& mod) { n = mod; }
+        void setPrivateExponent(const BigInteger& exp) { d = exp; }
 
     protected:
         // Decryption primitive.

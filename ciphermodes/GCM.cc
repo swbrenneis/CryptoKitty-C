@@ -1,5 +1,5 @@
 #include "ciphermodes/GCM.h"
-#include "cipher/Cipher.h"
+#include "cipher/BlockCipher.h"
 #include "coder/Unsigned64.h"
 #include "coder/Unsigned32.h"
 #include "data/BigInteger.h"
@@ -11,13 +11,10 @@
 
 namespace CK {
 
-//static const uint64_t P_MAX = 549755813632; // 2^39 - 256.
-//static const uint64_t A_MAX = 0xffffffffffffffff;
-uint8_t GCM::tagSize = 128;
-
-GCM::GCM(Cipher *c, const coder::ByteArray& iv)
-: cipher(c),
-IV(iv) {
+GCM::GCM(BlockCipher *c, bool append)
+: tagSize(128),
+  appendTag(append),
+  cipher(c) {
 
     if (cipher->blockSize() != 16) {
         throw BadParameterException("Invalid cipher block size");
@@ -27,7 +24,9 @@ IV(iv) {
 
 GCM::~GCM() {
 
-    delete cipher;
+    if (!jni) {
+        delete cipher;
+    }
 
 }
 
@@ -36,10 +35,14 @@ GCM::~GCM() {
  */
 coder::ByteArray GCM::decrypt(const coder::ByteArray& C, const coder::ByteArray& K) {
 
-    //std::cout << "decrypt C = " << C << std::endl;
-    // l = (n - 1)128 + u
-    int n = C.getLength() / 16;
-    int u = C.getLength() % 16;
+    coder::ByteArray ciphertext(C);
+    if (appendTag) {
+        uint32_t tagLength = tagSize / 8;
+        T = C.range(C.getLength() - tagLength, tagLength);
+        ciphertext.truncate(tagLength);
+    }
+    int n = ciphertext.getLength() / 16;
+    int u = ciphertext.getLength() % 16;
     if (u == 0) {
         u = 16;
         n--;
@@ -58,7 +61,7 @@ coder::ByteArray GCM::decrypt(const coder::ByteArray& C, const coder::ByteArray&
         Y0 = GHASH(H, coder::ByteArray(0), IV);
     }
 
-    coder::ByteArray Tp(GHASH(H, A, C));
+    coder::ByteArray Tp(GHASH(H, A, ciphertext));
     Tp = Tp ^ cipher->encrypt(Y0, K);
     if (T != Tp) {
         throw AuthenticationException("GCM AEAD failed authentication");
@@ -70,20 +73,19 @@ coder::ByteArray GCM::decrypt(const coder::ByteArray& C, const coder::ByteArray&
     coder::ByteArray Pi;           // C(i);
     coder::ByteArray P;
 
-    if (C.getLength() > 0) {
+    if (ciphertext.getLength() > 0) {
         for (int i = 1; i <= n; ++i) {
             Yi = incr(Yi1);
-            Ci = C.range((i-1)*16, 16);
+            Ci = ciphertext.range((i-1)*16, 16);
             Pi = Ci ^ cipher->encrypt(Yi, K);
             P.append(Pi);
             Yi1 = Yi;
         }
         Yi = incr(Yi1);
-        coder::ByteArray Cn(C.range(C.getLength()-u, u));
+        coder::ByteArray Cn(ciphertext.range(ciphertext.getLength()-u, u));
         P.append(Cn ^ (cipher->encrypt(Yi, K)).range(0, u));
     }
 
-    //std::cout << "decrypt P = " << P << std::endl;
     return P;
 
 }
@@ -137,7 +139,10 @@ coder::ByteArray GCM::encrypt(const coder::ByteArray& P, const coder::ByteArray&
     T = GHASH(H, A, C);
     T = T ^ cipher->encrypt(Y0, K);
 
-    //std::cout << "encrypt C = " << C << std::endl;
+    if (appendTag) {
+        C.append(T);
+    }
+
     return C;
 
 }
@@ -317,7 +322,7 @@ void GCM::shiftBlock(coder::ByteArray& block) const {
 
 }
 
-void GCM::setAuthData(const coder::ByteArray& ad) {
+void GCM::setAuthenticationData(const coder::ByteArray& ad) {
 
     /*if (ad.getLength() * 8 > A_MAX) {
         throw BadParameterException("GCM setAuthData: Invalid authentication data");

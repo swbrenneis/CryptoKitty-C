@@ -1,9 +1,9 @@
 #include "DigestTest.h"
-#include "coder/ByteArray.h"
-#include "digest/SHA1.h"
-#include "digest/SHA256.h"
-#include "digest/SHA384.h"
-#include "digest/SHA512.h"
+#include <coder/ByteArray.h>
+#include <CryptoKitty-C/digest/SHA1.h>
+#include <CryptoKitty-C/digest/SHA256.h>
+#include <CryptoKitty-C/digest/SHA384.h>
+#include <CryptoKitty-C/digest/SHA512.h>
 #include <iostream>
 
 DigestTest::DigestTest() {

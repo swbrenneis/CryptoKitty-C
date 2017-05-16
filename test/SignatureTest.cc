@@ -1,12 +1,11 @@
 #include "SignatureTest.h"
-#include "keys/RSAKeyPairGenerator.h"
-#include "random/FortunaSecureRandom.h"
-#include "signature/RSASignature.h"
-#include "digest/SHA256.h"
-#include "cipher/PKCS1rsassa.h"
-#include "cipher/PSSrsassa.h"
+#include <CryptoKitty-C/keys/RSAKeyPairGenerator.h>
+#include <CryptoKitty-C/random/FortunaSecureRandom.h>
+#include <CryptoKitty-C/signature/RSASignature.h>
+#include <CryptoKitty-C/digest/SHA256.h>
+#include <CryptoKitty-C/cipher/PKCS1rsassa.h>
+#include <CryptoKitty-C/cipher/PSSrsassa.h>
 #include "coder/ByteArray.h"
-#include "exceptions/Exception.h"
 #include <iostream>
 
 SignatureTest::SignatureTest() {
@@ -52,7 +51,7 @@ bool SignatureTest::RSAPKCS1test(int keysize) {
         delete pair;
         return true;
     }
-    catch (CK::Exception& e) {
+    catch (std::exception& e) {
         std::cout << "Exception thrown: " << e.what() << std::endl;
         delete pair;
         return false;
@@ -95,7 +94,7 @@ bool SignatureTest::RSAPSStest(int keysize) {
         delete pair;
         return true;
     }
-    catch (CK::Exception& e) {
+    catch (std::exception& e) {
         std::cout << "Exception thrown: " << e.what() << std::endl;
         delete pair;
         return false;

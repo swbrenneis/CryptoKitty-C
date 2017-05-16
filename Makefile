@@ -1,25 +1,23 @@
-UNAME= $(shell uname)
-ifeq ($(UNAME), Darwin)
-DEV_HOME=$(HOME)/Development
-endif
-ifeq ($(UNAME), Linux)
-DEV_HOME=$(HOME)/dev
-endif
+DEV_HOME:= $(HOME)/dev
+export DEV_HOME
+WHOAMI= $(shell whoami)
+ifeq ($(WHOAMI), amnesia)
+# Tails
+INSTALL_PATH= $(HOME)/Persistent/local
+TAILS_INCLUDE:= -I$(INSTALL_PATH)/include
+export TAILS_INCLUDE
+CHOWN_USER= amnesia:amnesia
+else
+DEV_HOME= $(HOME)/dev
 INSTALL_PATH= /usr/local
+CHOWN_USER= root:root
+endif
 CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
-ifeq ($(UNAME), Darwin)
-LD= libtool
-LDFLAGS= -static
-endif
-ifeq ($(UNAME), Linux)
 LD= g++
-endif
-LDPATHS= -L$(DEV_HOME)/from_source/lib
-LDLIBS=  -lntl -lgmp -lcoder -lcthread
-ifeq ($(UNAME), Linux)
+LDPATHS= -L$(DEV_HOME)/lib -L/usr/local/lib -L/usr/local/lib64
+LDLIBS=  -lntl -lgmp -lcoder -lcthread -lgnutls
 LDFLAGS= -Wall -g -shared -Wl,--no-undefined
-endif
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
 			   cipher/PSSmgf1.o cipher/PSSrsassa.o cipher/RSA.o
@@ -39,6 +37,11 @@ DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o dig
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
 			   include/digest/SHA512.h include/digest/DigestBase.h
 DIGEST_SOURCE= $(DIGEST_OBJECT:.o=.cc)
+ENCODING_OBJECT= encoding/Base64.o encoding/DERCodec.o encoding/GCMCodec.o encoding/PEMCodec.o \
+				 encoding/RSACodec.o
+ENCODING_HEADER= include/encoding/Base64.h include/encoding/DERCodec.h include/encoding/GCMCodec.h \
+				 include/encoding/PEMCodec.h include/encoding/RSACodec.h
+ENCODING_SOURCE= $(ENCODING_OBJECT:.o=.cc)
 KEYS_OBJECT= keys/DHKeyExchange.o keys/ECDHKeyExchange.o keys/PrivateKey.o \
 			 keys/PublicKey.o keys/RSAKeyPairGenerator.o keys/RSAPrivateKey.o \
 			 keys/RSAPrivateCrtKey.o keys/RSAPrivateModKey.o \
@@ -61,17 +64,15 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
+TLS_OBJECT=  tls/TLSCertificate.o tls/TLSCredentials.o tls/TLSSession.o
+TLS_HEADER=  include/tls/TLSCertificate.h include/tls/TLSCredentials.h include/tls/TLSSession.h
+TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
-CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) \
+CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) $(ENCODING_OBJECT) \
 		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
-		  $(SIGNATURE_OBJECT)
+		  $(SIGNATURE_OBJECT) $(TLS_OBJECT)
 
-ifeq ($(UNAME), Darwin)
-LIBRARY= libcryptokitty.a
-endif
-ifeq ($(UNAME), Linux)
 LIBRARY= libcryptokitty.so
-endif
 
 .SUFFIXES:
 
@@ -88,6 +89,9 @@ $(CIPHERMODES_OBJECT): $(CIPHERMODES_SOURCE) $(CIPHERMODES_HEADER)
 $(DATA_OBJECT): $(DATA_SOURCE) $(DATA_HEADER)
 	$(MAKE) -C data
 
+$(ENCODING_OBJECT): $(ENCODING_SOURCE) $(ENCODING_HEADER)
+	$(MAKE) -C encoding 
+
 $(DIGEST_OBJECT): $(DIGEST_SOURCE) $(DIGEST_HEADER)
 	$(MAKE) -C digest
 
@@ -103,6 +107,9 @@ $(RANDOM_OBJECT): $(RANDOM_SOURCE) $(RANDOM_HEADER)
 $(SIGNATURE_OBJECT): $(SIGNATURE_SOURCE) $(SIGNATURE_HEADER)
 	$(MAKE) -C signature
 
+$(TLS_OBJECT): $(TLS_SOURCE) $(TLS_HEADER)
+	$(MAKE) -C tls
+
 $(LIBRARY): $(CKOBJECT)
 	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS) $(LDPATHS) $(LDLIBS)
 
@@ -112,11 +119,12 @@ install: $(LIBRRY)
 	cp -R --preserve=timestamps include/* $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)/
-	chown -R root:root $(CK_INCLUDE)
-	strip $(LIBRARY)
+	chown -R $(CHOWN_USER) $(CK_INCLUDE)
+	mkdir -p $(INSTALL_PATH)/lib64
 	cp --preserve=timestamps $(LIBRARY) $(INSTALL_PATH)/lib64
 	chmod 755 $(INSTALL_PATH)/lib64/$(LIBRARY)
-	chown root:root $(INSTALL_PATH)/lib64/$(LIBRARY)
+	chown $(CHOWN_USER) $(INSTALL_PATH)/lib64/$(LIBRARY)
+	strip $(INSTALL_PATH)/lib64/$(LIBRARY)
 
 clean:
 	rm -f $(LIBRARY)
@@ -124,8 +132,10 @@ clean:
 	cd ciphermodes && $(MAKE) clean
 	cd data && $(MAKE) clean
 	cd digest && $(MAKE) clean
+	cd encoding && $(MAKE) clean
 	cd keys && $(MAKE) clean
 	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
+	cd tls && $(MAKE) clean
 

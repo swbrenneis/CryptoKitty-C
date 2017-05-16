@@ -9,12 +9,14 @@ namespace CK {
 // Static initialization
 const BigInteger RSAKeyPairGenerator::THREE(3);
 
-/*
- * The class defaults to a key size of 1024 bits and
- * a BBSRandom secure PRNG.
- */
 RSAKeyPairGenerator::RSAKeyPairGenerator()
-: keySize(1024) {
+: keySize(1024),
+  random(0) {
+}
+
+RSAKeyPairGenerator::RSAKeyPairGenerator(SecureRandom *secure, int bits)
+: keySize(bits),
+  random(secure) {
 }
 
 RSAKeyPairGenerator::~RSAKeyPairGenerator() {
@@ -36,8 +38,10 @@ void RSAKeyPairGenerator::initialize(int bits,
 /*
  * Generate the key pair.
  */
-KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool crt) {
+RSAKeyPair *RSAKeyPairGenerator::generateKeyPair(bool crt) {
 
+    // Puplic exponent
+    BigInteger e(65537L);
     // Create SG primes.
     BigInteger p(keySize / 2, false, *random);
     BigInteger q(keySize / 2, false, *random);
@@ -55,15 +59,17 @@ KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool 
     BigInteger phi = pp * qq;
     // Calculate the public exponent.
     // e is coprime (gcd = 1) with phi.
-    bool eFound = false;
-    BigInteger e;
-    while (!eFound) {
+    //bool eFound = false;
+    if (e.gcd(phi) != BigInteger::ONE) {
+        return generateKeyPair(crt);
+    }
+    /*while (!eFound) {
         e = BigInteger(64, false, *random);
         // 3 < e <= n-1
         if (e > THREE && e < n) {
             eFound = e.gcd(phi) == BigInteger::ONE;
         }
-    }
+    }*/
 
     // d * e = 1 mod phi (d = e^{1} mod phi)
     BigInteger d = e.modInverse(phi);
@@ -78,13 +84,16 @@ KeyPair<RSAPublicKey, RSAPrivateKey> *RSAKeyPairGenerator::generateKeyPair(bool 
         BigInteger dP = e.modInverse(pp);
         BigInteger dQ = e.modInverse(qq);
         BigInteger qInv = q.modInverse(p);
-        prv = new RSAPrivateCrtKey(p, q, dP, dQ, qInv);
+        RSAPrivateCrtKey *crtKey = new RSAPrivateCrtKey(p, q, dP, dQ, qInv);
+        crtKey->setModulus(n);
+        crtKey->setPrivateExponent(d);
+        prv = crtKey;
     }
     else {
         prv = new RSAPrivateModKey(n, d);
     }
 
-    return new KeyPair<RSAPublicKey, RSAPrivateKey>(pub, prv);
+    return new RSAKeyPair(pub, prv);
 
 }
 

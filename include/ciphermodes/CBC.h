@@ -1,16 +1,16 @@
 #ifndef CBC_H_INCLUDED
 #define CBC_H_INCLUDED
 
-#include "ciphermodes/CipherMode.h"
+#include "BlockCipherMode.h"
 
 namespace CK {
 
-class Cipher;
+class BlockCipher;
 
-class CBC : public CipherMode {
+class CBC : public BlockCipherMode {
 
     public:
-        CBC(Cipher *c, const coder::ByteArray& i);
+        CBC(BlockCipher *c);
         ~CBC();
 
     private:
@@ -22,6 +22,8 @@ class CBC : public CipherMode {
                                             const coder::ByteArray& key);
         coder::ByteArray encrypt(const coder::ByteArray& plaintext,
                                             const coder::ByteArray& key);
+        void setIV(const coder::ByteArray& iv);
+
     private:
         coder::ByteArray decrypt(const coder::ByteArray& iv, const coder::ByteArray& block,
                                             const coder::ByteArray& key) const;
@@ -30,7 +32,7 @@ class CBC : public CipherMode {
 
     private:
         unsigned blockSize;
-        Cipher *cipher;
+        BlockCipher *cipher;
         coder::ByteArray iv;
 
 };

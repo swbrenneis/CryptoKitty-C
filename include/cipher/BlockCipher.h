@@ -1,21 +1,22 @@
-#ifndef CIPHER_H_INCLUDED
-#define CIPHER_H_INCLUDED
+#ifndef BLOCKCIPHER_H_INCLUDED
+#define BLOCKCIPHER_H_INCLUDED
 
+#include "../jni/JNIReference.h"
 #include "coder/ByteArray.h"
 
 namespace CK {
 
-class Cipher {
+class BlockCipher : public JNIReference {
 
     protected:
-        Cipher() {}
+        BlockCipher() {}
 
     public:
-        virtual ~Cipher() {}
+        virtual ~BlockCipher() {}
 
     private:
-        Cipher(const Cipher& other);
-        Cipher& operator= (const Cipher& other);
+        BlockCipher(const BlockCipher& other);
+        BlockCipher& operator= (const BlockCipher& other);
 
     public:
         virtual unsigned blockSize() const=0;
@@ -23,9 +24,10 @@ class Cipher {
                 encrypt(const coder::ByteArray& plaintext, const coder::ByteArray& key)=0;
         virtual coder::ByteArray
                 decrypt(const coder::ByteArray& ciphertext, const coder::ByteArray& key)=0;
+        virtual void reset() = 0;
 
 };
 
 }
 
-#endif  // CIPHER_H_INCLUDED
+#endif  // BLOCKCIPHER_H_INCLUDED

@@ -1,7 +1,7 @@
 #ifndef ENCODINGEXCEPTION_H_INCLUDED
 #define ENCODINGEXCEPTION_H_INCLUDED
 
-#include "exceptions/Exception.h"
+#include "Exception.h"
 
 namespace CK {
 

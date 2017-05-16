@@ -4,6 +4,7 @@
 #include "data/NanoTime.h"
 #include "exceptions/BadParameterException.h"
 #include "exceptions/SignatureException.h"
+#include <coder/ByteArray.h>
 #include <cmath>
 #include <time.h>
 
@@ -28,7 +29,7 @@ coder::ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
     // I'll leave it in. Any reasonable sized key won't even come
     // close to violating this.
     /*if (x > (BigInteger(256).pow(xLen))) {
-        coder::ByteArray xb(x.getEncoded(BigInteger::BIGENDIAN));
+        coder::ByteArray xb(x.getEncoded());
         std::cout << "limit = " << (BigInteger(256).pow(xLen)) << std::endl;
         std::cout << "x = " << x << std::endl;
         std::cout << "xLen = " << xLen << std::endl;
@@ -38,9 +39,17 @@ coder::ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
     }*/
 
     //std::cout << "i2sop x = " << x << std::endl;
-    coder::ByteArray work(x.getEncoded(BigInteger::BIGENDIAN));
+    coder::ByteArray work(x.getEncoded());
     if (work.getLength() > xLen) {
-        throw BadParameterException("Invalid specified length");
+        if (work[0] == 0) {
+            // BigInteger encoding places a sign byte in the LSB when necessary.
+            // It needs to be removed to make the encoded integer the specified
+            // length.
+            work = work.range(1);
+        }
+        else {
+            throw BadParameterException("Invalid specified length");
+        }
     }
     coder::ByteArray pad(xLen - work.getLength());
     pad.append(work);
@@ -56,7 +65,7 @@ coder::ByteArray RSA::i2osp(const BigInteger& x, unsigned xLen) {
  */
 BigInteger RSA::os2ip(const coder::ByteArray& X) {
 
-    return BigInteger(X, BigInteger::BIGENDIAN);
+    return BigInteger(X);
 
 }
 
@@ -102,7 +111,7 @@ BigInteger RSA::rsavp1(const RSAPublicKey& K, const BigInteger& s) {
     rnd.setSeed(nt.getFullTime());
     timespec ts;
     ts.tv_sec = 0;
-    ts.tv_nsec = rnd.nextInt();
+    ts.tv_nsec = rnd.nextUnsignedInt();
     nanosleep(&ts, 0);
 
     //std:: cout << "rsavp1 s = " << s << std::endl;

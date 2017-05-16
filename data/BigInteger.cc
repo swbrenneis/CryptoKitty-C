@@ -1,6 +1,7 @@
 #include "data/BigInteger.h"
 #include "random/Random.h"
 #include "exceptions/BadParameterException.h"
+#include <coder/ByteArray.h>
 #include <algorithm>
 #include <climits>
 #include <cmath>
@@ -15,8 +16,6 @@ const BigInteger BigInteger::ZERO;
 const BigInteger BigInteger::ONE(1);
 const unsigned long long
     BigInteger::ULLONG_MSB = (ULLONG_MAX >> 1) ^ ULLONG_MAX;
-const int BigInteger::BIGENDIAN = 1;
-const int BigInteger::LITTLEENDIAN = 2;
 
 /* Uses small coprime test, 64 rounds of Miller-Rabin, and
  * tests for Germain primality, if indicated.
@@ -35,8 +34,7 @@ void makePrime(NTL::ZZ& n, bool sgPrime) {
             n += 2;
         }
     }
-    // I don't think Shoup knows that there is a bool type
-    // in C++.
+    // Not sure why ProbPrime returns an integer.
     provisional = false;
     while (!provisional) {
         provisional = NTL::ProbPrime(n, 64) == 1;
@@ -84,10 +82,10 @@ BigInteger::BigInteger(long initial)
 /*
  * Construct a BigInteger from a byte array
  */
-BigInteger::BigInteger(const coder::ByteArray& bytes, int endian)
+BigInteger::BigInteger(const coder::ByteArray& bytes)
 : number(0) {
 
-    decode(bytes, endian);
+    decode(bytes);
 
 }
 
@@ -226,7 +224,7 @@ int BigInteger::bitLength() const {
  */
 int BigInteger::bitSize() const {
 
-    coder::ByteArray enc(getEncoded(BIGENDIAN));
+    coder::ByteArray enc(getEncoded());
     return enc.getLength() * 8;
 
 }
@@ -234,28 +232,16 @@ int BigInteger::bitSize() const {
 /*
  * Decode a byte array with the indicated byte order.
  */
-void BigInteger::decode(const coder::ByteArray& bytes, int endian) {
+void BigInteger::decode(const coder::ByteArray& bytes) {
 
     delete number;
     number = new NTL::ZZ(0L);
     int bl = bytes.getLength(); // have to do this so the indexes
                                 // don't wrap.
-    
-    switch (endian) {
-        case BIGENDIAN:
-            for (int n = 0; n < bl; ++n) {
-                *number = *number << 8;
-                *number |= bytes[n];
-            }
-            break;
-        case LITTLEENDIAN:
-            for (int n = bl - 1; n >= 0; --n) {
-                *number = *number << 8;
-                *number |= bytes[n];
-            }
-            break;
-        default:
-            throw BadParameterException("Illegal endian value");
+
+    for (int n = 0; n < bl; ++n) {
+        *number = *number << 8;
+        *number |= bytes[n];
     }
 
 }
@@ -291,7 +277,7 @@ BigInteger BigInteger::gcd(const BigInteger& a) const {
  * Encodes the absolute value of the integer into an array
  * in the specified byte order.
  */
-coder::ByteArray BigInteger::getEncoded(int endian) const {
+coder::ByteArray BigInteger::getEncoded() const {
 
     NTL::ZZ work(NTL::abs(*number));
     double bl = bitLength();
@@ -302,18 +288,14 @@ coder::ByteArray BigInteger::getEncoded(int endian) const {
     coder::ByteArray result;
     while (index > 0) {
         long byte = work % 256;
-        switch (endian) {
-            case BIGENDIAN:
-                result.push(byte & 0xff);
-                break;
-            case LITTLEENDIAN:
-                result.append(byte & 0xff);
-                break;
-            default:
-                throw BadParameterException("Invalid byte order");
-        }
+        result.push(byte & 0xff);
         work = work / 256;
         index --;
+    }
+    // If the MSB is set in the lowest octet, we need to add
+    // a sign byte so that the value is always positive.
+    if ((result[0] & 0x80) != 0) {
+        result.push(0);
     }
     return result;
 
@@ -330,6 +312,15 @@ BigInteger BigInteger::invert() const {
         NTL::SetBit(mask, i);
     }
     return BigInteger(new NTL::ZZ(*number ^ mask));
+
+}
+
+/*
+ * Returns true if the integer is probably prime.
+ */
+bool BigInteger::isProbablePrime() const {
+
+    return NTL::ProbPrime(*number, 64) == 1;
 
 }
 
@@ -533,6 +524,15 @@ BigInteger BigInteger::subtract(const BigInteger& subtractor) const {
 bool BigInteger::testBit(int bitnum) const {
 
     return NTL::bit(*number, bitnum) == 1;
+
+}
+
+/*
+ * Returns a long (64 bit) representation of this integer.
+ */
+long BigInteger::toLong() {
+
+    return NTL::to_long(*number);
 
 }
 

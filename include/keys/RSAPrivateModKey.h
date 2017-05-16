@@ -1,8 +1,8 @@
 #ifndef RSAPRIVATEMODKEY_H_INCLUDED
 #define RSAPRIVATEMODKEY_H_INCLUDED
 
-#include "keys/RSAPrivateKey.h"
-#include "data/BigInteger.h"
+#include "RSAPrivateKey.h"
+#include "../data/BigInteger.h"
 
 namespace CK {
 
@@ -10,16 +10,16 @@ class RSAPrivateModKey : public RSAPrivateKey {
 
     private:
         RSAPrivateModKey();
-        RSAPrivateModKey(const RSAPrivateModKey& other);
-        RSAPrivateModKey& operator= (const RSAPrivateModKey& other);
 
     public:
         RSAPrivateModKey(const BigInteger& d, const BigInteger& n);
+        RSAPrivateModKey(const RSAPrivateModKey& other);
+        RSAPrivateModKey& operator= (const RSAPrivateModKey& other);
         ~RSAPrivateModKey();
 
     public:
-        const BigInteger& getPrivateExponent() const;
-        const BigInteger& getModulus() const;
+        const BigInteger& getPrivateExponent() const { return prvExp; }
+        const BigInteger& getModulus() const { return mod; }
 
     protected:
         // Decryption primitive.

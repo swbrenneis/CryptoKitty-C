@@ -2,6 +2,7 @@
 #define RSAKEYPAIRGENERATOR_H_INCLUDED
 
 #include "../data/BigInteger.h"
+#include "../jni/JNIReference.h"
 #include "KeyPair.h"
 
 namespace CK {
@@ -10,10 +11,13 @@ class SecureRandom;
 class RSAPublicKey;
 class RSAPrivateKey;
 
-class RSAKeyPairGenerator {
+typedef KeyPair<RSAPublicKey, RSAPrivateKey> RSAKeyPair;
+
+class RSAKeyPairGenerator : public JNIReference {
 
     public:
         RSAKeyPairGenerator();
+        RSAKeyPairGenerator(SecureRandom *secure, int bits = 1024);
         ~RSAKeyPairGenerator();
 
     private:
@@ -22,7 +26,7 @@ class RSAKeyPairGenerator {
                 operator= (const RSAKeyPairGenerator& other);
 
     public:
-        KeyPair<RSAPublicKey, RSAPrivateKey> *generateKeyPair(bool crt = true);
+        RSAKeyPair *generateKeyPair(bool crt = true);
         void initialize(int bits, SecureRandom* secure);
 
     private:

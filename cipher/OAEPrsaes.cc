@@ -231,7 +231,7 @@ coder::ByteArray OAEPrsaes::encrypt(const RSAPublicKey& K, const coder::ByteArra
     // Do encryption primitive
     BigInteger c = rsaep(K, os2ip(EM));
     // Return octet string.
-    coder::ByteArray cb(c.getEncoded(CK::BigInteger::BIGENDIAN));
+    coder::ByteArray cb(c.getEncoded());
     //std::cout << "cb = " << cb.toString() << std::endl;
     return i2osp(c, k);
 

@@ -29,8 +29,8 @@ class Random {
 
     public:
         virtual void nextBytes(coder::ByteArray& bytes);
-        virtual uint32_t nextInt();
-        virtual uint64_t nextLong();
+        virtual uint32_t nextUnsignedInt();
+        virtual uint64_t nextUnsignedLong();
 
     public:
         virtual void setSeed(uint64_t seedValue);

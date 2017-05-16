@@ -2,13 +2,14 @@
 #define RSA_H_INCLUDED
 
 #include "../data/BigInteger.h"
+#include "../jni/JNIReference.h"
 
 namespace CK {
 
 class RSAPublicKey;
 class RSAPrivateKey;
 
-class RSA {
+class RSA : public JNIReference {
 
     protected:
         RSA();

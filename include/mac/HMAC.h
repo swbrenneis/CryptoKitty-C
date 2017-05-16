@@ -1,7 +1,8 @@
 #ifndef HMAC_H_INCLUDED
 #define HMAC_H_INCLUDED
 
-#include "coder/ByteArray.h"
+#include "../jni/JNIReference.h"
+#include <coder/ByteArray.h>
 
 namespace CK {
 
@@ -11,7 +12,7 @@ class Digest;
  * Hash-based message authentication.
  * See RFC-2104 for details.
  */
-class HMAC {
+class HMAC : public JNIReference {
 
     private:
         HMAC();

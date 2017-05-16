@@ -1,7 +1,7 @@
 #include "RandomTest.h"
-#include "random/SecureRandom.h"
-#include "random/CMWCRandom.h"
-#include "coder/ByteArray.h"
+#include <CryptoKitty-C/random/SecureRandom.h>
+#include <CryptoKitty-C/random/CMWCRandom.h>
+#include <coder/ByteArray.h>
 #include <iostream>
 #include <deque>
 

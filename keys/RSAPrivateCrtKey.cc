@@ -6,7 +6,7 @@ namespace CK {
 
 RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
                                     const BigInteger& d, const BigInteger& e)
-: RSAPrivateKey("RSA CRT"),
+: RSAPrivateKey(crt),
   p(p),
   q(q) {
 
@@ -23,7 +23,7 @@ RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
 RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
                                     const BigInteger& dp, const BigInteger& dq,
                                     const BigInteger& qi)
-: RSAPrivateKey("RSA CRT"),
+: RSAPrivateKey(crt),
   p(p),
   q(q),
   dP(dp),
@@ -32,6 +32,36 @@ RSAPrivateCrtKey::RSAPrivateCrtKey(const BigInteger& p, const BigInteger& q,
 
     n = p * q;
     bitLength = n.bitLength();
+
+}
+
+RSAPrivateCrtKey::RSAPrivateCrtKey(const RSAPrivateCrtKey& other)
+: RSAPrivateKey(crt) {
+
+    p = other.p;
+    q = other.q;
+    dP = other.dP;
+    dQ = other.dQ;
+    qInv = other.qInv;
+    n = other.n;
+    d = other.d;
+    bitLength = other.bitLength;
+
+}
+
+RSAPrivateCrtKey& RSAPrivateCrtKey::operator =(const RSAPrivateCrtKey& other) {
+
+    p = other.p;
+    q = other.q;
+    dP = other.dP;
+    dQ = other.dQ;
+    qInv = other.qInv;
+    n = other.n;
+    d = other.d;
+    bitLength = other.bitLength;
+    keyType = crt;
+    algorithm = "RSA";
+    return *this;
 
 }
 
