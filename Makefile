@@ -106,9 +106,6 @@ $(RANDOM_OBJECT): $(RANDOM_SOURCE) $(RANDOM_HEADER)
 $(SIGNATURE_OBJECT): $(SIGNATURE_SOURCE) $(SIGNATURE_HEADER)
 	$(MAKE) -C signature
 
-$(TLS_OBJECT): $(TLS_SOURCE) $(TLS_HEADER)
-	$(MAKE) -C tls
-
 $(LIBRARY): $(CKOBJECT)
 	    $(LD) -o $@ $(CKOBJECT) $(LDFLAGS) $(LDPATHS) $(LDLIBS)
 
@@ -136,5 +133,4 @@ clean:
 	cd mac && $(MAKE) clean
 	cd random && $(MAKE) clean
 	cd signature && $(MAKE) clean
-	cd tls && $(MAKE) clean
 

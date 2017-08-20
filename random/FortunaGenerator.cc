@@ -5,20 +5,18 @@
 #include "coder/Unsigned32.h"
 #include "coder/Unsigned64.h"
 #include "data/NanoTime.h"
-#include "cthread/Lock.h"
-#include "cthread/Mutex.h"
-#include "cthread/Thread.h"
 #include <memory>
 #include <fstream>
 #include <cmath>
+#include <chrono>
 
 namespace CK {
 
 FortunaGenerator::FortunaGenerator()
 : runFlag(false),
+  thread(0),
   cipher(new AES(AES::AES256)),
-  counter(0L),
-  keyMutex(new cthread::Mutex) {
+  counter(0L) {
 
       limit.setBit(128);    // Limits counter to 16 bytes
 
@@ -26,7 +24,7 @@ FortunaGenerator::FortunaGenerator()
 
 FortunaGenerator::~FortunaGenerator() {
 
-    delete keyMutex;
+    delete thread;
 
 }
 
@@ -105,6 +103,10 @@ void FortunaGenerator::reseed(const coder::ByteArray& seed) {
 
 void FortunaGenerator::run() {
 
+#if (__GNUC__ > 4)
+    using namespace std::chrono_literals;
+#endif
+
     char ebuf[32];
     uint8_t *ubuf = reinterpret_cast<uint8_t*>(ebuf);
     uint64_t reseedCounter = 0;
@@ -113,8 +115,11 @@ void FortunaGenerator::run() {
         coder::ByteArray rd;
         generateRandomData(rd, 4);
         coder::Unsigned32 nsec(rd, coder::littleendian);
-        cthread::Thread::sleep(2000);       // Reseeds about once per minute.
-
+#if (__GNUC__ > 4)
+        std::this_thread::sleep_for(2s);       // Reseeds about once per minute.
+#else
+        std::this_thread::sleep_for(std::chrono::seconds(2));       // Reseeds about once per minute.
+#endif
         // Add some timed entropy
         NanoTime tm;
         coder::Unsigned32 timed(tm.getNanoseconds());
@@ -213,8 +218,7 @@ void FortunaGenerator::start() {
 
         // Start the accumulator.
         runFlag = true;
-        thread = new cthread::Thread(this);
-        thread->start();
+        thread = new std::thread([this]{ run(); });
     }
 
 }
