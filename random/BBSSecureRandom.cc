@@ -44,7 +44,7 @@ void BBSSecureRandom::getEntropy(coder::ByteArray bytes) const {
     if (!seeded) {
         CMWCRandom rnd;
         NanoTime nt;
-        rnd.setSeed(nt.getFullTime());
+        rnd.setSeed(nt.getCurrentNanoseconds());
         coder::ByteArray seed(10);
         rnd.nextBytes(seed);
         std::ofstream out("/dev/random");
@@ -70,7 +70,7 @@ void BBSSecureRandom::initialize() {
 
     CMWCRandom rnd;
     NanoTime nt;
-    rnd.setSeed(nt.getFullTime());
+    rnd.setSeed(nt.getCurrentNanoseconds());
     BigInteger p(512, false, rnd);
     // Check for congruence to 3 (mod 4). Generate new prime if not.
     while (p % FOUR != THREE) {

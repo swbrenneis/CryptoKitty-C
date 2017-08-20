@@ -1,3 +1,7 @@
+UNAME= $(shell uname)
+
+ifeq ($(UNAME), Linux)
+LIB_INSTALL_DIR= lib64
 WHOAMI= $(shell whoami)
 ifeq ($(WHOAMI), amnesia)
 # Tails
@@ -9,7 +13,14 @@ else
 INSTALL_PATH= /usr/local
 CHOWN_USER= root:root
 endif
-UNAME= $(shell uname)
+endif
+
+ifeq ($(UNAME), CYGWIN_NT-10.0)
+INSTALL_PATH= /usr/local
+CHOWN_USER= Steve:Users
+LIB_INSTALL_DIR= lib
+endif
+
 CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
 LD= g++
@@ -28,8 +39,8 @@ CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/CTR.o ciphermodes/GCM.o \
 CIPHERMODES_HEADER= include/ciphermodes/CBC.h include/ciphermodes/CTR.h \
 					include/ciphermodes/GCM.h include/ciphermodes/MtE.h
 CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
-DATA_OBJECT= data/BigInteger.o
-DATA_HEADER= include/data/BigInteger.h
+DATA_OBJECT= data/BigInteger.o data/NanoTime.o
+DATA_HEADER= include/data/BigInteger.h include/data/NanoTime.h
 DATA_SOURCE= $(DATA_OBJECT:.o=.cc)
 DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o digest/DigestBase.o
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
@@ -116,11 +127,11 @@ install: $(LIBRRY)
 	chmod 755 $(CK_INCLUDE)
 	chmod 755 $(CK_INCLUDE)/
 	chown -R $(CHOWN_USER) $(CK_INCLUDE)
-	mkdir -p $(INSTALL_PATH)/lib64
-	cp --preserve=timestamps $(LIBRARY) $(INSTALL_PATH)/lib64
-	chmod 755 $(INSTALL_PATH)/lib64/$(LIBRARY)
-	chown $(CHOWN_USER) $(INSTALL_PATH)/lib64/$(LIBRARY)
-	strip $(INSTALL_PATH)/lib64/$(LIBRARY)
+	mkdir -p $(INSTALL_PATH)/$(LIB_INSTALL_DIR)
+	cp --preserve=timestamps $(LIBRARY) $(INSTALL_PATH)/$(LIB_INSTALL_DIR)
+	chmod 755 $(INSTALL_PATH)/$(LIB_INSTALL_DIR)/$(LIBRARY)
+	chown $(CHOWN_USER) $(INSTALL_PATH)/$(LIB_INSTALL_DIR)/$(LIBRARY)
+	#strip $(INSTALL_PATH)/$(LIB_INSTALL_DIR)/$(LIBRARY)
 
 clean:
 	rm -f $(LIBRARY)

@@ -3,8 +3,10 @@ UNAME= $(shell uname)
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT -DVMRANDOM
 CPPINCLUDES= -I../include $(TAILS_INCLUDE)
-CPPFLAGS= -Wall -g -MMD -std=c++11 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
-ifneq ($(UNAME), CYGWIN_NT-10.0)
+CPPFLAGS= -Wall -g -MMD -std=c++11 $(CPPDEFINES) $(CPPINCLUDES)
+ifeq ($(UNAME), CYGWIN_NT-10.0)
+CPPFLAGS+= -fext-numeric-literals
+else
 CPPFLAGS+= -fPIC
 endif
 

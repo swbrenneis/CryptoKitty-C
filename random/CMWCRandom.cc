@@ -18,7 +18,7 @@ const uint64_t CMWCRandom::R = 0xfffffffe;
 CMWCRandom::CMWCRandom() {
 
     NanoTime time;
-    seed = time.getFullTime();
+    seed = time.getCurrentNanoseconds();
 
 }
 
@@ -102,7 +102,7 @@ void CMWCRandom::seedGenerator() {
         coder::Unsigned64 u64(nonce);
         digest.update(u64.getEncoded());
         nonce++;
-        u64.setValue(nt.getFullTime());
+        u64.setValue(nt.getCurrentNanoseconds());
         digest.update(u64.getEncoded());
         context = digest.digest();
         fill.copy(filled, context, 0);
@@ -114,7 +114,7 @@ void CMWCRandom::seedGenerator() {
         q[qi] = u64.getValue();
     }
     nt.newTime();
-    c = nt.getFullTime() % 809430659;  // Reset the reseed counter.
+    c = nt.getCurrentNanoseconds() % 809430659;  // Reset the reseed counter.
 
 }
 

@@ -4,27 +4,26 @@
 namespace CK {
 
 /*
- * Encapsulation of *nix clock_time function
+ * Convenience class for std::chrono functions
  */
 class NanoTime {
 
     public:
         NanoTime();
-        ~NanoTime();
+        ~NanoTime() {}
 
     private:
         NanoTime(const NanoTime& other);
+        NanoTime& operator =(const NanoTime& other);
 
     public:
-        unsigned long getFullTime() const; // Time in nanoseconds.
-        unsigned long getNanoseconds() const; // Returns just nanoseconds.
-        unsigned long getSeconds() const; // Returns just seconds.
+        unsigned long getCurrentNanoseconds() const { return ntNanoseconds; }
+        unsigned long getCurrentSeconds() const { return ntSeconds; }
         void newTime(); // Get new time value.
 
     private:
-        unsigned long time;
-        unsigned long seconds;
-        unsigned long nanoseconds;
+        unsigned long ntSeconds;
+        unsigned long ntNanoseconds;
 
 };
 

@@ -103,9 +103,10 @@ void FortunaGenerator::reseed(const coder::ByteArray& seed) {
 
 void FortunaGenerator::run() {
 
-#if (__GNUC__ > 4)
+#if (__GNUC__ > 4) && !defined (__CYGWIN__)
     using namespace std::chrono_literals;
 #endif
+    using namespace std::chrono;
 
     char ebuf[32];
     uint8_t *ubuf = reinterpret_cast<uint8_t*>(ebuf);
@@ -115,14 +116,14 @@ void FortunaGenerator::run() {
         coder::ByteArray rd;
         generateRandomData(rd, 4);
         coder::Unsigned32 nsec(rd, coder::littleendian);
-#if (__GNUC__ > 4)
+#if (__GNUC__ > 4) && !defined (__CYGWIN__)
         std::this_thread::sleep_for(2s);       // Reseeds about once per minute.
 #else
-        std::this_thread::sleep_for(std::chrono::seconds(2));       // Reseeds about once per minute.
+        std::this_thread::sleep_for(seconds(2));       // Reseeds about once per minute.
 #endif
         // Add some timed entropy
         NanoTime tm;
-        coder::Unsigned32 timed(tm.getNanoseconds());
+        coder::Unsigned32 timed(tm.getCurrentSeconds());
         coder::ByteArray nano(timed.getEncoded(coder::littleendian));
         // Fill out to 32 bytes.
         for (int i = 1; i < 8; ++i) {
@@ -134,7 +135,7 @@ void FortunaGenerator::run() {
         }
 
         // Hash the time value and distribute
-        coder::Unsigned64 htimed(tm.getFullTime());
+        coder::Unsigned64 htimed(tm.getCurrentNanoseconds());
         SHA256 sha;
         coder::ByteArray hashed(sha.digest(htimed.getEncoded(coder::littleendian)));
         for (int i = 0; i < 32; ++i) {

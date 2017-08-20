@@ -8,7 +8,7 @@ ifneq ($(UNAME), CYGWIN_NT-10.0)
 CPPFLAGS+= -fPIC
 endif
 
-CPP_SOURCES= BigInteger.cc
+CPP_SOURCES= BigInteger.cc NanoTime.cc
 CPP_OBJECT= $(CPP_SOURCES:.cc=.o)
 DEPEND= $(CPP_OBJECT:.o=.d)
 
