@@ -1,5 +1,3 @@
-DEV_HOME:= $(HOME)/dev
-export DEV_HOME
 WHOAMI= $(shell whoami)
 ifeq ($(WHOAMI), amnesia)
 # Tails
@@ -8,15 +6,15 @@ TAILS_INCLUDE:= -I$(INSTALL_PATH)/include
 export TAILS_INCLUDE
 CHOWN_USER= amnesia:amnesia
 else
-DEV_HOME= $(HOME)/dev
 INSTALL_PATH= /usr/local
 CHOWN_USER= root:root
 endif
+UNAME= $(shell uname)
 CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
 LD= g++
-LDPATHS= -L$(DEV_HOME)/lib -L/usr/local/lib -L/usr/local/lib64
-LDLIBS=  -lntl -lgmp -lcoder -lcthread -lgnutls
+LDPATHS= -L/usr/local/lib -L/usr/local/lib64
+LDLIBS=  -lntl -lgmp -lcoder
 LDFLAGS= -Wall -g -shared -Wl,--no-undefined
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
@@ -30,8 +28,8 @@ CIPHERMODES_OBJECT= ciphermodes/CBC.o ciphermodes/CTR.o ciphermodes/GCM.o \
 CIPHERMODES_HEADER= include/ciphermodes/CBC.h include/ciphermodes/CTR.h \
 					include/ciphermodes/GCM.h include/ciphermodes/MtE.h
 CIPHERMODES_SOURCE= $(CIPHERMODES_OBJECT:.o=.cc)
-DATA_OBJECT= data/BigInteger.o data/NanoTime.o
-DATA_HEADER= include/data/BigInteger.h include/data/NanoTime.h
+DATA_OBJECT= data/BigInteger.o
+DATA_HEADER= include/data/BigInteger.h
 DATA_SOURCE= $(DATA_OBJECT:.o=.cc)
 DIGEST_OBJECT= digest/SHA1.o digest/SHA256.o digest/SHA384.o digest/SHA512.o digest/DigestBase.o
 DIGEST_HEADER= include/digest/SHA1.h include/digest/SHA256.h include/digest/SHA384.h \
@@ -64,15 +62,16 @@ RANDOM_SOURCE= $(RANDOM_OBJECT:.o=.cc)
 SIGNATURE_OBJECT= signature/RSASignature.o
 SIGNATURE_HEADER= include/signature/RSASignature.h
 SIGNATURE_SOURCE= $(SIGNATURE_OBJECT:.o=.cc)
-TLS_OBJECT=  tls/TLSCertificate.o tls/TLSCredentials.o tls/TLSSession.o
-TLS_HEADER=  include/tls/TLSCertificate.h include/tls/TLSCredentials.h include/tls/TLSSession.h
-TLS_SOURCE= $(TLS_OBJECT:.o=.cc)
 
 CKOBJECT= $(CIPHER_OBJECT) $(CIPHERMODES_OBJECT) $(DATA_OBJECT) $(ENCODING_OBJECT) \
 		  $(DIGEST_OBJECT) $(KEYS_OBJECT) $(MAC_OBJECT) $(RANDOM_OBJECT) \
-		  $(SIGNATURE_OBJECT) $(TLS_OBJECT)
+		  $(SIGNATURE_OBJECT)
 
+ifeq ($(UNAME), CYGWIN_NT-10.0)
+LIBRARY= cryptokitty.dll
+else
 LIBRARY= libcryptokitty.so
+endif
 
 .SUFFIXES:
 

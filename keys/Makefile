@@ -1,7 +1,12 @@
+UNAME= $(shell uname)
+
 CPP= g++
 CPPDEFINES= -D_GNU_SOURCE -D_REENTRANT
 CPPINCLUDES= -I../include $(TAILS_INCLUDE)
-CPPFLAGS= -Wall -g -MMD -std=c++11 -fPIC $(CPPDEFINES) $(CPPINCLUDES)
+CPPFLAGS= -Wall -g -MMD -std=c++11 $(CPPDEFINES) $(CPPINCLUDES)
+ifneq ($(UNAME), CYGWIN_NT-10.0)
+CPPFLAGS+= -fPIC
+endif
 
 CPP_SOURCES= DHKeyExchange.cc ECDHKeyExchange.cc PrivateKey.cc PublicKey.cc RSAKeyPairGenerator.cc \
 			 RSAPrivateKey.cc RSAPrivateCrtKey.cc RSAPrivateModKey.cc RSAPublicKey.cc
