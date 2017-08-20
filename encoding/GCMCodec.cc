@@ -8,7 +8,8 @@
 
 namespace CK {
 
-GCMCodec::GCMCodec() {
+GCMCodec::GCMCodec()
+: ivSet(false) {
     
 }
 
