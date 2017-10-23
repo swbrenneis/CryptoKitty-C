@@ -15,8 +15,7 @@ namespace CK {
 FortunaGenerator::FortunaGenerator()
 : runFlag(false),
   thread(0),
-  cipher(new AES(AES::AES256)),
-  counter(0L) {
+  cipher(new AES(AES::AES256)) {
 
       limit.setBit(128);    // Limits counter to 16 bytes
 

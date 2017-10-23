@@ -103,7 +103,7 @@ coder::ByteArray PSSrsassa::emsaPSSEncode(const coder::ByteArray& M, int emBits)
     }
     catch (BadParameterException& e) {
         // Fail silently
-        return false;
+        return coder::ByteArray();
     }
 
     //std:: cout << "emsaPSSEncode dbMask = " << dbMask << std::endl << std::endl;

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
-#include "NTL/ZZ.h"
+#include <memory>
 
 namespace CK {
 
@@ -18,41 +18,25 @@ const unsigned long long
     BigInteger::ULLONG_MSB = (ULLONG_MAX >> 1) ^ ULLONG_MAX;
 
 /* Uses small coprime test, 64 rounds of Miller-Rabin, and
- * tests for Germain primality, if indicated.
+ * tests for Sophie Germain primality, if indicated.
  */ 
-void makePrime(NTL::ZZ& n, bool sgPrime) {
+void makePrime(mpz_t n, bool sgPrime) {
 
-    bool provisional = false;
-    // Improve Miller-Rabin probability.
-    long smallPrimes[] = { 3, 5, 7, 11, 13, 17, 19 };
-    while (!provisional) {
-        provisional = true;
-        for (int i = 0; i < 7 && provisional; ++i) {
-            provisional = NTL::GCD(n, NTL::ZZ(smallPrimes[i])) == 1;
-        }
-        if (!provisional) {
-            n += 2;
-        }
-    }
-    // Not sure why ProbPrime returns an integer.
-    provisional = false;
-    while (!provisional) {
-        provisional = NTL::ProbPrime(n, 64) == 1;
-        if (!provisional) {
-            n += 2;
-        }
+    if (mpz_probab_prime_p(n, 64) != 1) {
+        mpz_nextprime(n, n);
     }
 
-    // We'll just use Miller-Rabin for the Germain prime.
+    // Increment until we get the SG prime.
     if (sgPrime) {
-        provisional = false;
-        while (!provisional) {
-            provisional = NTL::ProbPrime((n * 2) + 1, 64) == 1;
-            if (!provisional) {
-                n += 2;
-                makePrime(n, true);
-            }
+        mpz_t sg;
+        mpz_init(sg);
+        mpz_mul_ui(sg, n, 2);
+        mpz_add_ui(sg, sg, 1);
+        if (mpz_probab_prime_p(sg, 64) != 1) {
+            mpz_add_ui(n, n, 2);
+            makePrime(n, true);
         }
+        mpz_clear(sg);
     }
 
 }
@@ -61,30 +45,36 @@ void makePrime(NTL::ZZ& n, bool sgPrime) {
  * Default constructor
  * Sets value to 0
  */
-BigInteger::BigInteger()
-: number(new NTL::ZZ(0)){
+BigInteger::BigInteger() {
+
+    mpz_init(number);
+
 }
 
 /*
  * Copy constructor
  */
-BigInteger::BigInteger(const BigInteger& other)
-: number(new NTL::ZZ(*other.number)) {
+BigInteger::BigInteger(const BigInteger& other) {
+
+    mpz_init_set(number, other.number);
+
 }
 
 /*
- * Constructor with initial long long value
+ * Constructor with initial unsigned long value
  */
-BigInteger::BigInteger(long initial)
-: number(new NTL::ZZ(initial)) {
+BigInteger::BigInteger(unsigned long initial) {
+
+    mpz_init_set_ui(number, initial);
+
 }
 
 /*
  * Construct a BigInteger from a byte array
  */
-BigInteger::BigInteger(const coder::ByteArray& bytes)
-: number(0) {
+BigInteger::BigInteger(const coder::ByteArray& bytes) {
 
+    mpz_init(number);
     decode(bytes);
 
 }
@@ -106,38 +96,45 @@ BigInteger::BigInteger(int bits, bool sgPrime, Random& rnd) {
     rnd.nextBytes(pBytes);
 
     // Load the big integer.
-    NTL::ZZ work(pBytes[0]);
-    for (unsigned n = 1; n < pBytes.getLength(); ++n) {
-        work = (work * 256) + pBytes[n];
+    mpz_t work;
+    mpz_init_set_ui(work, pBytes[0]);
+    for (unsigned n = 1; n < pBytes.length(); ++n) {
+        mpz_mul_ui(work, work, 256);
+        mpz_add_ui(work, work, pBytes[n]);
     }
 
     // Make sure it's positive.
-    if (work < 0) {
-        work = abs(work);
-    }
+    mpz_abs(work, work);
 
     // Make sure it's odd.
-    if (work % 2 == 0) {
-        work++;
+    if (mpz_odd_p(work) == 0) {
+        mpz_add_ui(work, work, 1);
     }
 
     makePrime(work, sgPrime);
-    number = new NTL::ZZ(work);
+    mpz_init_set(number, work);
+    mpz_clear(work);
 
 }
 
 /*
- * Construct a BigInteger with a new NTL integer.
+ * Construct a BigInteger with a new GMP integer. Clears the input integer.
+ * This effectively consumes the input integer.
  */
-BigInteger::BigInteger(NTL::ZZ *newNumber)
-: number(newNumber) {
+BigInteger::BigInteger(mpz_t newNumber) {
+
+    mpz_init_set(number, newNumber);
+    mpz_clear(newNumber);
+
 }
 
 /*
- * Construct a BigInteger with a copy of an  NTL integer.
+ * Construct a BigInteger with a copy of a GMP integer.
  */
-BigInteger::BigInteger(const NTL::ZZ& otherNumber)
-: number(new NTL::ZZ(otherNumber)) {
+BigInteger::BigInteger(const mpz_t otherNumber) {
+
+    mpz_init_set(number, otherNumber);
+    
 }
 
 /*
@@ -145,7 +142,7 @@ BigInteger::BigInteger(const NTL::ZZ& otherNumber)
  */
 BigInteger::~BigInteger() {
 
-    delete number;
+    mpz_clear(number);
 
 }
 
@@ -154,8 +151,8 @@ BigInteger::~BigInteger() {
  */
 BigInteger& BigInteger::operator= (const BigInteger& other) {
 
-    delete number;
-    number = new NTL::ZZ(*other.number);
+    mpz_clear(number);
+    mpz_init_set(number, other.number);
     return *this;
 
 }
@@ -163,10 +160,10 @@ BigInteger& BigInteger::operator= (const BigInteger& other) {
 /*
  * Assignment operator
  */
-BigInteger& BigInteger::operator= (long value) {
+BigInteger& BigInteger::operator= (unsigned long value) {
 
-    delete number;
-    number = new NTL::ZZ(value);
+    mpz_clear(number);
+    mpz_init_set_ui(number, value);
     return *this;
 
 }
@@ -176,7 +173,7 @@ BigInteger& BigInteger::operator= (long value) {
  */
 BigInteger& BigInteger::operator++ () {
 
-    ++(*number);
+    mpz_add_ui(number, number, 1);
     return *this;
 
 }
@@ -197,7 +194,10 @@ BigInteger BigInteger::operator++ (int) {
  */
 BigInteger BigInteger::add(const BigInteger& addend) const {
 
-    return BigInteger(new NTL::ZZ(*number + *addend.number));
+    mpz_t result;
+    mpz_init(result);
+    mpz_add(result, number, addend.number);
+    return result;
 
 }
 
@@ -206,7 +206,10 @@ BigInteger BigInteger::add(const BigInteger& addend) const {
  */
 BigInteger BigInteger::And(const BigInteger& logical) const {
 
-    return BigInteger(new NTL::ZZ(*number & *logical.number));
+    mpz_t result;
+    mpz_init(result);
+    mpz_and(result, number, logical.number);
+    return result;
 
 }
 
@@ -215,7 +218,7 @@ BigInteger BigInteger::And(const BigInteger& logical) const {
  */
 int BigInteger::bitLength() const {
 
-    return NTL::NumBits(*number);
+    return mpz_sizeinbase(number, 2);
 
 }
 
@@ -225,33 +228,39 @@ int BigInteger::bitLength() const {
 int BigInteger::bitSize() const {
 
     coder::ByteArray enc(getEncoded());
-    return enc.getLength() * 8;
+    return enc.length() * 8;
 
 }
 
 /*
  * Decode a byte array with the indicated byte order.
+ * Assumes that the GMP integer has been initialized.
  */
 void BigInteger::decode(const coder::ByteArray& bytes) {
 
-    delete number;
-    number = new NTL::ZZ(0L);
-    int bl = bytes.getLength(); // have to do this so the indexes
+    int bl = bytes.length(); // have to do this so the indexes
                                 // don't wrap.
 
     for (int n = 0; n < bl; ++n) {
-        *number = *number << 8;
-        *number |= bytes[n];
+        mpz_mul_ui(number, number, 256);
+        mpz_add_ui(number, number, bytes[n]);
     }
 
 }
 
 /*
- * returns a BigInteger that is eual to this divded by divisor.
+ * returns a BigInteger that is eual to this divided by divisor.
  */
 BigInteger BigInteger::divide(const BigInteger& divisor) const {
 
-    return BigInteger(*number / *divisor.number);
+    if (divisor == ZERO) {
+        throw BadParameterException("Divide by zero");
+    }
+    
+    mpz_t result;
+    mpz_init(result);
+    mpz_tdiv_q(result, number, divisor.number);
+    return result;
 
 }
 
@@ -260,7 +269,7 @@ BigInteger BigInteger::divide(const BigInteger& divisor) const {
  */
 bool BigInteger::equals(const BigInteger& other) const {
 
-    return NTL::compare(*number, *other.number) == 0;
+    return mpz_cmp(number, other.number) == 0;
 
 }
 
@@ -269,7 +278,10 @@ bool BigInteger::equals(const BigInteger& other) const {
  */
 BigInteger BigInteger::gcd(const BigInteger& a) const {
 
-    return BigInteger(new NTL::ZZ(NTL::GCD(*number, *a.number)));
+    mpz_t result;
+    mpz_init(result);
+    mpz_gcd(result, number, a.number);
+    return result;
 
 }
 
@@ -279,7 +291,9 @@ BigInteger BigInteger::gcd(const BigInteger& a) const {
  */
 coder::ByteArray BigInteger::getEncoded() const {
 
-    NTL::ZZ work(NTL::abs(*number));
+    mpz_t work;
+    mpz_init(work);
+    mpz_abs(work, number);
     double bl = bitLength();
     int index = ceil(bl / 8);
     if (index == 0) {
@@ -287,9 +301,9 @@ coder::ByteArray BigInteger::getEncoded() const {
     }
     coder::ByteArray result;
     while (index > 0) {
-        long byte = work % 256;
+        unsigned long byte = mpz_fdiv_ui(work, 256);
         result.push(byte & 0xff);
-        work = work / 256;
+        mpz_tdiv_q_ui(work, work, 256);
         index --;
     }
     // If the MSB is set in the lowest octet, we need to add
@@ -302,25 +316,23 @@ coder::ByteArray BigInteger::getEncoded() const {
 }
 
 /*
- * Returns a BigInteger that is the bitwise inversion of this.
+ * Returns a BigInteger that is the bitwise inversion (1s complement) of this.
  */
 BigInteger BigInteger::invert() const {
 
-    int bits = bitLength();
-    NTL::ZZ mask;
-    for (int i = 0; i < bits; ++i) {
-        NTL::SetBit(mask, i);
-    }
-    return BigInteger(new NTL::ZZ(*number ^ mask));
+    mpz_t result;
+    mpz_init(result);
+    mpz_com(result, number);
+    return result;
 
 }
 
 /*
- * Returns true if the integer is probably prime.
+ * Returns true if the integer is probably prime. Performs 64 Miller-Rabin iterations.
  */
 bool BigInteger::isProbablePrime() const {
 
-    return NTL::ProbPrime(*number, 64) == 1;
+    return mpz_probab_prime_p(number, 64) == 1;
 
 }
 
@@ -329,7 +341,13 @@ bool BigInteger::isProbablePrime() const {
  */
 BigInteger BigInteger::leftShift(long count) const {
 
-    return BigInteger(new NTL::ZZ(*number << count));
+    mpz_t result;
+    mpz_init_set(result, number);
+    long shifted = 0;
+    while (shifted++ < count) {
+        mpz_mul_ui(result, result, 2);
+    }
+    return result;
 
 }
 
@@ -338,7 +356,7 @@ BigInteger BigInteger::leftShift(long count) const {
  */
 bool BigInteger::lessThan(const BigInteger& other) const {
 
-    return NTL::compare(*number, *other.number) < 0;
+    return mpz_cmp(number, other.number) < 0;
 
 }
 
@@ -347,7 +365,14 @@ bool BigInteger::lessThan(const BigInteger& other) const {
  */
 BigInteger BigInteger::mod(const BigInteger& a) const {
 
-    return BigInteger(new NTL::ZZ(*number % *a.number));
+    if (a == ZERO) {
+        throw BadParameterException("Divide by zero");
+    }
+    
+    mpz_t result;
+    mpz_init(result);
+    mpz_mod(result, number, a.number);
+    return result;
 
 }
 
@@ -357,50 +382,20 @@ BigInteger BigInteger::mod(const BigInteger& a) const {
  */
 BigInteger BigInteger::modInverse(const BigInteger& n) const {
 
-    // Sadly, NTL has a bug that causes this to throw an exception when
-    // the a >= n in a congruent to 1/x mod n.
-    //try {
-    //    return BigInteger(new NTL::ZZ(NTL::InvMod(*number, *n.number)));
-    //}
-    //catch (NTL::InvModErrorObject& e) {
-    //    throw BadParameterException("Undefined inverse");
-    //}
-
-    if (gcd(n) != ONE) {
-        throw BadParameterException("Modulus not coprime");
+    if (n == ZERO) {
+        throw BadParameterException("Invalid modulus for inversion");
     }
 
-    BigInteger t;
-    BigInteger q;
-    BigInteger x0(ZERO);
-    BigInteger x1(ONE);
-    BigInteger a(*number);
-    BigInteger m(n);
-
-    // Inverse modulus 1 is always 0. 
-    if (n == ONE) {
-        return BigInteger(ZERO);
+    mpz_t result;
+    mpz_init(result);
+    int res = mpz_invert(result, number, n.number);
+    
+    if (res == 0) {
+        mpz_clear(result);
+        throw BadParameterException("Inverse does not exist");
     }
 
-    while (a > ONE) {
-        // q is quotient
-        q = a / m;
-        t = m;
-        // m is remainder
-        m = a % m;
-        a = t;
-        t = x0;
-        // Extended Euclid substitution.
-        x0 = x1 - q * x0;
-        x1 = t;
-    }
-
-    // Make x1 positive
-    if (x1 < ZERO) {
-        x1 = x1 +  n;
-    }
-
-    return x1;
+    return result;
 
 }
 
@@ -410,47 +405,15 @@ BigInteger BigInteger::modInverse(const BigInteger& n) const {
 BigInteger BigInteger::modPow(const BigInteger& exp,
                 const BigInteger& m) const {
 
-    // This also appears to be bugged in NTL.
-    //return BigInteger(new NTL::ZZ(
-    //                    NTL::PowerMod(*number, *exp.number, *m.number)));
-
     // Solve for negative exponents using modular multiplicative
     // inverse.
     if (exp < ZERO) {
         return modInverse(m);
     }
 
-    /*
-     * Pseudocode from Schneier
-    if modulus = 1 then return 0
-    Assert :: (modulus - 1) * (modulus - 1) does not overflow base
-    result := 1
-    base := base mod modulus
-    while exponent > 0
-        if (exponent mod 2 == 1):
-            result := (result * base) mod modulus
-        exponent := exponent >> 1
-        base := (base * base) mod modulus
-    return result
-    */
-
-    if (m == ONE) {
-        return BigInteger(ZERO);
-    }
-
-    BigInteger base(*this % m);
-    BigInteger exponent(exp);
-    BigInteger result(ONE);
-    BigInteger TWO(2L);
-    
-    while (exponent > ZERO) {
-        if (exponent % TWO == ONE) {
-            result = (result * base) % m;
-        }
-        exponent = exponent >> 1;
-        base = (base * base) % m;
-    }
- 
+    mpz_t result;
+    mpz_init(result);
+    mpz_powm(result, number, exp.number, m.number);
     return result;
 
 }
@@ -460,7 +423,10 @@ BigInteger BigInteger::modPow(const BigInteger& exp,
  */
 BigInteger BigInteger::multiply(const BigInteger& multiplier) const {
 
-    return BigInteger(new NTL::ZZ((*number) * (*multiplier.number)));
+    mpz_t result;
+    mpz_init(result);
+    mpz_mul(result, number, multiplier.number);
+    return result;
 
 }
 
@@ -469,7 +435,10 @@ BigInteger BigInteger::multiply(const BigInteger& multiplier) const {
  */
 BigInteger BigInteger::Or(const BigInteger& logical) const {
 
-    return BigInteger(new NTL::ZZ(*number | *logical.number));
+    mpz_t result;
+    mpz_init(result);
+    mpz_ior(result, number, logical.number);
+    return result;
 
 }
 
@@ -478,16 +447,20 @@ BigInteger BigInteger::Or(const BigInteger& logical) const {
  */
 void BigInteger::out(std::ostream& o) const {
 
-    o << *number;
+    std::unique_ptr<char[]> str(mpz_get_str(0, 10, number));
+    o << std::string(str.get());
 
 }
 
 /*
  * Returns a BigInteger equal to this**exp.
  */
-BigInteger BigInteger::pow(long exp) const {
+BigInteger BigInteger::pow(unsigned long exp) const {
 
-    return BigInteger(new NTL::ZZ(NTL::power(*number, exp)));
+    mpz_t result;
+    mpz_init(result);
+    mpz_pow_ui(result, number, exp);
+    return result;
 
 }
 
@@ -496,7 +469,15 @@ BigInteger BigInteger::pow(long exp) const {
  */
 BigInteger BigInteger::rightShift(long count) const {
 
-    return BigInteger(new NTL::ZZ(*number >> count));
+
+    mpz_t result;
+    mpz_init_set(result, number);
+    long shifted = 0;
+    while (shifted++ < count) {
+        mpz_tdiv_q_ui(result, result, 2);
+    }
+    return result;
+    
 
 }
 
@@ -505,7 +486,7 @@ BigInteger BigInteger::rightShift(long count) const {
  */
 void BigInteger::setBit(int bitnum) {
 
-    NTL::SetBit(*number, bitnum);
+    mpz_setbit(number, bitnum);
 
 }
 
@@ -514,8 +495,11 @@ void BigInteger::setBit(int bitnum) {
  */
 BigInteger BigInteger::subtract(const BigInteger& subtractor) const {
 
-    return BigInteger(new NTL::ZZ(*number - *subtractor.number));
-
+    mpz_t result;
+    mpz_init(result);
+    mpz_sub(result, number, subtractor.number);
+    return result;
+    
 }
 
 /*
@@ -523,16 +507,16 @@ BigInteger BigInteger::subtract(const BigInteger& subtractor) const {
  */
 bool BigInteger::testBit(int bitnum) const {
 
-    return NTL::bit(*number, bitnum) == 1;
+    return mpz_tstbit(number, bitnum) == 1;
 
 }
 
 /*
  * Returns a long (64 bit) representation of this integer.
  */
-long BigInteger::toLong() {
+unsigned long BigInteger::toLong() {
 
-    return NTL::to_long(*number);
+    return mpz_get_ui(number);
 
 }
 
@@ -541,8 +525,11 @@ long BigInteger::toLong() {
  */
 BigInteger BigInteger::Xor(const BigInteger& logical) const {
 
-    return BigInteger(new NTL::ZZ(*number ^ *logical.number));
-
+    mpz_t result;
+    mpz_init(result);
+    mpz_xor(result, number, logical.number);
+    return result;
+    
 }
 
 }
