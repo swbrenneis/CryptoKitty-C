@@ -14,7 +14,6 @@ namespace CK {
 
 FortunaGenerator::FortunaGenerator()
 : runFlag(false),
-  thread(0),
   cipher(new AES(AES::AES256)) {
 
       limit.setBit(128);    // Limits counter to 16 bytes
@@ -22,9 +21,6 @@ FortunaGenerator::FortunaGenerator()
 }
 
 FortunaGenerator::~FortunaGenerator() {
-
-    delete thread;
-
 }
 
 /*
@@ -217,7 +213,8 @@ void FortunaGenerator::start() {
 
         // Start the accumulator.
         runFlag = true;
-        thread = new std::thread([this]{ run(); });
+        std::thread tmp([this]{ run(); });
+	thread.swap(tmp);
     }
 
 }

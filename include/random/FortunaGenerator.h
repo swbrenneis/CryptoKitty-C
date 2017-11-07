@@ -31,7 +31,7 @@ class FortunaGenerator {
 
     private:
         bool runFlag;
-        std::thread *thread;
+        std::thread thread;
         typedef std::deque<coder::ByteArray> EntropyPools;
         EntropyPools pools;
         uint32_t poolCounter;

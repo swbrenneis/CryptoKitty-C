@@ -16,7 +16,7 @@ CK_INCLUDE= $(INSTALL_PATH)/include/CryptoKitty-C
 
 LD= g++
 LDPATHS= -L$(DEV_HOME)/lib -L/usr/local/lib -L/usr/local/lib64
-LDLIBS=  -lgmp -lcoder
+LDLIBS=  -lgmp -lcoder -lpthread
 LDFLAGS= -Wall -g -shared -Wl,--no-undefined
 
 CIPHER_OBJECT= cipher/AES.o cipher/OAEPrsaes.o cipher/PKCS1rsaes.o cipher/PKCS1rsassa.o \
